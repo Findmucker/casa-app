@@ -88,7 +88,7 @@ export default function PublicEventsPage() {
 
       {/* Events */}
       <main className="flex-1">
-        <EventList isPublic />
+        <EventList isPublic guestName={guestName} />
       </main>
     </div>
   );

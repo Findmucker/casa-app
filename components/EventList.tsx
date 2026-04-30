@@ -27,9 +27,10 @@ export interface CasaEvent {
 
 interface EventListProps {
   isPublic?: boolean;
+  guestName?: string;
 }
 
-export default function EventList({ isPublic = false }: EventListProps) {
+export default function EventList({ isPublic = false, guestName }: EventListProps) {
   const { items: events, loading, add, update, remove } =
     useCollection<CasaEvent>("events");
   const [showCreate, setShowCreate] = useState(false);
@@ -39,19 +40,32 @@ export default function EventList({ isPublic = false }: EventListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // In public mode, only show events the guest is registered in
+  // In app mode (not public), show all
+  const currentUser = isPublic ? guestName : null;
+
   const handleCreate = async () => {
     if (!title.trim()) return;
+    const participants = currentUser ? [currentUser] : [];
     await add({
       title: title.trim(),
       date,
       guests: parseInt(guests) || 0,
-      participants: [],
+      participants,
       done: false,
     } as unknown as Omit<CasaEvent, "id">);
     setTitle("");
     setDate("");
     setGuests("");
     setShowCreate(false);
+  };
+
+  const handleJoin = async (event: CasaEvent) => {
+    if (!currentUser) return;
+    const participants = event.participants || [];
+    if (!participants.includes(currentUser)) {
+      await update(event.id, { participants: [...participants, currentUser] });
+    }
   };
 
   const handleShare = async () => {
@@ -105,6 +119,14 @@ export default function EventList({ isPublic = false }: EventListProps) {
 
   const activeEvents = events.filter((e) => !e.done);
   const pastEvents = events.filter((e) => e.done);
+
+  // In public mode, split into "my events" (registered) and "available" (not registered)
+  const myEvents = isPublic && currentUser
+    ? activeEvents.filter((e) => (e.participants || []).includes(currentUser))
+    : activeEvents;
+  const availableEvents = isPublic && currentUser
+    ? activeEvents.filter((e) => !(e.participants || []).includes(currentUser))
+    : [];
 
   if (loading) {
     return (
@@ -184,8 +206,8 @@ export default function EventList({ isPublic = false }: EventListProps) {
         </div>
       )}
 
-      {/* Active events */}
-      {activeEvents.map((event) => (
+      {/* My events (registered / all in app mode) */}
+      {myEvents.map((event) => (
         <EventCard
           key={event.id}
           event={event}
@@ -198,6 +220,46 @@ export default function EventList({ isPublic = false }: EventListProps) {
           onUpdateEvent={(data) => update(event.id, data)}
         />
       ))}
+
+      {/* Available events to join (public mode only) */}
+      {availableEvents.length > 0 && (
+        <div className="space-y-2 pt-3 border-t border-purple-100/40">
+          <p className="text-[10px] font-semibold text-purple-300 uppercase tracking-wider">
+            Eventos disponíveis
+          </p>
+          {availableEvents.map((event) => (
+            <div
+              key={event.id}
+              className="bg-white/60 rounded-2xl border border-purple-100/30 p-3.5 flex items-center gap-3"
+            >
+              <span className="text-lg">🎉</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-rose-700 truncate">
+                  {event.title}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {event.date && (
+                    <span className="text-[11px] text-purple-400">
+                      📅 {event.date}
+                    </span>
+                  )}
+                  {(event.participants || []).length > 0 && (
+                    <span className="text-[11px] text-purple-400">
+                      👥 {(event.participants || []).length}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => handleJoin(event)}
+                className="text-[11px] bg-gradient-to-r from-purple-400 to-pink-400 text-white px-3 py-1.5 rounded-xl font-medium hover:from-purple-500 hover:to-pink-500 active:scale-95 transition-all"
+              >
+                Participar
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Past events with clone */}
       {pastEvents.length > 0 && (
@@ -219,7 +281,7 @@ export default function EventList({ isPublic = false }: EventListProps) {
         </details>
       )}
 
-      {activeEvents.length === 0 && !showCreate && pastEvents.length === 0 && (
+      {myEvents.length === 0 && availableEvents.length === 0 && !showCreate && pastEvents.length === 0 && (
         <p className="text-center text-xs text-pink-300 py-3">
           Sem eventos — toca no + para criar
         </p>
