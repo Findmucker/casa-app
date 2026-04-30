@@ -9,16 +9,20 @@ function getGreeting(): { text: string; emoji: string } {
   return { text: "Boa noite", emoji: "🌙" };
 }
 
+const OWNER_DISPLAY: Record<string, string> = {
+  eduardo: "Eduardo",
+  moniquinha: "Moniquinha",
+};
+
 export default function Greeting({ onDone }: { onDone: () => void }) {
   const [phase, setPhase] = useState<"enter" | "show" | "exit">("enter");
   const greeting = getGreeting();
+  const owner = typeof window !== "undefined" ? localStorage.getItem("casa-owner") : null;
+  const displayName = owner ? OWNER_DISPLAY[owner] || owner : "amor";
 
   useEffect(() => {
-    // enter → show after 50ms (trigger animation)
     const t1 = setTimeout(() => setPhase("show"), 50);
-    // show → exit after 1.2s
     const t2 = setTimeout(() => setPhase("exit"), 1200);
-    // exit → done after animation (400ms)
     const t3 = setTimeout(() => onDone(), 1600);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [onDone]);
@@ -62,7 +66,7 @@ export default function Greeting({ onDone }: { onDone: () => void }) {
           {greeting.text},
         </h1>
         <h2 className="text-2xl font-semibold text-pink-400">
-          Moniquinha 💕
+          {displayName} 💕
         </h2>
         <div className="flex justify-center gap-1 mt-3">
           {["❤️", "🩷", "💗", "🩷", "❤️"].map((h, i) => (
