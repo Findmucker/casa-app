@@ -1,10 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCollection } from "@/lib/hooks";
 import { getOrCreateShareId } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+
+// ─── Weather for event dates ────────────────────────────────
+
+interface DateWeather {
+  tempMax: number;
+  tempMin: number;
+  weathercode: number;
+  precipProb: number;
+}
+
+const WMO_CODES: Record<number, { emoji: string; label: string }> = {
+  0: { emoji: "☀️", label: "Céu limpo" },
+  1: { emoji: "🌤️", label: "Quase limpo" },
+  2: { emoji: "⛅", label: "Parcialmente nublado" },
+  3: { emoji: "☁️", label: "Nublado" },
+  45: { emoji: "🌫️", label: "Nevoeiro" },
+  48: { emoji: "🌫️", label: "Nevoeiro" },
+  51: { emoji: "🌦️", label: "Chuvisco" },
+  53: { emoji: "🌦️", label: "Chuvisco" },
+  55: { emoji: "🌦️", label: "Chuvisco forte" },
+  61: { emoji: "🌧️", label: "Chuva leve" },
+  63: { emoji: "🌧️", label: "Chuva" },
+  65: { emoji: "🌧️", label: "Chuva forte" },
+  80: { emoji: "🌦️", label: "Aguaceiros" },
+  81: { emoji: "🌦️", label: "Aguaceiros" },
+  82: { emoji: "⛈️", label: "Aguaceiros fortes" },
+  95: { emoji: "⛈️", label: "Trovoada" },
+  96: { emoji: "⛈️", label: "Trovoada" },
+  99: { emoji: "⛈️", label: "Trovoada forte" },
+};
+
+function getWeatherInfo(code: number) {
+  return WMO_CODES[code] || { emoji: "🌡️", label: "Desconhecido" };
+}
+
+// Cache weather data in memory
+let weatherCache: { data: Record<string, DateWeather>; fetchedAt: number } | null = null;
+
+async function fetchWeatherForDates(): Promise<Record<string, DateWeather>> {
+  // Cache for 30 minutes
+  if (weatherCache && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
+    return weatherCache.data;
+  }
+  try {
+    const res = await fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=Europe/Lisbon&forecast_days=7"
+    );
+    const json = await res.json();
+    const result: Record<string, DateWeather> = {};
+    for (let i = 0; i < json.daily.time.length; i++) {
+      result[json.daily.time[i]] = {
+        tempMax: Math.round(json.daily.temperature_2m_max[i]),
+        tempMin: Math.round(json.daily.temperature_2m_min[i]),
+        weathercode: json.daily.weather_code[i],
+        precipProb: json.daily.precipitation_probability_max[i],
+      };
+    }
+    weatherCache = { data: result, fetchedAt: Date.now() };
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+function useEventWeather(date: string): DateWeather | null {
+  const [weather, setWeather] = useState<DateWeather | null>(null);
+  useEffect(() => {
+    if (!date) return;
+    fetchWeatherForDates().then((data) => {
+      if (data[date]) setWeather(data[date]);
+    });
+  }, [date]);
+  return weather;
+}
 
 export interface EventItem {
   id: string;
@@ -392,6 +466,7 @@ function EventCard({
   const [newType, setNewType] = useState<"compra" | "todo">("compra");
   const [newAssignee, setNewAssignee] = useState("");
   const [newParticipant, setNewParticipant] = useState("");
+  const weather = useEventWeather(event.date);
 
   const handleAdd = async () => {
     if (!newItem.trim()) return;
@@ -453,6 +528,12 @@ function EventCard({
             {event.date && (
               <span className="text-[11px] text-purple-400">
                 📅 {formatDate(event.date)}
+              </span>
+            )}
+            {weather && (
+              <span className="text-[11px] text-purple-400" title={getWeatherInfo(weather.weathercode).label}>
+                {getWeatherInfo(weather.weathercode).emoji} {weather.tempMin}°-{weather.tempMax}°
+                {weather.precipProb > 30 && <span className="text-blue-400"> 💧{weather.precipProb}%</span>}
               </span>
             )}
             {participants.length > 0 && (

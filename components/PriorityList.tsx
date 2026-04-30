@@ -240,178 +240,162 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
         {filteredItems.map((item, idx) => (
           <div
             key={item.id}
-            className={`bg-white/70 backdrop-blur-sm rounded-2xl p-4 shadow-sm shadow-pink-100/30 border border-pink-100/30 transition-all hover:shadow-md hover:shadow-pink-100/30 ${
+            className={`bg-white/70 backdrop-blur-sm rounded-2xl p-3 shadow-sm shadow-pink-100/30 border border-pink-100/30 transition-all hover:shadow-md hover:shadow-pink-100/30 ${
               type === "big" && "status" in item && item.status === "concluido"
                 ? "opacity-50"
                 : ""
-            }`}
+            } ${type === "small" && (item as SmallPriorityItem).done ? "opacity-50" : ""}`}
           >
-            <div className="flex items-center gap-3">
-              {/* Priority number */}
-              <span className="text-lg font-bold text-pink-200 w-6 text-center">
-                {idx + 1}
-              </span>
-
+            {/* Main row */}
+            <div className="flex items-center gap-2">
               {/* Move arrows */}
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-0.5">
                 <button
                   onClick={() => moveItem(item, "up")}
                   disabled={idx === 0}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-pink-50 text-sm text-pink-400 hover:bg-pink-100 hover:text-pink-600 disabled:opacity-20 active:scale-90 transition-all"
+                  className="w-6 h-5 flex items-center justify-center text-xs text-pink-300 disabled:opacity-20 active:scale-90 rounded"
                 >
                   ▲
                 </button>
                 <button
                   onClick={() => moveItem(item, "down")}
                   disabled={idx === filteredItems.length - 1}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-pink-50 text-sm text-pink-400 hover:bg-pink-100 hover:text-pink-600 disabled:opacity-20 active:scale-90 transition-all"
+                  className="w-6 h-5 flex items-center justify-center text-xs text-pink-300 disabled:opacity-20 active:scale-90 rounded"
                 >
                   ▼
                 </button>
               </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                {editingId === item.id ? (
-                  /* Editing mode */
-                  <div className="flex flex-col gap-1.5">
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") saveEdit(item);
-                        if (e.key === "Escape") setEditingId(null);
-                      }}
-                      className="rounded-xl border border-pink-200/60 bg-white px-3 py-1.5 text-sm text-rose-800 focus:outline-none focus:border-pink-300 transition-all"
-                      autoFocus
-                    />
-                    {type === "small" && (
-                      <input
-                        type="number"
-                        value={editPrice}
-                        onChange={(e) => setEditPrice(e.target.value)}
-                        placeholder="Preço (opcional)"
-                        className="rounded-xl border border-pink-200/60 bg-white px-3 py-1.5 text-xs text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
-                      />
-                    )}
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => saveEdit(item)}
-                        className="text-xs bg-gradient-to-r from-pink-400 to-rose-400 text-white px-3 py-1 rounded-lg active:scale-95 transition-all"
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="text-xs text-pink-400 px-2 py-1 hover:text-pink-600 transition-colors"
-                      >
-                        Cancelar
-                      </button>
+              {/* Checkbox (small) or Status (big) */}
+              {type === "small" ? (
+                <div className="relative">
+                  <button
+                    onClick={() => handleToggleDone(item as SmallPriorityItem)}
+                    className={`h-7 w-7 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-xs transition-all active:scale-90 ${
+                      (item as SmallPriorityItem).done
+                        ? "bg-gradient-to-r from-pink-300 to-rose-300 border-pink-300 text-white"
+                        : "border-pink-300 hover:bg-pink-100"
+                    } ${celebrating === item.id ? "animate-celebrate" : ""}`}
+                  >
+                    {(item as SmallPriorityItem).done ? "✓" : ""}
+                  </button>
+                  {celebrating === item.id && (
+                    <div className="absolute inset-0 flex items-center justify-center confetti-burst pointer-events-none">
+                      <span className="absolute text-xs">💕</span>
+                      <span className="absolute text-xs">✨</span>
                     </div>
-                  </div>
-                ) : (
-                  /* Display mode */
-                  <>
-                    <div className="flex items-center gap-2">
-                      {type === "small" ? (
-                        <div className="relative">
-                          <button
-                            onClick={() => handleToggleDone(item as SmallPriorityItem)}
-                            className={`h-8 w-8 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-sm transition-all active:scale-90 ${
-                              (item as SmallPriorityItem).done
-                                ? "bg-gradient-to-r from-pink-300 to-rose-300 border-pink-300 text-white shadow-sm shadow-pink-200/50"
-                                : "border-pink-300 hover:bg-pink-100"
-                            } ${celebrating === item.id ? "animate-celebrate" : ""}`}
-                          >
-                            {(item as SmallPriorityItem).done ? "✓" : ""}
-                          </button>
-                          {celebrating === item.id && (
-                            <div className="absolute inset-0 flex items-center justify-center confetti-burst pointer-events-none">
-                              <span className="absolute text-xs">💕</span>
-                              <span className="absolute text-xs">✨</span>
-                              <span className="absolute text-xs">💗</span>
-                              <span className="absolute text-xs">🩷</span>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => cycleStatus(item as BigPriorityItem)}
-                          className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all active:scale-95 ${
-                            STATUS_LABELS[(item as BigPriorityItem).status].color
-                          }`}
-                          dangerouslySetInnerHTML={{
-                            __html: `${STATUS_LABELS[(item as BigPriorityItem).status].emoji} ${STATUS_LABELS[(item as BigPriorityItem).status].label}`
-                          }}
-                        />
-                      )}
-                      <span
-                        onClick={() => startEditing(item)}
-                        className={`text-base cursor-pointer ${
-                          type === "big" ? "break-words" : "break-words"
-                        } ${
-                          type === "small" && (item as SmallPriorityItem).done
-                            ? "line-through text-pink-300"
-                            : "text-rose-800"
-                        }`}
-                      >
-                        {item.name}
-                      </span>
-                      {/* Assignee badge (clickable to cycle) */}
-                      {type === "small" && (
-                        <button
-                          onClick={() => {
-                            const current = (item as SmallPriorityItem).assignee || "ambos";
-                            update(item.id, { assignee: cycleAssignee(current) });
-                          }}
-                          className="text-xs flex-shrink-0 w-7 h-7 rounded-full bg-pink-50 flex items-center justify-center hover:bg-pink-100 active:scale-90 transition-all"
-                          title={ASSIGNEE_CONFIG[(item as SmallPriorityItem).assignee || "ambos"].label}
-                        >
-                          {ASSIGNEE_CONFIG[(item as SmallPriorityItem).assignee || "ambos"].emoji}
-                        </button>
-                      )}
-                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => cycleStatus(item as BigPriorityItem)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95 flex-shrink-0 ${
+                    STATUS_LABELS[(item as BigPriorityItem).status].color
+                  }`}
+                  dangerouslySetInnerHTML={{
+                    __html: `${STATUS_LABELS[(item as BigPriorityItem).status].emoji} ${STATUS_LABELS[(item as BigPriorityItem).status].label}`
+                  }}
+                />
+              )}
 
-                    {type === "small" && (item as SmallPriorityItem).price && (
-                      <span className="text-xs text-pink-400 ml-8">
-                        ~{(item as SmallPriorityItem).price}&euro;
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
+              {/* Name (tap to edit) */}
+              <span
+                onClick={() => startEditing(item)}
+                className={`flex-1 text-sm cursor-pointer truncate ${
+                  type === "small" && (item as SmallPriorityItem).done
+                    ? "line-through text-pink-300"
+                    : "text-rose-800"
+                }`}
+              >
+                {item.name}
+              </span>
 
-              {/* Actions */}
-              <div className="flex gap-2">
+              {/* Assignee badge */}
+              {type === "small" && (
                 <button
                   onClick={() => {
-                    if (editingNotes === item.id) {
-                      update(item.id, { notes: notesText });
-                      setEditingNotes(null);
-                    } else {
-                      setEditingNotes(item.id);
-                      setNotesText((item as BigPriorityItem).notes || (item as SmallPriorityItem).notes || "");
-                    }
+                    const current = (item as SmallPriorityItem).assignee || "ambos";
+                    update(item.id, { assignee: cycleAssignee(current) });
                   }}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl bg-pink-50 text-pink-400 hover:bg-pink-100 hover:text-pink-600 transition-all active:scale-90 text-base"
+                  className="w-8 h-8 flex-shrink-0 rounded-full bg-pink-50 flex items-center justify-center hover:bg-pink-100 active:scale-90 transition-all text-sm"
                 >
-                  📝
+                  {ASSIGNEE_CONFIG[(item as SmallPriorityItem).assignee || "ambos"].emoji}
                 </button>
-                <button
-                  onClick={() => startEditing(item)}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl bg-pink-50 text-pink-400 hover:bg-pink-100 hover:text-pink-600 transition-all active:scale-90 text-sm"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => remove(item.id)}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl bg-pink-50 text-pink-300 hover:bg-red-50 hover:text-red-400 transition-all active:scale-90 text-sm"
-                >
-                  ✕
-                </button>
-              </div>
+              )}
+
+              {/* Compact actions: notes + delete */}
+              <button
+                onClick={() => {
+                  if (editingNotes === item.id) {
+                    update(item.id, { notes: notesText });
+                    setEditingNotes(null);
+                  } else {
+                    setEditingNotes(item.id);
+                    setNotesText((item as BigPriorityItem).notes || (item as SmallPriorityItem).notes || "");
+                  }
+                }}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all active:scale-90 ${
+                  ((item as SmallPriorityItem).notes || (item as BigPriorityItem).notes)
+                    ? "bg-pink-100 text-pink-500"
+                    : "text-pink-300 hover:text-pink-500"
+                }`}
+              >
+                📝
+              </button>
+              <button
+                onClick={() => remove(item.id)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-pink-300 hover:text-red-400 transition-all active:scale-90 text-sm"
+              >
+                ✕
+              </button>
             </div>
+
+            {/* Price (small items) */}
+            {type === "small" && (item as SmallPriorityItem).price && (
+              <span className="text-[11px] text-pink-400 ml-10 block mt-0.5">
+                ~{(item as SmallPriorityItem).price}€
+              </span>
+            )}
+
+            {/* Editing mode */}
+            {editingId === item.id && (
+              <div className="mt-2 ml-6 flex flex-col gap-1.5">
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveEdit(item);
+                    if (e.key === "Escape") setEditingId(null);
+                  }}
+                  className="rounded-xl border border-pink-200/60 bg-white px-3 py-1.5 text-sm text-rose-800 focus:outline-none focus:border-pink-300 transition-all"
+                  autoFocus
+                />
+                {type === "small" && (
+                  <input
+                    type="number"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    placeholder="Preço (opcional)"
+                    className="rounded-xl border border-pink-200/60 bg-white px-3 py-1.5 text-xs text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
+                  />
+                )}
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => saveEdit(item)}
+                    className="text-xs bg-gradient-to-r from-pink-400 to-rose-400 text-white px-3 py-1 rounded-lg active:scale-95 transition-all"
+                  >
+                    Guardar
+                  </button>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="text-xs text-pink-400 px-2 py-1 hover:text-pink-600 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Notes editor */}
             {editingNotes === item.id && (
