@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useCollection } from "@/lib/hooks";
+import { getOrCreateShareId } from "@/lib/share";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export interface EventItem {
   id: string;
@@ -20,7 +23,11 @@ export interface CasaEvent {
   createdAt: unknown;
 }
 
-export default function EventList() {
+interface EventListProps {
+  isPublic?: boolean;
+}
+
+export default function EventList({ isPublic = false }: EventListProps) {
   const { items: events, loading, add, update, remove } =
     useCollection<CasaEvent>("events");
   const [showCreate, setShowCreate] = useState(false);
@@ -28,6 +35,7 @@ export default function EventList() {
   const [date, setDate] = useState("");
   const [guests, setGuests] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleCreate = async () => {
     if (!title.trim()) return;
@@ -41,6 +49,55 @@ export default function EventList() {
     setDate("");
     setGuests("");
     setShowCreate(false);
+  };
+
+  const handleShare = async () => {
+    try {
+      const shareId = await getOrCreateShareId();
+      const url = `${window.location.origin}/eventos/${shareId}`;
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error("Share error:", e);
+    }
+  };
+
+  const handleClone = async (event: CasaEvent) => {
+    // Create new event with same details
+    const newEvent = await add({
+      title: `${event.title} (cópia)`,
+      date: "",
+      guests: event.guests,
+      done: false,
+    } as unknown as Omit<CasaEvent, "id">);
+
+    // Copy items from old event (reset done to false)
+    // We need to get the items from the original event subcollection
+    try {
+      const itemsSnap = await getDocs(collection(db, `events/${event.id}/items`));
+      const { addDoc, serverTimestamp } = await import("firebase/firestore");
+      // Find the new event ID (it's the last active one with this title)
+      const eventsSnap = await getDocs(collection(db, "events"));
+      const allEvents = eventsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const newest = allEvents
+        .filter((e) => (e as unknown as CasaEvent).title === `${event.title} (cópia)`)
+        .pop();
+
+      if (newest) {
+        for (const itemDoc of itemsSnap.docs) {
+          const data = itemDoc.data();
+          await addDoc(collection(db, `events/${newest.id}/items`), {
+            name: data.name,
+            type: data.type,
+            done: false,
+            createdAt: serverTimestamp(),
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Clone items error:", e);
+    }
   };
 
   const activeEvents = events.filter((e) => !e.done);
@@ -66,12 +123,27 @@ export default function EventList() {
             </span>
           )}
         </h3>
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
-        >
-          {showCreate ? "×" : "+"}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Share button (only in app, not public page) */}
+          {!isPublic && (
+            <button
+              onClick={handleShare}
+              className={`px-2.5 py-1.5 rounded-full text-[11px] font-medium transition-all active:scale-90 ${
+                copied
+                  ? "bg-green-100 text-green-600"
+                  : "bg-purple-50 text-purple-400 hover:bg-purple-100"
+              }`}
+            >
+              {copied ? "✓ Copiado!" : "🔗 Partilhar"}
+            </button>
+          )}
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
+          >
+            {showCreate ? "×" : "+"}
+          </button>
+        </div>
       </div>
 
       {/* Create form */}
@@ -123,7 +195,7 @@ export default function EventList() {
         />
       ))}
 
-      {/* Past events (collapsed) */}
+      {/* Past events with clone */}
       {pastEvents.length > 0 && (
         <details className="group">
           <summary className="text-[11px] text-pink-300 cursor-pointer hover:text-pink-400 transition-colors list-none flex items-center gap-1">
@@ -132,21 +204,12 @@ export default function EventList() {
           </summary>
           <div className="mt-2 space-y-2">
             {pastEvents.map((event) => (
-              <div
+              <PastEventCard
                 key={event.id}
-                className="flex items-center gap-2 bg-pink-50/40 rounded-xl p-2.5 opacity-60"
-              >
-                <span className="text-sm">✓</span>
-                <span className="flex-1 text-xs text-pink-400 line-through">
-                  {event.title}
-                </span>
-                <button
-                  onClick={() => remove(event.id)}
-                  className="text-pink-200 hover:text-red-400 text-xs"
-                >
-                  ✕
-                </button>
-              </div>
+                event={event}
+                onClone={() => handleClone(event)}
+                onDelete={() => remove(event.id)}
+              />
             ))}
           </div>
         </details>
@@ -156,6 +219,82 @@ export default function EventList() {
         <p className="text-center text-xs text-pink-300 py-3">
           Sem eventos — toca no + para criar
         </p>
+      )}
+    </div>
+  );
+}
+
+// ─── Past Event Card (with clone + history) ──────────────────
+
+function PastEventCard({
+  event,
+  onClone,
+  onDelete,
+}: {
+  event: CasaEvent;
+  onClone: () => void;
+  onDelete: () => void;
+}) {
+  const { items } = useCollection<EventItem>(`events/${event.id}/items`);
+  const [expanded, setExpanded] = useState(false);
+
+  const formatDate = (d: string) => {
+    if (!d) return "";
+    try {
+      return new Date(d).toLocaleDateString("pt-PT", { day: "2-digit", month: "short" });
+    } catch { return d; }
+  };
+
+  return (
+    <div className="bg-pink-50/60 rounded-2xl border border-pink-100/40 overflow-hidden">
+      <div className="flex items-center gap-2 p-2.5">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-pink-300 transition-transform"
+          style={{ transform: expanded ? "rotate(90deg)" : "" }}
+        >
+          ▶
+        </button>
+        <div className="flex-1 min-w-0">
+          <span className="text-xs text-pink-500 font-medium truncate block">
+            {event.title}
+          </span>
+          <div className="flex gap-2">
+            {event.date && (
+              <span className="text-[10px] text-pink-300">{formatDate(event.date)}</span>
+            )}
+            {event.guests > 0 && (
+              <span className="text-[10px] text-pink-300">👥 {event.guests}</span>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={onClone}
+          className="text-[10px] bg-purple-100 text-purple-500 px-2 py-1 rounded-lg hover:bg-purple-200 active:scale-90 transition-all"
+        >
+          📋 Clonar
+        </button>
+        <button
+          onClick={onDelete}
+          className="text-pink-200 hover:text-red-400 text-xs"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Expanded: show completed items for reference */}
+      {expanded && items.length > 0 && (
+        <div className="px-3 pb-2.5 border-t border-pink-100/30 pt-2 space-y-1">
+          {items.map((item) => (
+            <div key={item.id} className="flex items-center gap-2 text-xs text-pink-400">
+              <span>{item.type === "compra" ? "🛒" : "✅"}</span>
+              <span className={item.done ? "line-through opacity-60" : ""}>
+                {item.name}
+              </span>
+              {item.done && <span className="text-[9px] text-green-400">✓</span>}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -313,7 +452,7 @@ function EventCard({
             </div>
           )}
 
-          {/* TODO items */}
+          {/* Task items */}
           {todos.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider mb-1.5">
