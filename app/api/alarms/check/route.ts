@@ -1,20 +1,34 @@
 import { NextResponse } from "next/server";
 import admin from "firebase-admin";
 
-// Initialize Firebase Admin (singleton)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    }),
-  });
+// Initialize Firebase Admin (singleton) - only if env vars are configured
+function getAdmin() {
+  if (!admin.apps.length) {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+
+    if (!projectId || !clientEmail || !privateKey) {
+      return null;
+    }
+
+    admin.initializeApp({
+      credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+    });
+  }
+  return admin;
 }
 
-const db = admin.firestore();
-
 export async function GET(request: Request) {
+  const adm = getAdmin();
+  if (!adm) {
+    return NextResponse.json(
+      { error: "Firebase Admin not configured" },
+      { status: 503 }
+    );
+  }
+
+  const db = adm.firestore();
   // Verify this is called by Vercel Cron (or allow in dev)
   const authHeader = request.headers.get("authorization");
   if (
