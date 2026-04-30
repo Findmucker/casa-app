@@ -9,16 +9,7 @@ import EventList from "@/components/EventList";
 import Weather from "@/components/Weather";
 import { requestNotificationPermission, registerPushToken } from "@/lib/notifications";
 
-// Tabs shown in the bottom bar
-const MAIN_TABS = [
-  { id: "shopping", label: "Compras", emoji: "🧺" },
-  { id: "small", label: "Coisinhas", emoji: "🪴" },
-  { id: "big", label: "Projetos", emoji: "🏡" },
-  { id: "weather", label: "Tempo", emoji: "🌤️" },
-] as const;
-
-// All available sections (shown in the grid panel)
-const ALL_SECTIONS = [
+const ALL_TABS = [
   { id: "shopping", label: "Compras", emoji: "🧺" },
   { id: "small", label: "Coisinhas", emoji: "🪴" },
   { id: "big", label: "Projetos", emoji: "🏡" },
@@ -27,7 +18,7 @@ const ALL_SECTIONS = [
   { id: "weather", label: "Tempo", emoji: "🌤️" },
 ] as const;
 
-type TabId = (typeof ALL_SECTIONS)[number]["id"];
+type TabId = (typeof ALL_TABS)[number]["id"];
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("shopping");
@@ -54,11 +45,14 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50">
-      {/* Header */}
+      {/* Header - tap to open dashboard grid */}
       <header className="bg-white/60 backdrop-blur-md border-b border-pink-100/50 px-4 py-3.5 flex items-center justify-center animate-fade-in-up">
-        <h1 className="text-lg font-bold text-rose-400 tracking-wide">
+        <button
+          onClick={() => setShowPanel(!showPanel)}
+          className="text-lg font-bold text-rose-400 tracking-wide hover:text-rose-500 active:scale-95 transition-all"
+        >
           🏡 A Nossa Casinha
-        </h1>
+        </button>
       </header>
 
       {/* Content */}
@@ -81,7 +75,7 @@ export default function Dashboard() {
           >
             <p className="text-sm font-semibold text-rose-400 mb-6">Ir para...</p>
             <div className="grid grid-cols-3 gap-4 px-8">
-              {ALL_SECTIONS.map((section) => (
+              {ALL_TABS.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => switchTab(section.id)}
@@ -108,14 +102,14 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* Bottom tabs */}
+      {/* Bottom tabs - scrollable */}
       <nav className="bg-white/70 backdrop-blur-md border-t border-pink-100/50 safe-area-bottom">
-        <div className="flex">
-          {MAIN_TABS.map((tab) => (
+        <div className="flex overflow-x-auto scrollbar-hide">
+          {ALL_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => switchTab(tab.id)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-300 relative ${
+              className={`flex-shrink-0 flex-1 min-w-[64px] flex flex-col items-center gap-1 py-3 transition-all duration-300 relative ${
                 activeTab === tab.id && !showPanel
                   ? "text-rose-500 scale-105"
                   : "text-gray-400 hover:text-rose-300"
@@ -132,23 +126,6 @@ export default function Dashboard() {
               )}
             </button>
           ))}
-          {/* More button */}
-          <button
-            onClick={() => setShowPanel(!showPanel)}
-            className={`flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-300 relative ${
-              showPanel
-                ? "text-rose-500 scale-105"
-                : "text-gray-400 hover:text-rose-300"
-            }`}
-          >
-            <span className={`text-xl transition-all duration-300 ${showPanel ? "scale-110" : ""}`}>
-              ⋯
-            </span>
-            <span className="text-[10px] font-medium">Mais</span>
-            {showPanel && (
-              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-1 w-8 bg-gradient-to-r from-pink-300 to-rose-300 rounded-full" />
-            )}
-          </button>
         </div>
       </nav>
     </div>
