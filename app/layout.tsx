@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import FloatingCuties from "@/components/FloatingCuties";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="h-full font-sans bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50">
+        <FloatingCuties />
         {children}
       </body>
     </html>

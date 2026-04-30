@@ -74,6 +74,8 @@ export interface SmallPriorityItem {
   done: boolean;
   order: number;
   price?: number;
+  notes?: string;
+  assignee?: "eduardo" | "moniquinha" | "ambos";
   createdAt: unknown;
 }
 

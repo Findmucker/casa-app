@@ -1,7 +1,18 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useCollection, type ShoppingItem } from "@/lib/hooks";
+import AutocompleteInput from "./AutocompleteInput";
+import EventList from "./EventList";
+
+const COMMON_SHOPPING = [
+  "Leite", "Ovos", "Pão", "Manteiga", "Queijo", "Fiambre", "Iogurtes",
+  "Arroz", "Massa", "Azeite", "Sal", "Açúcar", "Café", "Chá",
+  "Frango", "Carne picada", "Salmão", "Atum", "Batatas", "Cebolas",
+  "Alho", "Tomates", "Alface", "Cenouras", "Bananas", "Maçãs", "Laranjas",
+  "Papel higiénico", "Detergente", "Sabonete", "Champô", "Pasta de dentes",
+  "Água", "Sumo", "Cerveja", "Vinho", "Bolachas", "Cereais", "Chocolate",
+];
 
 export default function ShoppingList() {
   const { items, loading, add, update, remove } =
@@ -10,6 +21,12 @@ export default function ShoppingList() {
   const [newUrgent, setNewUrgent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [celebrating, setCelebrating] = useState<string | null>(null);
+
+  const suggestions = useMemo(() => {
+    const fromHistory = items.map((i) => i.name);
+    const combined = [...new Set([...fromHistory, ...COMMON_SHOPPING])];
+    return combined;
+  }, [items]);
 
   const handleCheck = useCallback(async (item: ShoppingItem) => {
     if (!item.done) {
@@ -107,13 +124,13 @@ export default function ShoppingList() {
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40 space-y-2">
         <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            type="text"
+          <AutocompleteInput
+            inputRef={inputRef}
             value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
+            onChange={setNewItem}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="O que falta comprar?"
+            suggestions={suggestions}
             className="flex-1 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
           />
           <button
@@ -201,6 +218,11 @@ export default function ShoppingList() {
             ))}
           </>
         )}
+
+        {/* Events section */}
+        <div className="pt-6 border-t border-pink-100/40 mt-4">
+          <EventList />
+        </div>
       </div>
     </div>
   );

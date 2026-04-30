@@ -69,7 +69,8 @@ function getDayName(dateStr: string): string {
   if (date.getTime() === today.getTime()) return "Hoje";
   if (date.getTime() === tomorrow.getTime()) return "Amanhã";
 
-  return date.toLocaleDateString("pt-PT", { weekday: "short" }).replace(".", "");
+  const name = date.toLocaleDateString("pt-PT", { weekday: "short" }).replace(".", "");
+  return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 function getHoursForDate(date: string, hourly: HourlyData[]): HourlyData[] {
@@ -213,25 +214,18 @@ export default function Weather() {
 
         {/* 7-day forecast */}
         <p className="text-xs text-pink-400 font-medium uppercase tracking-wider pb-1 pt-2">
-          Próximos 7 dias
+          Próximos dias
         </p>
-        {daily.map((day) => {
+        {daily.filter((day) => day.date !== todayDate).map((day) => {
           const info = getWeatherInfo(day.weathercode);
-          const isToday = day.date === todayDate;
           const isExpanded = expandedDay === day.date;
-          const dayHours = !isToday ? getHoursForDate(day.date, hourly) : [];
+          const dayHours = getHoursForDate(day.date, hourly);
 
           return (
             <div key={day.date}>
               <button
-                onClick={() => {
-                  if (!isToday) {
-                    setExpandedDay(isExpanded ? null : day.date);
-                  }
-                }}
-                className={`w-full flex items-center bg-white/70 backdrop-blur-sm rounded-2xl p-3.5 border border-pink-100/30 shadow-sm shadow-pink-100/30 text-left transition-all ${
-                  !isToday ? "active:scale-[0.98]" : ""
-                } ${isExpanded ? "rounded-b-none border-b-0 shadow-none" : ""}`}
+                onClick={() => setExpandedDay(isExpanded ? null : day.date)}
+                className={`w-full flex items-center bg-white/70 backdrop-blur-sm rounded-2xl p-3.5 border border-pink-100/30 shadow-sm shadow-pink-100/30 text-left transition-all active:scale-[0.98] ${isExpanded ? "rounded-b-none border-b-0 shadow-none" : ""}`}
               >
                 <span className="text-sm font-medium text-rose-600 w-16">
                   {getDayName(day.date)}
@@ -249,11 +243,9 @@ export default function Weather() {
                   <span className="text-sm font-semibold text-rose-700">{day.tempMax}°</span>
                   <span className="text-xs text-pink-300 ml-1">{day.tempMin}°</span>
                 </div>
-                {!isToday && (
-                  <span className={`text-pink-300 text-xs ml-2 transition-transform ${isExpanded ? "rotate-180" : ""}`}>
+                <span className={`text-pink-300 text-xs ml-2 transition-transform ${isExpanded ? "rotate-180" : ""}`}>
                     ▼
                   </span>
-                )}
               </button>
 
               {/* Expanded hourly for non-today days */}

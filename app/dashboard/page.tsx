@@ -4,13 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import ShoppingList from "@/components/ShoppingList";
 import PriorityList from "@/components/PriorityList";
 import ProjectList from "@/components/ProjectList";
+import AlarmList from "@/components/AlarmList";
 import Weather from "@/components/Weather";
-import { requestNotificationPermission } from "@/lib/notifications";
+import { requestNotificationPermission, registerPushToken } from "@/lib/notifications";
 
 const TABS = [
   { id: "shopping", label: "Compras", emoji: "🧺" },
   { id: "small", label: "Coisinhas", emoji: "🪴" },
   { id: "big", label: "Projetos", emoji: "🏡" },
+  { id: "alarms", label: "Alarmes", emoji: "⏰" },
   { id: "weather", label: "Tempo", emoji: "🌤️" },
 ] as const;
 
@@ -23,6 +25,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     requestNotificationPermission();
+    // Register push token - uses device name from localStorage
+    const owner = localStorage.getItem("casa-owner") as "eduardo" | "moniquinha" | null;
+    if (owner) {
+      registerPushToken(owner);
+    }
   }, []);
 
   const switchTab = (id: TabId) => {
@@ -50,6 +57,7 @@ export default function Dashboard() {
             <PriorityList collectionName="priorities_small" type="small" />
           )}
           {activeTab === "big" && <ProjectList />}
+          {activeTab === "alarms" && <AlarmList />}
           {activeTab === "weather" && <Weather />}
         </div>
       </main>
@@ -72,7 +80,7 @@ export default function Dashboard() {
               }`}>
                 {tab.emoji}
               </span>
-              <span className="text-[11px] font-medium">{tab.label}</span>
+              <span className="text-[10px] font-medium">{tab.label}</span>
               {activeTab === tab.id && (
                 <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-1 w-8 bg-gradient-to-r from-pink-300 to-rose-300 rounded-full" />
               )}

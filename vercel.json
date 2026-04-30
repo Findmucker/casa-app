@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/alarms/check",
+      "schedule": "* * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/",
