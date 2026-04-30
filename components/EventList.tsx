@@ -11,6 +11,7 @@ export interface EventItem {
   name: string;
   done: boolean;
   type: "compra" | "todo";
+  assignee?: string;
   createdAt: unknown;
 }
 
@@ -19,6 +20,7 @@ export interface CasaEvent {
   title: string;
   date: string;
   guests: number;
+  participants: string[];
   done: boolean;
   createdAt: unknown;
 }
@@ -43,6 +45,7 @@ export default function EventList({ isPublic = false }: EventListProps) {
       title: title.trim(),
       date,
       guests: parseInt(guests) || 0,
+      participants: [],
       done: false,
     } as unknown as Omit<CasaEvent, "id">);
     setTitle("");
@@ -192,6 +195,7 @@ export default function EventList({ isPublic = false }: EventListProps) {
           }
           onMarkDone={() => update(event.id, { done: true })}
           onDelete={() => remove(event.id)}
+          onUpdateEvent={(data) => update(event.id, data)}
         />
       ))}
 
@@ -308,6 +312,7 @@ interface EventCardProps {
   onToggleExpand: () => void;
   onMarkDone: () => void;
   onDelete: () => void;
+  onUpdateEvent: (data: Partial<CasaEvent>) => void;
 }
 
 function EventCard({
@@ -316,12 +321,15 @@ function EventCard({
   onToggleExpand,
   onMarkDone,
   onDelete,
+  onUpdateEvent,
 }: EventCardProps) {
   const { items, add, update, remove } = useCollection<EventItem>(
     `events/${event.id}/items`
   );
   const [newItem, setNewItem] = useState("");
   const [newType, setNewType] = useState<"compra" | "todo">("compra");
+  const [newAssignee, setNewAssignee] = useState("");
+  const [newParticipant, setNewParticipant] = useState("");
 
   const handleAdd = async () => {
     if (!newItem.trim()) return;
@@ -329,10 +337,27 @@ function EventCard({
       name: newItem.trim(),
       done: false,
       type: newType,
+      ...(newAssignee ? { assignee: newAssignee } : {}),
     } as unknown as Omit<EventItem, "id">);
     setNewItem("");
+    setNewAssignee("");
   };
 
+  const addParticipant = () => {
+    if (!newParticipant.trim()) return;
+    const participants = event.participants || [];
+    if (!participants.includes(newParticipant.trim())) {
+      onUpdateEvent({ participants: [...participants, newParticipant.trim()] });
+    }
+    setNewParticipant("");
+  };
+
+  const removeParticipant = (name: string) => {
+    const participants = (event.participants || []).filter((p) => p !== name);
+    onUpdateEvent({ participants });
+  };
+
+  const participants = event.participants || [];
   const compras = items.filter((i) => i.type === "compra");
   const todos = items.filter((i) => i.type === "todo");
   const doneCount = items.filter((i) => i.done).length;
@@ -368,7 +393,12 @@ function EventCard({
                 📅 {formatDate(event.date)}
               </span>
             )}
-            {event.guests > 0 && (
+            {participants.length > 0 && (
+              <span className="text-[11px] text-purple-400">
+                👥 {participants.length}
+              </span>
+            )}
+            {event.guests > 0 && participants.length === 0 && (
               <span className="text-[11px] text-purple-400">
                 👥 {event.guests} pessoas
               </span>
@@ -404,33 +434,87 @@ function EventCard({
       {/* Expanded content */}
       {expanded && (
         <div className="px-3.5 pb-3.5 pt-2 space-y-3 border-t border-purple-100/30">
+          {/* Participants */}
+          <div>
+            <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider mb-1.5">
+              👥 Participantes
+            </p>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {participants.map((p) => (
+                <span
+                  key={p}
+                  className="inline-flex items-center gap-1 bg-purple-100 text-purple-600 text-[11px] px-2 py-1 rounded-full"
+                >
+                  {p}
+                  <button
+                    onClick={() => removeParticipant(p)}
+                    className="text-purple-300 hover:text-red-400 text-[10px]"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                value={newParticipant}
+                onChange={(e) => setNewParticipant(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addParticipant()}
+                placeholder="Adicionar pessoa..."
+                className="flex-1 rounded-lg border border-purple-200/60 bg-white/80 px-2.5 py-1.5 text-xs text-rose-800 placeholder-purple-300 focus:outline-none focus:border-purple-300 transition-all"
+              />
+              <button
+                onClick={addParticipant}
+                disabled={!newParticipant.trim()}
+                className="rounded-lg bg-purple-100 px-2.5 text-purple-500 text-xs font-bold hover:bg-purple-200 active:scale-90 transition-all disabled:opacity-30"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
           {/* Add item */}
-          <div className="flex gap-2">
-            <select
-              value={newType}
-              onChange={(e) => setNewType(e.target.value as "compra" | "todo")}
-              className="rounded-xl border border-purple-200/60 bg-white/80 px-2 py-2 text-xs text-purple-600 focus:outline-none"
-            >
-              <option value="compra">🛒 Compra</option>
-              <option value="todo">✅ Tarefa</option>
-            </select>
-            <input
-              type="text"
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-              placeholder={
-                newType === "compra" ? "O que comprar..." : "O que fazer..."
-              }
-              className="flex-1 rounded-xl border border-purple-200/60 bg-white/80 px-3 py-2 text-sm text-rose-800 placeholder-purple-300 focus:outline-none focus:border-purple-300 transition-all"
-            />
-            <button
-              onClick={handleAdd}
-              disabled={!newItem.trim()}
-              className="rounded-xl bg-purple-100 px-3 text-purple-500 font-bold hover:bg-purple-200 active:scale-90 transition-all disabled:opacity-30"
-            >
-              +
-            </button>
+          <div className="space-y-1.5">
+            <div className="flex gap-2">
+              <select
+                value={newType}
+                onChange={(e) => setNewType(e.target.value as "compra" | "todo")}
+                className="rounded-xl border border-purple-200/60 bg-white/80 px-2 py-2 text-xs text-purple-600 focus:outline-none"
+              >
+                <option value="compra">🛒 Compra</option>
+                <option value="todo">✅ Tarefa</option>
+              </select>
+              <input
+                type="text"
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                placeholder={
+                  newType === "compra" ? "O que comprar..." : "O que fazer..."
+                }
+                className="flex-1 rounded-xl border border-purple-200/60 bg-white/80 px-3 py-2 text-sm text-rose-800 placeholder-purple-300 focus:outline-none focus:border-purple-300 transition-all"
+              />
+              <button
+                onClick={handleAdd}
+                disabled={!newItem.trim()}
+                className="rounded-xl bg-purple-100 px-3 text-purple-500 font-bold hover:bg-purple-200 active:scale-90 transition-all disabled:opacity-30"
+              >
+                +
+              </button>
+            </div>
+            {participants.length > 0 && (
+              <select
+                value={newAssignee}
+                onChange={(e) => setNewAssignee(e.target.value)}
+                className="rounded-lg border border-purple-200/60 bg-white/80 px-2 py-1.5 text-xs text-purple-600 focus:outline-none"
+              >
+                <option value="">Sem responsável</option>
+                {participants.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Shopping items */}
@@ -444,7 +528,9 @@ function EventCard({
                   <SubItem
                     key={item.id}
                     item={item}
+                    participants={participants}
                     onToggle={() => update(item.id, { done: !item.done })}
+                    onAssign={(assignee) => update(item.id, { assignee })}
                     onDelete={() => remove(item.id)}
                   />
                 ))}
@@ -463,7 +549,9 @@ function EventCard({
                   <SubItem
                     key={item.id}
                     item={item}
+                    participants={participants}
                     onToggle={() => update(item.id, { done: !item.done })}
+                    onAssign={(assignee) => update(item.id, { assignee })}
                     onDelete={() => remove(item.id)}
                   />
                 ))}
@@ -496,11 +584,15 @@ function EventCard({
 
 function SubItem({
   item,
+  participants,
   onToggle,
+  onAssign,
   onDelete,
 }: {
   item: EventItem;
+  participants?: string[];
   onToggle: () => void;
+  onAssign?: (assignee: string) => void;
   onDelete: () => void;
 }) {
   return (
@@ -522,6 +614,24 @@ function SubItem({
       >
         {item.name}
       </span>
+      {/* Assignee badge / selector */}
+      {participants && participants.length > 0 && onAssign && (
+        <select
+          value={item.assignee || ""}
+          onChange={(e) => onAssign(e.target.value)}
+          className="text-[10px] bg-purple-50 text-purple-500 border-none rounded-full px-1.5 py-0.5 focus:outline-none max-w-[80px]"
+        >
+          <option value="">—</option>
+          {participants.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+      )}
+      {item.assignee && (!participants || participants.length === 0) && (
+        <span className="text-[10px] bg-purple-100 text-purple-500 px-1.5 py-0.5 rounded-full">
+          {item.assignee}
+        </span>
+      )}
       <button
         onClick={onDelete}
         className="text-purple-200 hover:text-red-400 text-xs transition-colors"
