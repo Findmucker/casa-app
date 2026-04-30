@@ -49,26 +49,36 @@ export default function PublicEventsPage() {
   if (!guestName) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
-        <div className="flex flex-col items-center gap-6 p-8">
-          <div className="text-5xl">🎉</div>
-          <h2 className="text-lg font-bold text-purple-500">Bem-vindo!</h2>
-          <p className="text-sm text-pink-400 text-center">Como te chamas?</p>
-          <input
-            type="text"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSetName()}
-            placeholder="O teu nome..."
-            className="w-64 rounded-2xl border border-purple-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-purple-300 focus:outline-none focus:border-purple-300 text-center transition-all"
-            autoFocus
-          />
-          <button
-            onClick={handleSetName}
-            disabled={!nameInput.trim()}
-            className="rounded-2xl bg-gradient-to-r from-purple-400 to-pink-400 px-8 py-3 text-white font-semibold hover:from-purple-500 hover:to-pink-500 active:scale-95 transition-all disabled:opacity-40"
-          >
-            Entrar
-          </button>
+        <div className="flex flex-col items-center gap-5 p-8 max-w-sm">
+          <div className="text-5xl animate-bounce-gentle">🏡</div>
+          <h2 className="text-xl font-bold text-purple-500 text-center">
+            Bem-vindo aos eventos do Eduardo & Moniquinha!
+          </h2>
+          <p className="text-sm text-pink-400 text-center leading-relaxed">
+            Estamos a organizar algo especial 💕<br />
+            Diz-nos o teu nome para participares!
+          </p>
+          <div className="w-full space-y-3 mt-2">
+            <input
+              type="text"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSetName()}
+              placeholder="O teu nome..."
+              className="w-full rounded-2xl border border-purple-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-purple-300 focus:outline-none focus:border-purple-300 text-center transition-all"
+              autoFocus
+            />
+            <button
+              onClick={handleSetName}
+              disabled={!nameInput.trim()}
+              className="w-full rounded-2xl bg-gradient-to-r from-purple-400 to-pink-400 px-8 py-3 text-white font-semibold hover:from-purple-500 hover:to-pink-500 active:scale-95 transition-all disabled:opacity-40"
+            >
+              Entrar 🎉
+            </button>
+          </div>
+          <p className="text-[11px] text-pink-300 text-center mt-2">
+            Podes ver eventos, adicionar compras e tarefas, e juntar-te à organização!
+          </p>
         </div>
       </div>
     );
