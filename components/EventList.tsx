@@ -55,7 +55,7 @@ export default function EventList() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="h-full overflow-y-auto px-4 py-4 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider flex items-center gap-2">
@@ -273,7 +273,7 @@ function EventCard({
               className="rounded-xl border border-purple-200/60 bg-white/80 px-2 py-2 text-xs text-purple-600 focus:outline-none"
             >
               <option value="compra">🛒 Compra</option>
-              <option value="todo">✅ TODO</option>
+              <option value="todo">✅ Tarefa</option>
             </select>
             <input
               type="text"
@@ -317,7 +317,7 @@ function EventCard({
           {todos.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider mb-1.5">
-                ✅ A fazer
+                ✅ Tarefas
               </p>
               <div className="space-y-1">
                 {todos.map((item) => (

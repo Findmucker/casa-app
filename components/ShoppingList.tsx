@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { useCollection, type ShoppingItem } from "@/lib/hooks";
 import AutocompleteInput from "./AutocompleteInput";
-import EventList from "./EventList";
 
 const COMMON_SHOPPING = [
   "Leite", "Ovos", "Pão", "Manteiga", "Queijo", "Fiambre", "Iogurtes",
@@ -218,11 +217,6 @@ export default function ShoppingList() {
             ))}
           </>
         )}
-
-        {/* Events section */}
-        <div className="pt-6 border-t border-pink-100/40 mt-4">
-          <EventList />
-        </div>
       </div>
     </div>
   );
