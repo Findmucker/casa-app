@@ -217,48 +217,329 @@ export default function AvatarBuilder({ owner, onSave }: AvatarBuilderProps) {
   );
 }
 
-// ─── 8-bit Pixel Panda (based on the cute 3D panda reference) ─────────────
+// ─── 8-bit Pixel Animal Avatars ──────────────────────────────────────────
 
-function PixelPanda({ size, idle, top, bottom, accessory }: { size: number; idle: string; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) {
-  const p = size / 16; // pixel size (16x16 grid scaled to size)
+// Pixel art grids for all 11 animals (16 wide × 19 tall)
+// null = transparent, string = hex color
 
-  // 16x16 pixel art panda matching the reference image:
-  // Round white face, big black eye patches, small black ears, chubby body
-  // Color palette
-  const B = "#1a1a2e"; // black (ears, eye patches, arms, legs)
-  const W = "#f5f0e8"; // white/cream (face, belly)
-  const D = "#2d2d3a"; // dark grey (body outline, darker black)
-  const N = "#3d3d4a"; // nose
-  const E = "#111118"; // eye pupil
-  const S = "#ffffff"; // eye shine
-  const C = "#ffb3c8"; // cheek blush
-  const BG = "transparent";
+function getPixelGrid(animalId: number): { pixels: (string | null)[][]; palette: Record<string, string> } {
+  switch (animalId) {
+    case 0: // Panda
+      return {
+        palette: { B: "#1a1a2e", W: "#f5f0e8", D: "#2d2d3a", N: "#3d3d4a", E: "#111118", S: "#ffffff", C: "#ffb3c8" },
+        pixels: (() => {
+          const [B, W, D, N, E, S, C, _] = ["#1a1a2e", "#f5f0e8", "#2d2d3a", "#3d3d4a", "#111118", "#ffffff", "#ffb3c8", null];
+          return [
+            [_,_,_, B, B,_,_,_,_,_,_, B, B,_,_,_],
+            [_,_, B, D, D, B,_,_,_,_, B, D, D, B,_,_],
+            [_,_, B, B, B, B, W, W, W, W, B, B, B, B,_,_],
+            [_, B, W, W, W, W, W, W, W, W, W, W, W, W, B,_],
+            [_, B, W, W, B, B, W, W, W, W, B, B, W, W, B,_],
+            [B, W, W, B, B, E, B, W, W, B, E, B, B, W, W, B],
+            [B, W, W, B, S, E, B, W, W, B, E, S, B, W, W, B],
+            [B, W, W, W, B, B, W, W, W, W, B, B, W, W, W, B],
+            [_, B, W, W, W, W, W, N, N, W, W, W, W, W, B,_],
+            [_, B, W, W, C, W, W, W, W, W, W, C, W, W, B,_],
+            [_,_, B, W, W, W, W, W, W, W, W, W, W, B,_,_],
+            [_,_,_, B, B, W, W, W, W, W, W, B, B,_,_,_],
+            [_,_, B, D, B, W, W, W, W, W, W, B, D, B,_,_],
+            [_, B, D, D, B, W, W, W, W, W, W, B, D, D, B,_],
+            [_, B, D, D, B, W, W, W, W, W, W, B, D, D, B,_],
+            [_,_, B, B, B, B, W, W, W, W, B, B, B, B,_,_],
+            [_,_,_, B, B,_, B, B, B, B,_, B, B,_,_,_],
+            [_,_, B, D, D, B,_,_,_,_, B, D, D, B,_,_],
+            [_,_, B, B, B, B,_,_,_,_, B, B, B, B,_,_],
+          ];
+        })(),
+      };
+    case 1: // Gatinho (orange tabby)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [O, W, D, N, E, S, C, P, _] = ["#ff9f43", "#fff3e0", "#e67e22", "#ff6b81", "#111118", "#ffffff", "#ffcccc", "#d35400", null];
+          return [
+            [_,_,_, D, D,_,_,_,_,_,_, D, D,_,_,_],
+            [_,_, D, O, O, D,_,_,_,_, D, O, O, D,_,_],
+            [_,_, D, O, O, O, O, O, O, O, O, O, O, D,_,_],
+            [_, D, O, O, O, O, O, O, O, O, O, O, O, O, D,_],
+            [_, D, O, O, O, O, O, O, O, O, O, O, O, O, D,_],
+            [D, O, O, O, E, E, O, O, O, O, E, E, O, O, O, D],
+            [D, O, O, O, S, E, O, W, W, O, E, S, O, O, O, D],
+            [D, O, O, O, O, O, O, W, W, O, O, O, O, O, O, D],
+            [_, D, O, O, O, O, O, N, N, O, O, O, O, O, D,_],
+            [_, D, O, C, O, O, O, O, O, O, O, O, C, O, D,_],
+            [_,_, D, O, O, O, O, D, O, D, O, O, O, D,_,_],
+            [_,_,_, D, D, O, O, O, O, O, O, D, D,_,_,_],
+            [_,_, D, O, D, W, W, W, W, W, W, D, O, D,_,_],
+            [_, D, O, O, D, W, W, W, W, W, W, D, O, O, D,_],
+            [_, D, O, O, D, W, W, W, W, W, W, D, O, O, D,_],
+            [_,_, D, D, D, D, W, W, W, W, D, D, D, D,_,_],
+            [_,_,_, D, D,_, D, D, D, D,_, D, D,_,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, D, D, D,_,_, O, O, D, D, D, D,_,_],
+          ];
+        })(),
+      };
+    case 2: // Coelhinho (pink bunny)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [P, W, D, N, E, S, C, I, _] = ["#fce4ec", "#ffffff", "#f48fb1", "#ff6b81", "#111118", "#ffffff", "#ff8a9e", "#f8bbd0", null];
+          return [
+            [_,_,_,_, D, D,_,_,_,_, D, D,_,_,_,_],
+            [_,_,_,_, D, I, D,_,_, D, I, D,_,_,_,_],
+            [_,_,_,_, D, I, D,_,_, D, I, D,_,_,_,_],
+            [_,_,_,_, D, P, D,_,_, D, P, D,_,_,_,_],
+            [_,_, D, D, D, P, P, P, P, P, P, D, D, D,_,_],
+            [_, D, P, P, P, P, P, P, P, P, P, P, P, P, D,_],
+            [D, P, P, P, E, E, P, P, P, P, E, E, P, P, P, D],
+            [D, P, P, P, S, E, P, P, P, P, E, S, P, P, P, D],
+            [D, P, P, P, P, P, P, N, N, P, P, P, P, P, P, D],
+            [_, D, P, C, P, P, P, P, P, P, P, P, C, P, D,_],
+            [_,_, D, P, P, P, P, D, P, P, P, P, P, D,_,_],
+            [_,_,_, D, D, P, P, P, P, P, P, D, D,_,_,_],
+            [_,_, D, P, D, W, W, W, W, W, W, D, P, D,_,_],
+            [_, D, P, P, D, W, W, W, W, W, W, D, P, P, D,_],
+            [_, D, P, P, D, W, W, W, W, W, W, D, P, P, D,_],
+            [_,_, D, D, D, D, W, W, W, W, D, D, D, D,_,_],
+            [_,_,_, D, D,_, D, D, D, D,_, D, D,_,_,_],
+            [_,_, D, I, I, D,_,_,_,_, D, I, I, D,_,_],
+            [_,_, D, D, D, D,_,_,_,_, D, D, D, D,_,_],
+          ];
+        })(),
+      };
+    case 3: // Raposa (orange fox)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [O, W, D, N, E, S, C, T, _] = ["#ff6b35", "#fff8e1", "#bf360c", "#37474f", "#111118", "#ffffff", "#ffab91", "#e55100", null];
+          return [
+            [_,_, D, D,_,_,_,_,_,_,_,_, D, D,_,_],
+            [_,_, D, T, D,_,_,_,_,_,_, D, T, D,_,_],
+            [_,_, D, O, O, D,_,_,_,_, D, O, O, D,_,_],
+            [_,_, D, O, O, O, O, O, O, O, O, O, O, D,_,_],
+            [_, D, O, O, O, O, O, O, O, O, O, O, O, O, D,_],
+            [D, O, O, O, E, E, O, W, W, O, E, E, O, O, O, D],
+            [D, O, O, O, S, E, O, W, W, O, E, S, O, O, O, D],
+            [D, O, O, O, O, O, W, W, W, W, O, O, O, O, O, D],
+            [_, D, O, O, O, W, W, N, N, W, W, O, O, O, D,_],
+            [_, D, O, C, O, W, W, W, W, W, W, O, C, O, D,_],
+            [_,_, D, O, O, O, W, W, W, W, O, O, O, D,_,_],
+            [_,_,_, D, D, O, O, O, O, O, O, D, D,_,_,_],
+            [_,_, D, O, D, W, W, W, W, W, W, D, O, D,_,_],
+            [_, D, O, O, D, W, W, W, W, W, W, D, O, O, D,_],
+            [_, D, O, O, D, W, W, W, W, W, W, D, O, O, D,_],
+            [_,_, D, D, D, D, W, W, W, W, D, D, D, D,_,_],
+            [_,_,_, D, D,_, D, D, D, D,_, D, D,_,_,_],
+            [_,_, D, T, T, D,_,_,_,_, D, T, T, D,_,_],
+            [_,_, D, D, D, D,_,_, O, T, O, D, D, D,_,_],
+          ];
+        })(),
+      };
+    case 4: // Ursinho (brown bear)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [B, W, D, N, E, S, C, P, _] = ["#8d6e63", "#d7ccc8", "#5d4037", "#3e2723", "#111118", "#ffffff", "#ffccbc", "#6d4c41", null];
+          return [
+            [_,_,_, D, D,_,_,_,_,_,_, D, D,_,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, D, D, B, B, B, B, B, B, D, D, D,_,_],
+            [_, D, B, B, B, B, B, B, B, B, B, B, B, B, D,_],
+            [_, D, B, B, B, B, B, B, B, B, B, B, B, B, D,_],
+            [D, B, B, B, E, E, B, W, W, B, E, E, B, B, B, D],
+            [D, B, B, B, S, E, B, W, W, B, E, S, B, B, B, D],
+            [D, B, B, B, B, B, W, W, W, W, B, B, B, B, B, D],
+            [_, D, B, B, B, W, W, N, N, W, W, B, B, B, D,_],
+            [_, D, B, C, B, W, W, W, W, W, W, B, C, B, D,_],
+            [_,_, D, B, B, B, W, W, W, W, B, B, B, D,_,_],
+            [_,_,_, D, D, B, B, B, B, B, B, D, D,_,_,_],
+            [_,_, D, P, D, W, W, W, W, W, W, D, P, D,_,_],
+            [_, D, P, P, D, W, W, W, W, W, W, D, P, P, D,_],
+            [_, D, P, P, D, W, W, W, W, W, W, D, P, P, D,_],
+            [_,_, D, D, D, D, W, W, W, W, D, D, D, D,_,_],
+            [_,_,_, D, D,_, D, D, D, D,_, D, D,_,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, D, D, D,_,_,_,_, D, D, D, D,_,_],
+          ];
+        })(),
+      };
+    case 5: // Cãozinho (golden dog)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [G, W, D, N, E, S, C, P, T, _] = ["#ffcc80", "#fff8e1", "#f57c00", "#37474f", "#111118", "#ffffff", "#ffcccc", "#ff8f00", "#ff6b81", null];
+          return [
+            [_,_, D, D, D,_,_,_,_,_,_, D, D, D,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, P, G, G, G, G, G, G, G, G, P, D,_,_],
+            [_, D, G, G, G, G, G, G, G, G, G, G, G, G, D,_],
+            [_, D, G, G, G, G, G, G, G, G, G, G, G, G, D,_],
+            [D, G, G, G, E, E, G, W, W, G, E, E, G, G, G, D],
+            [D, G, G, G, S, E, G, W, W, G, E, S, G, G, G, D],
+            [D, G, G, G, G, G, W, W, W, W, G, G, G, G, G, D],
+            [_, D, G, G, G, W, W, N, N, W, W, G, G, G, D,_],
+            [_, D, G, C, G, W, W, W, W, W, W, G, C, G, D,_],
+            [_,_, D, G, G, G, W, T, T, W, G, G, G, D,_,_],
+            [_,_,_, D, D, G, G, G, G, G, G, D, D,_,_,_],
+            [_,_, D, G, D, W, W, W, W, W, W, D, G, D,_,_],
+            [_, D, G, G, D, W, W, W, W, W, W, D, G, G, D,_],
+            [_, D, G, G, D, W, W, W, W, W, W, D, G, G, D,_],
+            [_,_, D, D, D, D, W, W, W, W, D, D, D, D,_,_],
+            [_,_,_, D, D,_, D, D, D, D,_, D, D,_,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, D, D, D,_, G, P, G, D, D, D, D,_,_],
+          ];
+        })(),
+      };
+    case 6: // Pinguim (black/white penguin)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [B, W, D, N, E, S, C, O, _] = ["#263238", "#ffffff", "#37474f", "#ff6f00", "#111118", "#ffffff", "#ffccdd", "#ff6f00", null];
+          return [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_, D, D, D, D, D, D, D, D,_,_,_,_],
+            [_,_,_, D, B, B, B, B, B, B, B, B, D,_,_,_],
+            [_,_, D, B, B, B, B, B, B, B, B, B, B, D,_,_],
+            [_, D, B, B, E, E, B, B, B, B, E, E, B, B, D,_],
+            [_, D, B, B, S, E, B, B, B, B, E, S, B, B, D,_],
+            [_, D, B, B, B, B, B, B, B, B, B, B, B, B, D,_],
+            [_, D, B, B, B, B, B, O, O, B, B, B, B, B, D,_],
+            [_,_, D, B, C, B, B, O, O, B, B, C, B, D,_,_],
+            [_,_, D, B, B, B, W, W, W, W, B, B, B, D,_,_],
+            [_,_, D, B, B, W, W, W, W, W, W, B, B, D,_,_],
+            [_, D, B, D, W, W, W, W, W, W, W, W, D, B, D,_],
+            [_, D, B, D, W, W, W, W, W, W, W, W, D, B, D,_],
+            [_,_, D, D, W, W, W, W, W, W, W, W, D, D,_,_],
+            [_,_,_, D, D, W, W, W, W, W, W, D, D,_,_,_],
+            [_,_,_,_, D, D, D, D, D, D, D, D,_,_,_,_],
+            [_,_,_, D, O, O, D,_,_, D, O, O, D,_,_,_],
+            [_,_,_, D, D, D, D,_,_, D, D, D, D,_,_,_],
+          ];
+        })(),
+      };
+    case 7: // Hamster (orange round)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [O, W, D, N, E, S, C, P, _] = ["#ffb74d", "#ffffff", "#f57c00", "#ff6b81", "#111118", "#ffffff", "#ffab91", "#ff9800", null];
+          return [
+            [_,_,_,_, D, D,_,_,_,_, D, D,_,_,_,_],
+            [_,_,_, D, P, P, D,_,_, D, P, P, D,_,_,_],
+            [_,_,_, D, O, O, O, O, O, O, O, O, D,_,_,_],
+            [_,_, D, O, O, O, O, O, O, O, O, O, O, D,_,_],
+            [_, D, O, O, O, O, O, O, O, O, O, O, O, O, D,_],
+            [D, O, O, O, E, E, O, O, O, O, E, E, O, O, O, D],
+            [D, O, O, O, S, E, O, O, O, O, E, S, O, O, O, D],
+            [D, O, C, C, O, O, O, O, O, O, O, O, C, C, O, D],
+            [D, O, C, C, O, O, O, N, N, O, O, O, C, C, O, D],
+            [_, D, O, O, O, O, O, O, O, O, O, O, O, O, D,_],
+            [_,_, D, O, O, O, O, O, O, O, O, O, O, D,_,_],
+            [_,_,_, D, D, O, O, O, O, O, O, D, D,_,_,_],
+            [_,_,_, D, D, W, W, W, W, W, W, D, D,_,_,_],
+            [_,_, D, O, D, W, W, W, W, W, W, D, O, D,_,_],
+            [_,_, D, O, D, W, W, W, W, W, W, D, O, D,_,_],
+            [_,_,_, D, D, D, W, W, W, W, D, D, D,_,_,_],
+            [_,_,_,_, D,_, D, D, D, D,_, D,_,_,_,_],
+            [_,_,_, D, P, D,_,_,_,_, D, P, D,_,_,_],
+            [_,_,_, D, D, D,_,_,_,_, D, D, D,_,_,_],
+          ];
+        })(),
+      };
+    case 8: // Coala (grey)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [G, W, D, N, E, S, C, P, _] = ["#78909c", "#eceff1", "#455a64", "#263238", "#111118", "#ffffff", "#f8bbd0", "#546e7a", null];
+          return [
+            [_,_, D, D, D,_,_,_,_,_,_, D, D, D,_,_],
+            [_, D, P, C, P, D,_,_,_,_, D, P, C, P, D,_],
+            [_, D, D, D, D, G, G, G, G, G, G, D, D, D, D,_],
+            [_, D, G, G, G, G, G, G, G, G, G, G, G, G, D,_],
+            [_, D, G, G, G, G, G, G, G, G, G, G, G, G, D,_],
+            [D, G, G, G, E, E, G, W, W, G, E, E, G, G, G, D],
+            [D, G, G, G, S, E, G, W, W, G, E, S, G, G, G, D],
+            [D, G, G, G, G, G, W, W, W, W, G, G, G, G, G, D],
+            [_, D, G, G, G, W, W, N, N, W, W, G, G, G, D,_],
+            [_, D, G, C, G, W, W, W, W, W, W, G, C, G, D,_],
+            [_,_, D, G, G, G, W, W, W, W, G, G, G, D,_,_],
+            [_,_,_, D, D, G, G, G, G, G, G, D, D,_,_,_],
+            [_,_, D, P, D, W, W, W, W, W, W, D, P, D,_,_],
+            [_, D, P, P, D, W, W, W, W, W, W, D, P, P, D,_],
+            [_, D, P, P, D, W, W, W, W, W, W, D, P, P, D,_],
+            [_,_, D, D, D, D, W, W, W, W, D, D, D, D,_,_],
+            [_,_,_, D, D,_, D, D, D, D,_, D, D,_,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, D, D, D,_,_,_,_, D, D, D, D,_,_],
+          ];
+        })(),
+      };
+    case 9: // Coruja (brown owl)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [B, W, D, N, E, S, C, P, _] = ["#6d4c41", "#d7ccc8", "#4e342e", "#ff8f00", "#111118", "#ffffff", "#ffccbc", "#3e2723", null];
+          return [
+            [_,_,_, D, D,_,_,_,_,_,_, D, D,_,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, B, B, B, B, B, B, B, B, B, B, D,_,_],
+            [_, D, B, B, B, B, B, B, B, B, B, B, B, B, D,_],
+            [_, D, B, W, W, W, B, B, B, B, W, W, W, B, D,_],
+            [D, B, W, W, E, E, W, B, B, W, E, E, W, W, B, D],
+            [D, B, W, W, S, E, W, B, B, W, E, S, W, W, B, D],
+            [D, B, B, W, W, W, B, B, B, B, W, W, W, B, B, D],
+            [_, D, B, B, B, B, B, N, N, B, B, B, B, B, D,_],
+            [_, D, B, C, B, B, B, N, N, B, B, B, C, B, D,_],
+            [_,_, D, B, B, B, B, B, B, B, B, B, B, D,_,_],
+            [_,_,_, D, D, B, B, B, B, B, B, D, D,_,_,_],
+            [_,_, D, B, D, W, W, W, W, W, W, D, B, D,_,_],
+            [_, D, B, B, D, W, W, W, W, W, W, D, B, B, D,_],
+            [D, B, B, B, D, W, W, W, W, W, W, D, B, B, B, D],
+            [_, D, D, D, D, D, W, W, W, W, D, D, D, D, D,_],
+            [_,_,_,_, D,_, D, D, D, D,_, D,_,_,_,_],
+            [_,_,_, D, P, D,_,_,_,_, D, P, D,_,_,_],
+            [_,_,_, D, D, D,_,_,_,_, D, D, D,_,_,_],
+          ];
+        })(),
+      };
+    case 10: // Sapinho (green frog)
+      return {
+        palette: {},
+        pixels: (() => {
+          const [G, W, D, N, E, S, C, P, _] = ["#66bb6a", "#e8f5e9", "#388e3c", "#2e7d32", "#111118", "#ffffff", "#ff8a80", "#43a047", null];
+          return [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_, D, D, D,_,_,_,_,_,_, D, D, D,_,_],
+            [_, D, G, E, G, D,_,_,_,_, D, G, E, G, D,_],
+            [_, D, G, S, G, D, D, D, D, D, D, G, S, G, D,_],
+            [_, D, D, D, D, G, G, G, G, G, G, D, D, D, D,_],
+            [_,_, D, G, G, G, G, G, G, G, G, G, G, D,_,_],
+            [_, D, G, G, G, G, G, G, G, G, G, G, G, G, D,_],
+            [D, G, G, G, G, G, G, G, G, G, G, G, G, G, G, D],
+            [D, G, G, G, G, G, G, N, N, G, G, G, G, G, G, D],
+            [_, D, G, C, G, G, G, G, G, G, G, G, C, G, D,_],
+            [_,_, D, G, G, G, D, D, D, D, G, G, G, D,_,_],
+            [_,_,_, D, D, G, G, G, G, G, G, D, D,_,_,_],
+            [_,_,_, D, D, W, W, W, W, W, W, D, D,_,_,_],
+            [_,_, D, G, D, W, W, W, W, W, W, D, G, D,_,_],
+            [_,_, D, G, D, W, W, W, W, W, W, D, G, D,_,_],
+            [_,_,_, D, D, D, W, W, W, W, D, D, D,_,_,_],
+            [_,_,_, D,_,_, D, D, D, D,_,_, D,_,_,_],
+            [_,_, D, P, P, D,_,_,_,_, D, P, P, D,_,_],
+            [_,_, D, D, D, D,_,_,_,_, D, D, D, D,_,_],
+          ];
+        })(),
+      };
+    default:
+      return getPixelGrid(0); // fallback to panda
+  }
+}
 
-  // 16x20 pixel grid (each row is 16 pixels wide)
-  // Designed to look like the reference: big round head on top, small chubby body below
-  const pixels: (string | null)[][] = [
-    //0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
-    [null,null,null, B,   B,  null,null,null,null,null,null, B,   B,  null,null,null], // 0 ears
-    [null,null, B,   D,   D,   B,  null,null,null,null, B,   D,   D,   B,  null,null], // 1 ears inner
-    [null,null, B,   B,   B,   B,   W,   W,   W,   W,   B,   B,   B,   B,  null,null], // 2 top of head
-    [null, B,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   B,  null], // 3
-    [null, B,   W,   W,   B,   B,   W,   W,   W,   W,   B,   B,   W,   W,   B,  null], // 4 eye patches start
-    [ B,   W,   W,   B,   B,   E,   B,   W,   W,   B,   E,   B,   B,   W,   W,   B], // 5 eyes
-    [ B,   W,   W,   B,   S,   E,   B,   W,   W,   B,   E,   S,   B,   W,   W,   B], // 6 eyes with shine
-    [ B,   W,   W,   W,   B,   B,   W,   W,   W,   W,   B,   B,   W,   W,   W,   B], // 7 below eyes
-    [null, B,   W,   W,   W,   W,   W,   N,   N,   W,   W,   W,   W,   W,   B,  null], // 8 nose
-    [null, B,   W,   W,   C,   W,   W,   W,   W,   W,   W,   C,   W,   W,   B,  null], // 9 cheeks + mouth area
-    [null,null, B,   W,   W,   W,   W,   W,   W,   W,   W,   W,   W,   B,  null,null], // 10 chin
-    [null,null,null, B,   B,   W,   W,   W,   W,   W,   W,   B,   B,  null,null,null], // 11 neck/body start
-    [null,null, B,   D,   B,   W,   W,   W,   W,   W,   W,   B,   D,   B,  null,null], // 12 body + arms
-    [null, B,   D,   D,   B,   W,   W,   W,   W,   W,   W,   B,   D,   D,   B,  null], // 13 body
-    [null, B,   D,   D,   B,   W,   W,   W,   W,   W,   W,   B,   D,   D,   B,  null], // 14 body
-    [null,null, B,   B,   B,   B,   W,   W,   W,   W,   B,   B,   B,   B,  null,null], // 15 lower body
-    [null,null,null, B,   B,  null, B,   B,   B,   B,  null, B,   B,  null,null,null], // 16 legs
-    [null,null, B,   D,   D,   B,  null,null,null,null, B,   D,   D,   B,  null,null], // 17 feet
-    [null,null, B,   B,   B,   B,  null,null,null,null, B,   B,   B,   B,  null,null], // 18 feet bottom
-  ];
-
+function PixelAnimal({ size, animalId, idle, top, bottom, accessory }: { size: number; animalId: number; idle: string; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) {
+  const p = size / 16;
+  const { pixels } = getPixelGrid(animalId);
   const idleClass = `avatar-idle-${idle}`;
 
   return (
@@ -288,7 +569,7 @@ function PixelPanda({ size, idle, top, bottom, accessory }: { size: number; idle
         ))}
       </div>
 
-      {/* Clothing overlay (top) — pixel style colored squares on body */}
+      {/* Clothing overlay (top) */}
       {top.pattern !== "plain" && (
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-40" style={{ width: `${16*p}px`, height: `${19*p}px` }}>
           {[12, 13, 14].map((y) =>
@@ -302,20 +583,44 @@ function PixelPanda({ size, idle, top, bottom, accessory }: { size: number; idle
       {/* Accessory overlay */}
       {accessory.type === "crown" && (
         <div className="absolute left-1/2 -translate-x-1/2" style={{ top: `calc(50% - ${9.5*p}px - ${2*p}px)` }}>
-          <div className="flex">
-            {[..."🟡🟡🟡"].map((_, i) => (
-              <div key={i} className="absolute" style={{ left: `${(i*2 - 1)*p}px`, top: `${(i === 1 ? -1 : 0)*p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: "#ffd700" }} />
-            ))}
-            <div style={{ width: `${5*p}px`, height: `${p}px`, backgroundColor: "#ffd700" }} />
-            <div className="absolute" style={{ left: `${0*p}px`, top: `${-p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: "#ffd700" }} />
-            <div className="absolute" style={{ left: `${2*p}px`, top: `${-2*p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: "#ffed4a" }} />
-            <div className="absolute" style={{ left: `${4*p}px`, top: `${-p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: "#ffd700" }} />
+          <div className="relative" style={{ width: `${5*p}px`, height: `${2*p}px` }}>
+            <div style={{ width: `${5*p}px`, height: `${p}px`, backgroundColor: "#ffd700", position: "absolute", bottom: 0 }} />
+            <div className="absolute" style={{ left: `${0}px`, top: `0`, width: `${p}px`, height: `${p}px`, backgroundColor: "#ffd700" }} />
+            <div className="absolute" style={{ left: `${2*p}px`, top: `${-0.5*p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: "#ffed4a" }} />
+            <div className="absolute" style={{ left: `${4*p}px`, top: `0`, width: `${p}px`, height: `${p}px`, backgroundColor: "#ffd700" }} />
           </div>
         </div>
       )}
       {accessory.type === "bow" && (
         <div className="absolute" style={{ top: `calc(50% - ${9*p}px)`, left: `calc(50% + ${4*p}px)` }}>
           <div style={{ width: `${2*p}px`, height: `${2*p}px`, backgroundColor: "#e91e63", borderRadius: "2px" }} />
+        </div>
+      )}
+      {accessory.type === "wizard_hat" && (
+        <div className="absolute left-1/2 -translate-x-1/2" style={{ top: `calc(50% - ${9.5*p}px - ${3*p}px)` }}>
+          <div className="relative" style={{ width: `${5*p}px`, height: `${3*p}px` }}>
+            <div className="absolute" style={{ left: `${2*p}px`, top: 0, width: `${p}px`, height: `${p}px`, backgroundColor: "#4a148c" }} />
+            <div className="absolute" style={{ left: `${p}px`, top: `${p}px`, width: `${3*p}px`, height: `${p}px`, backgroundColor: "#6a1b9a" }} />
+            <div className="absolute" style={{ left: 0, top: `${2*p}px`, width: `${5*p}px`, height: `${p}px`, backgroundColor: "#ffd54f" }} />
+          </div>
+        </div>
+      )}
+      {accessory.type === "flowers" && (
+        <div className="absolute" style={{ top: `calc(50% - ${8*p}px)`, left: `calc(50% + ${5*p}px)` }}>
+          <div style={{ width: `${p}px`, height: `${p}px`, backgroundColor: "#f48fb1" }} />
+          <div className="absolute" style={{ top: `${-p}px`, left: `${p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: "#e91e63" }} />
+        </div>
+      )}
+      {accessory.type === "glasses" && (
+        <div className="absolute left-1/2 -translate-x-1/2 flex" style={{ top: `calc(50% - ${4.5*p}px)`, gap: `${p}px` }}>
+          <div style={{ width: `${2*p}px`, height: `${2*p}px`, border: `${p*0.4}px solid #37474f`, borderRadius: "1px" }} />
+          <div style={{ width: `${2*p}px`, height: `${2*p}px`, border: `${p*0.4}px solid #37474f`, borderRadius: "1px" }} />
+        </div>
+      )}
+      {accessory.type === "scarf" && (
+        <div className="absolute left-1/2 -translate-x-1/2" style={{ top: `calc(50% + ${1.5*p}px)` }}>
+          <div style={{ width: `${6*p}px`, height: `${p}px`, backgroundColor: "#e91e63" }} />
+          <div className="absolute" style={{ top: `${p}px`, right: 0, width: `${p}px`, height: `${2*p}px`, backgroundColor: "#c2185b" }} />
         </div>
       )}
 
@@ -336,10 +641,8 @@ export function AnimeAnimalCharacter({ config, size }: { config: AvatarConfig; s
   const accessory = ACCESSORY_STYLES[config.accessory] || ACCESSORY_STYLES[0];
   const s = size / 240; // scale factor
 
-  // Panda uses special 8-bit pixel art renderer
-  if (animal.id === 0) {
-    return <PixelPanda size={size} idle={animal.idle} top={top} bottom={bottom} accessory={accessory} />;
-  }
+  // All animals use 8-bit pixel art renderer
+  return <PixelAnimal size={size} animalId={animal.id} idle={animal.idle} top={top} bottom={bottom} accessory={accessory} />;
 
   // Fur texture overlay as a semi-transparent noise pattern
   const furTexture = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23ffffff' opacity='0.07'/%3E%3Ccircle cx='4' cy='3' r='0.4' fill='%23000000' opacity='0.05'/%3E%3Ccircle cx='2' cy='5' r='0.5' fill='%23ffffff' opacity='0.04'/%3E%3C/svg%3E")`;
