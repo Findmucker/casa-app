@@ -32,9 +32,7 @@ export async function GET() {
 
   try {
     const now = new Date();
-    // Check alarms within the last 1 minute window
-    const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
-
+    // Check alarms that should have fired (any time in the past up to now)
     const alarmsSnap = await db
       .collection("alarms")
       .where("active", "==", true)
@@ -46,8 +44,8 @@ export async function GET() {
       const alarm = alarmDoc.data();
       const alarmTime = new Date(alarm.datetime);
 
-      // Check if alarm should fire in this window
-      if (alarmTime > oneMinuteAgo && alarmTime <= now) {
+      // Fire if alarm time is in the past (or now)
+      if (alarmTime <= now) {
         // Get the token for this alarm's owner
         const tokenDoc = await db.collection("fcm_tokens").doc(alarm.owner).get();
         if (!tokenDoc.exists) continue;
