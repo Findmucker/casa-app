@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
+import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { HouseIdContext } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 import {
@@ -24,6 +25,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [currentBadges, setCurrentBadges] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"stats" | "settings">("stats");
   const { user } = useAuth();
   const houseId = useContext(HouseIdContext);
 
@@ -70,7 +72,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
         </button>
 
         {/* Avatar */}
-        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-4xl shadow-lg shadow-amber-500/30 border-2 border-amber-300/50">
+        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-4xl shadow-lg shadow-amber-500/30 border-2 border-amber-300/50 animate-float">
           🧙
         </div>
 
@@ -94,8 +96,49 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
 
         {/* Points */}
         <p className="mt-2 text-purple-300 text-xs">{stats.points} pontos totais</p>
+
+        {/* Tab switcher */}
+        <div className="flex gap-2 justify-center mt-4">
+          <button
+            onClick={() => setActiveTab("stats")}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+              activeTab === "stats"
+                ? "bg-purple-600/60 text-white border border-purple-400/40"
+                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+            }`}
+          >
+            ⚔️ Stats
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+              activeTab === "settings"
+                ? "bg-purple-600/60 text-white border border-purple-400/40"
+                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+            }`}
+          >
+            ⚙️ Perfil
+          </button>
+        </div>
       </div>
 
+      {activeTab === "stats" ? (
+        <StatsTab stats={stats} rpgStats={rpgStats} level={level} currentBadges={currentBadges} />
+      ) : (
+        <SettingsTab user={user} />
+      )}
+    </div>
+  );
+}
+
+// ─── Stats Tab ─────────────────────────────────────────────────
+
+import type { RPGStat } from "@/lib/gamification";
+import type { User } from "firebase/auth";
+
+function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats; rpgStats: RPGStat[]; level: number; currentBadges: string[] }) {
+  return (
+    <>
       {/* Stats */}
       <div className="px-5 mt-2">
         <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Atributos</h3>
@@ -127,14 +170,10 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
       <div className="px-5 mt-5">
         <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3">Equipamento</h3>
         <div className="relative bg-gradient-to-b from-indigo-950/60 to-purple-950/60 rounded-2xl border border-pink-300/20 p-4 shadow-inner shadow-purple-900/30">
-          {/* Paper doll grid - slots around avatar */}
           <div className="grid grid-cols-5 grid-rows-4 gap-1.5 items-center justify-items-center min-h-[220px]">
-            {/* Row 1: crown top center */}
             <div className="col-start-3 row-start-1">
               <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "crown")!} unlocked={EQUIPMENT.find((e) => e.slot === "crown")!.condition(stats, level)} rarity="legendary" />
             </div>
-
-            {/* Row 2: weapon left, avatar center, shield right */}
             <div className="col-start-1 row-start-2">
               <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "weapon")!} unlocked={EQUIPMENT.find((e) => e.slot === "weapon")!.condition(stats, level)} rarity="epic" />
             </div>
@@ -146,22 +185,16 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             <div className="col-start-5 row-start-2">
               <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "shield")!} unlocked={EQUIPMENT.find((e) => e.slot === "shield")!.condition(stats, level)} rarity="rare" />
             </div>
-
-            {/* Row 3: gloves left, ring right */}
             <div className="col-start-1 row-start-3">
               <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "gloves")!} unlocked={EQUIPMENT.find((e) => e.slot === "gloves")!.condition(stats, level)} rarity="epic" />
             </div>
             <div className="col-start-5 row-start-3">
               <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "ring")!} unlocked={EQUIPMENT.find((e) => e.slot === "ring")!.condition(stats, level)} rarity="rare" />
             </div>
-
-            {/* Row 4: boots bottom center */}
             <div className="col-start-3 row-start-4">
               <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "boots")!} unlocked={EQUIPMENT.find((e) => e.slot === "boots")!.condition(stats, level)} rarity="common" />
             </div>
           </div>
-
-          {/* Corner decorations */}
           <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-pink-400/30 rounded-tl" />
           <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-pink-400/30 rounded-tr" />
           <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-pink-400/30 rounded-bl" />
@@ -180,7 +213,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
                 key={badge.id}
                 className={`flex flex-col items-center p-2.5 rounded-xl border transition-all ${
                   earned
-                    ? "bg-purple-800/40 border-amber-500/30"
+                    ? "bg-purple-800/40 border-amber-500/30 animate-spring-in"
                     : "bg-purple-950/40 border-purple-800/30 opacity-50"
                 }`}
               >
@@ -193,6 +226,175 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             );
           })}
         </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Settings Tab ──────────────────────────────────────────────
+
+const AVATAR_OPTIONS = ["🧙", "🦸", "🧝", "🧚", "🦊", "🐱", "🐶", "🦄", "🐉", "🌸", "🌺", "💫", "⭐", "🔮", "🎭", "👑"];
+
+function SettingsTab({ user }: { user: User | null }) {
+  const [displayName, setDisplayName] = useState(user?.displayName || "");
+  const [selectedAvatar, setSelectedAvatar] = useState("🧙");
+  const [newEmail, setNewEmail] = useState(user?.email || "");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      await updateProfile(user, { displayName });
+      await updateDoc(doc(db, "users", user.uid), { name: displayName, avatar: selectedAvatar });
+      setStatus("✨ Perfil atualizado!");
+      setTimeout(() => setStatus(null), 3000);
+    } catch (e) {
+      setStatus(`❌ Erro: ${e}`);
+    }
+    setSaving(false);
+  };
+
+  const handleChangeEmail = async () => {
+    if (!user || !newEmail) return;
+    setSaving(true);
+    try {
+      await updateEmail(user, newEmail);
+      setStatus("✨ Email atualizado!");
+      setTimeout(() => setStatus(null), 3000);
+    } catch (e) {
+      setStatus(`❌ Erro: ${e}`);
+    }
+    setSaving(false);
+  };
+
+  const handleChangePassword = async () => {
+    if (!user || !newPassword) return;
+    if (newPassword !== confirmPassword) {
+      setStatus("❌ Passwords não coincidem");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setStatus("❌ Password deve ter pelo menos 6 caracteres");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updatePassword(user, newPassword);
+      setNewPassword("");
+      setConfirmPassword("");
+      setStatus("✨ Password atualizada!");
+      setTimeout(() => setStatus(null), 3000);
+    } catch (e) {
+      setStatus(`❌ Erro: ${e}`);
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div className="px-5 mt-2 pb-8 space-y-5">
+      {/* Avatar selector */}
+      <div>
+        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Avatar</h3>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {AVATAR_OPTIONS.map((av) => (
+            <button
+              key={av}
+              onClick={() => setSelectedAvatar(av)}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all active:scale-90 ${
+                selectedAvatar === av
+                  ? "bg-purple-600/60 border-2 border-amber-400/60 scale-110 shadow-md shadow-amber-400/20"
+                  : "bg-purple-900/40 border border-purple-700/30 hover:bg-purple-800/40"
+              }`}
+            >
+              {av}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Display name */}
+      <div>
+        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Nome</h3>
+        <input
+          type="text"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          className="w-full rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition-all"
+          placeholder="O teu nome..."
+        />
+      </div>
+
+      <button
+        onClick={handleSaveProfile}
+        disabled={saving}
+        className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 py-2.5 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-50 shadow-md shadow-purple-500/20"
+      >
+        {saving ? "A guardar..." : "Guardar perfil"}
+      </button>
+
+      {/* Email */}
+      <div>
+        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Email</h3>
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            className="flex-1 rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 transition-all"
+            placeholder="novo@email.com"
+          />
+          <button
+            onClick={handleChangeEmail}
+            disabled={saving || newEmail === user?.email}
+            className="px-4 rounded-xl bg-purple-700/50 text-purple-200 text-sm font-medium hover:bg-purple-600/50 disabled:opacity-30 transition-all active:scale-95"
+          >
+            Alterar
+          </button>
+        </div>
+      </div>
+
+      {/* Password */}
+      <div>
+        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Nova Password</h3>
+        <div className="space-y-2">
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 transition-all"
+            placeholder="Nova password..."
+          />
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 transition-all"
+            placeholder="Confirmar password..."
+          />
+          <button
+            onClick={handleChangePassword}
+            disabled={saving || !newPassword}
+            className="w-full rounded-xl bg-purple-700/50 text-purple-200 py-2.5 text-sm font-medium hover:bg-purple-600/50 disabled:opacity-30 transition-all active:scale-95"
+          >
+            Alterar password
+          </button>
+        </div>
+      </div>
+
+      {/* Status message */}
+      {status && (
+        <p className="text-sm text-center text-amber-300 animate-spring-in">{status}</p>
+      )}
+
+      {/* Account info */}
+      <div className="pt-2 border-t border-purple-800/30">
+        <p className="text-[11px] text-purple-500 text-center">
+          Conta: {user?.email} | UID: {user?.uid?.slice(0, 8)}...
+        </p>
       </div>
     </div>
   );

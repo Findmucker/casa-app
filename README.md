@@ -161,6 +161,15 @@ npm run dev
 
 Abrir [http://localhost:3000](http://localhost:3000)
 
+### 5. Testes
+
+```bash
+npm test              # Correr todos os testes
+npm run test:watch    # Modo watch
+npm run test:coverage # Com cobertura
+npm run typecheck     # Verificar tipos TypeScript
+```
+
 ## Estrutura do Projeto
 
 ```

@@ -1,0 +1,14 @@
+export const doc = jest.fn();
+export const getDoc = jest.fn(() => Promise.resolve({ exists: () => false, data: () => ({}) }));
+export const setDoc = jest.fn(() => Promise.resolve());
+export const updateDoc = jest.fn(() => Promise.resolve());
+export const increment = jest.fn((n) => n);
+export const collection = jest.fn();
+export const query = jest.fn();
+export const orderBy = jest.fn();
+export const onSnapshot = jest.fn();
+export const addDoc = jest.fn();
+export const deleteDoc = jest.fn();
+export const getDocs = jest.fn(() => Promise.resolve({ docs: [] }));
+export const serverTimestamp = jest.fn();
+export const getFirestore = jest.fn(() => ({}));

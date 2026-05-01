@@ -12,7 +12,6 @@ import MealPlanner from "@/components/MealPlanner";
 import Calendar from "@/components/Calendar";
 import DashboardSummary from "@/components/DashboardSummary";
 import MaintenancePanel from "@/components/MaintenancePanel";
-import Gamification from "@/components/Gamification";
 import ProfilePage from "@/components/ProfilePage";
 import Tutorial from "@/components/Tutorial";
 import SearchOverlay from "@/components/SearchOverlay";
