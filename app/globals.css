@@ -6,96 +6,96 @@
 }
 
 .dark-mode {
-  --background: #0f172a;
-  --foreground: #e9d5ff;
+  --background: #1e1b2e;
+  --foreground: #f3e8ff;
 }
 
-/* Dark mode overrides */
+/* Dark mode overrides — softer night theme */
 .dark-mode .bg-white\/60,
 .dark-mode .bg-white\/70,
 .dark-mode .bg-white\/80 {
-  background-color: rgba(30, 20, 50, 0.6) !important;
+  background-color: rgba(45, 40, 70, 0.7) !important;
 }
 
 .dark-mode .bg-white {
-  background-color: rgb(30, 20, 50) !important;
+  background-color: rgb(45, 40, 70) !important;
 }
 
 .dark-mode .border-pink-100\/40,
 .dark-mode .border-pink-100\/30,
 .dark-mode .border-pink-100\/50,
 .dark-mode .border-pink-200\/60 {
-  border-color: rgba(126, 34, 206, 0.2) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
 }
 
 .dark-mode .text-rose-800,
 .dark-mode .text-rose-700,
 .dark-mode .text-rose-600 {
-  color: #e9d5ff !important;
+  color: #f3e8ff !important;
 }
 
 .dark-mode .text-pink-300,
 .dark-mode .text-pink-400,
 .dark-mode .text-pink-500 {
-  color: #c084fc !important;
+  color: #d8b4fe !important;
 }
 
 .dark-mode .bg-pink-50,
 .dark-mode .bg-pink-100 {
-  background-color: rgba(126, 34, 206, 0.15) !important;
+  background-color: rgba(168, 85, 247, 0.12) !important;
 }
 
 .dark-mode .bg-gradient-to-r.from-pink-400,
 .dark-mode .bg-gradient-to-r.from-pink-300 {
-  --tw-gradient-from: #7c3aed !important;
-  --tw-gradient-to: #a855f7 !important;
+  --tw-gradient-from: #8b5cf6 !important;
+  --tw-gradient-to: #c084fc !important;
 }
 
 .dark-mode .placeholder-pink-300::placeholder {
-  color: #7c3aed !important;
+  color: #a78bfa !important;
 }
 
 .dark-mode .bg-green-50\/80,
 .dark-mode .bg-green-100 {
-  background-color: rgba(34, 197, 94, 0.15) !important;
+  background-color: rgba(34, 197, 94, 0.12) !important;
 }
 
 .dark-mode .text-green-600 {
-  color: #4ade80 !important;
+  color: #86efac !important;
 }
 
 .dark-mode .shadow-pink-100\/30,
 .dark-mode .shadow-pink-100\/20,
 .dark-mode .shadow-pink-100\/50,
 .dark-mode .shadow-pink-200\/50 {
-  --tw-shadow-color: rgba(126, 34, 206, 0.1) !important;
+  --tw-shadow-color: rgba(168, 85, 247, 0.15) !important;
 }
 
 .dark-mode .text-gray-400,
 .dark-mode .text-gray-500 {
-  color: #6b7280 !important;
+  color: #a1a1aa !important;
 }
 
 /* Dark mode for specific component backgrounds */
 .dark-mode .bg-gradient-to-br.from-pink-50,
 .dark-mode .bg-gradient-to-br.from-pink-100 {
-  background: linear-gradient(to bottom right, rgba(30, 20, 50, 0.6), rgba(40, 20, 60, 0.6)) !important;
+  background: linear-gradient(to bottom right, rgba(45, 40, 70, 0.7), rgba(55, 40, 80, 0.7)) !important;
 }
 
 .dark-mode input,
 .dark-mode textarea {
-  background-color: rgba(30, 20, 50, 0.8) !important;
-  color: #e9d5ff !important;
-  border-color: rgba(126, 34, 206, 0.3) !important;
+  background-color: rgba(45, 40, 70, 0.9) !important;
+  color: #f3e8ff !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
 }
 
 .dark-mode input::placeholder,
 .dark-mode textarea::placeholder {
-  color: rgba(168, 85, 247, 0.5) !important;
+  color: rgba(196, 132, 252, 0.5) !important;
 }
 
 .dark-mode ::-webkit-scrollbar-thumb {
-  background: #7c3aed;
+  background: #a78bfa;
 }
 
 /* Dark mode animation adaptations */
