@@ -67,7 +67,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
 
   if (loading || !stats) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "linear-gradient(to bottom right, #fdf2f8, #fff1f2, #faf5ff)" }}>
         <div className="animate-pulse text-4xl">⚔️</div>
       </div>
     );
@@ -79,7 +79,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const userName = user?.displayName || user?.email?.split("@")[0] || "Herói";
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 z-50 overflow-y-auto animate-fade-in-up">
+    <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in-up" style={{ background: "linear-gradient(to bottom right, #fdf2f8, #fff1f2, #faf5ff)" }}>
       {/* Header */}
       <div className="relative pt-6 pb-4 text-center">
         <button
