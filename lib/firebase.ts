@@ -31,7 +31,7 @@ export async function getFCMToken(): Promise<string | null> {
     const messaging = await getMessagingInstance();
     if (!messaging) return null;
     const token = await getToken(messaging, {
-      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
     });
     return token;
   } catch (e) {
