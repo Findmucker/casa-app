@@ -15,7 +15,17 @@ import {
   BADGES,
   GameStats,
   Equipment,
+  getPendingBoxes,
+  openLootBox,
+  equipItem,
+  unequipItem,
+  type InventoryItem,
+  type EquippedItems,
+  type LootSlot,
 } from "@/lib/gamification";
+import CharacterModel from "./CharacterModel";
+import Inventory from "./Inventory";
+import LootBoxOpener from "./LootBoxOpener";
 
 interface ProfilePageProps {
   onClose: () => void;
@@ -24,8 +34,11 @@ interface ProfilePageProps {
 export default function ProfilePage({ onClose }: ProfilePageProps) {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [currentBadges, setCurrentBadges] = useState<string[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [equipped, setEquipped] = useState<EquippedItems>({});
+  const [boxesOpened, setBoxesOpened] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"stats" | "settings">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "inventory" | "settings">("stats");
   const { user } = useAuth();
   const houseId = useContext(HouseIdContext);
 
@@ -41,6 +54,9 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
       const snap = await getDoc(ref);
       if (snap.exists()) {
         setCurrentBadges(snap.data().badges || []);
+        setInventory(snap.data().inventory || []);
+        setEquipped(snap.data().equipped || {});
+        setBoxesOpened(snap.data().boxesOpened || 0);
       }
       setLoading(false);
     };
@@ -71,9 +87,9 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
           ✕
         </button>
 
-        {/* Avatar */}
-        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-4xl shadow-lg shadow-amber-500/30 border-2 border-amber-300/50 animate-float">
-          🧙
+        {/* Character Model */}
+        <div className="flex justify-center">
+          <CharacterModel equipped={equipped} size="sm" />
         </div>
 
         {/* Name + Title */}
@@ -110,6 +126,16 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             ⚔️ Stats
           </button>
           <button
+            onClick={() => setActiveTab("inventory")}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+              activeTab === "inventory"
+                ? "bg-purple-600/60 text-white border border-purple-400/40"
+                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+            }`}
+          >
+            🎒 Inventário
+          </button>
+          <button
             onClick={() => setActiveTab("settings")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
               activeTab === "settings"
@@ -124,6 +150,26 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
 
       {activeTab === "stats" ? (
         <StatsTab stats={stats} rpgStats={rpgStats} level={level} currentBadges={currentBadges} />
+      ) : activeTab === "inventory" ? (
+        <InventoryTab
+          inventory={inventory}
+          equipped={equipped}
+          stats={stats}
+          boxesOpened={boxesOpened}
+          user={user}
+          onUpdate={() => {
+            // Reload data
+            const owner = user?.displayName || user?.email || "user";
+            const ref = doc(db, "gamification", owner);
+            getDoc(ref).then((snap) => {
+              if (snap.exists()) {
+                setInventory(snap.data().inventory || []);
+                setEquipped(snap.data().equipped || {});
+                setBoxesOpened(snap.data().boxesOpened || 0);
+              }
+            });
+          }}
+        />
       ) : (
         <SettingsTab user={user} />
       )}
@@ -131,10 +177,57 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   );
 }
 
-// ─── Stats Tab ─────────────────────────────────────────────────
+// ─── Inventory Tab ────────────────────────────────────────────
 
 import type { RPGStat } from "@/lib/gamification";
 import type { User } from "firebase/auth";
+
+function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate }: {
+  inventory: InventoryItem[];
+  equipped: EquippedItems;
+  stats: GameStats;
+  boxesOpened: number;
+  user: User | null;
+  onUpdate: () => void;
+}) {
+  const owner = user?.displayName || user?.email || "user";
+  const pending = getPendingBoxes(stats.points, boxesOpened);
+
+  const handleOpen = async () => {
+    const item = await openLootBox(owner);
+    onUpdate();
+    return item;
+  };
+
+  const handleEquip = async (itemId: string, slot: LootSlot) => {
+    await equipItem(owner, itemId, slot);
+    onUpdate();
+  };
+
+  const handleUnequip = async (slot: LootSlot) => {
+    await unequipItem(owner, slot);
+    onUpdate();
+  };
+
+  return (
+    <div className="mt-2 pb-8">
+      {/* Loot Box Opener */}
+      <div className="mx-4 mb-4 rounded-2xl bg-gradient-to-b from-purple-900/40 to-indigo-950/40 border border-purple-700/30 p-3">
+        <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
+      </div>
+
+      {/* Inventory Grid */}
+      <Inventory
+        inventory={inventory}
+        equipped={equipped}
+        onEquip={handleEquip}
+        onUnequip={handleUnequip}
+      />
+    </div>
+  );
+}
+
+// ─── Stats Tab ─────────────────────────────────────────────────
 
 function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats; rpgStats: RPGStat[]; level: number; currentBadges: string[] }) {
   return (

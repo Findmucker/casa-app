@@ -86,6 +86,44 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
   - Sistema de loot aleatório (common/rare/epic/legendary)
   - Level-up com notificação e recompensas
 - Streak tracking
+- **Loot Boxes** — 1 caixa por cada 50 pontos
+  - 30 items cosméticos em 6 slots (cabeça, arma, escudo, corpo, pés, acessório)
+  - 4 raridades com pesos: Comum (50%), Raro (30%), Épico (15%), Lendário (5%)
+  - Animação de abertura com shake → explosão → reveal
+- **Inventário** — grid com filtro por slot, equipar/desequipar com tap
+- **Personagem animado** — boneco chibi CSS com idle animation que mostra items equipados
+
+#### Como funciona a Gamificação
+
+| Ação | Pontos |
+|------|--------|
+| Completar comprinha | +1 |
+| Completar coisinha | +2 |
+| Completar projetinho | +5 |
+| Check de hábito | +2 |
+| 5 dias de streak | +10 |
+| 10 dias de streak | +25 |
+| 30 dias de streak | +100 |
+
+**Níveis:** Cada 50 pontos = 1 nível. Títulos progressivos desde "Aprendiz da Casa" (Nv.1) até "Divindade do Lar" (Nv.30).
+
+**Badges (9):** Primeiro Passo, Em Chamas, Imparável, Lenda, Compradora, Faz-Tudo, Arquiteto, Centenário, Top Scorer.
+
+**Equipamento desbloqueável (6 slots):**
+- 🗡️ Espada do Construtor — 3 projetinhos
+- 🛡️ Escudo da Consistência — 10 dias streak
+- 👑 Coroa Real — nível 10
+- 🧤 Luvas do Faz-Tudo — 50 coisinhas
+- 👟 Botas do Maratonista — 30 comprinhas
+- 💍 Anel da Comunidade — 100 pontos
+
+**Loot Boxes:** A cada 50 pontos ganhas uma caixa. Ao abrir recebes um item cosmético aleatório que podes equipar no teu personagem. Items disponíveis por slot:
+- 🎩 Cabeça: Coroa de Flores, Orelhas de Coelho, Tiara Estelar, Coroa Real, Auréola Divina
+- ⚔️ Arma: Vassoura Mágica, Espátula de Chef, Varinha Fofinha, Martelo Dourado, Tridente Lendário
+- 🛡️ Escudo: Escudo de Bolacha, Escudo Folha, Escudo do Amor, Escudo Cristal, Escudo Arco-Íris
+- 👗 Corpo: Avental Fofo, Camisola Quentinha, Capa de Super-Herói, Armadura de Diamante, Armadura de Dragão
+- 👟 Pés: Pantufas Fofas, Botas de Jardim, Botas de Velocidade, Botas de Nuvem, Botas Foguete
+- 💍 Acessório: Sininho, Gatinho de Ombro, Borboleta Mágica, Fadinha Ajudante, Fénix Miniatura
 
 ### 🔍 Pesquisa Global
 - Buscar em todas as tabs de uma vez

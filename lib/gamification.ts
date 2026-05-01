@@ -174,6 +174,133 @@ export function rollLoot(trigger: string): Reward | null {
   return null;
 }
 
+// ─── Loot Box System ──────────────────────────────────────────
+
+export type LootSlot = "helmet" | "weapon" | "shield" | "armor" | "boots" | "accessory";
+
+export interface LootItem {
+  id: string;
+  name: string;
+  emoji: string;
+  slot: LootSlot;
+  rarity: "common" | "rare" | "epic" | "legendary";
+  description: string;
+}
+
+export interface InventoryItem {
+  itemId: string;
+  count: number;
+}
+
+export interface EquippedItems {
+  helmet?: string;
+  weapon?: string;
+  shield?: string;
+  armor?: string;
+  boots?: string;
+  accessory?: string;
+}
+
+export const LOOT_POOL: LootItem[] = [
+  // Helmets
+  { id: "helm_flower", name: "Coroa de Flores", emoji: "🌸", slot: "helmet", rarity: "common", description: "Uma coroa delicada de flores da primavera" },
+  { id: "helm_bunny", name: "Orelhas de Coelho", emoji: "🐰", slot: "helmet", rarity: "common", description: "Fofinhas e peludas" },
+  { id: "helm_star", name: "Tiara Estelar", emoji: "⭐", slot: "helmet", rarity: "rare", description: "Brilha com a luz das estrelas" },
+  { id: "helm_crown", name: "Coroa Real", emoji: "👑", slot: "helmet", rarity: "epic", description: "Digna de realeza doméstica" },
+  { id: "helm_halo", name: "Auréola Divina", emoji: "😇", slot: "helmet", rarity: "legendary", description: "Para quem é um verdadeiro anjo da casa" },
+  // Weapons
+  { id: "wep_broom", name: "Vassoura Mágica", emoji: "🧹", slot: "weapon", rarity: "common", description: "Limpa e ataca ao mesmo tempo" },
+  { id: "wep_spatula", name: "Espátula de Chef", emoji: "🍳", slot: "weapon", rarity: "common", description: "Arma de cozinheiro destemido" },
+  { id: "wep_wand", name: "Varinha Fofinha", emoji: "🪄", slot: "weapon", rarity: "rare", description: "Transforma tarefas em diversão" },
+  { id: "wep_hammer", name: "Martelo Dourado", emoji: "🔨", slot: "weapon", rarity: "epic", description: "Para projetos épicos" },
+  { id: "wep_trident", name: "Tridente Lendário", emoji: "🔱", slot: "weapon", rarity: "legendary", description: "Poder supremo do lar" },
+  // Shields
+  { id: "shd_cookie", name: "Escudo de Bolacha", emoji: "🍪", slot: "shield", rarity: "common", description: "Doce proteção" },
+  { id: "shd_leaf", name: "Escudo Folha", emoji: "🍃", slot: "shield", rarity: "common", description: "Proteção natural" },
+  { id: "shd_heart", name: "Escudo do Amor", emoji: "💖", slot: "shield", rarity: "rare", description: "O amor protege de tudo" },
+  { id: "shd_crystal", name: "Escudo Cristal", emoji: "🔮", slot: "shield", rarity: "epic", description: "Reflete energia negativa" },
+  { id: "shd_rainbow", name: "Escudo Arco-Íris", emoji: "🌈", slot: "shield", rarity: "legendary", description: "Proteção colorida suprema" },
+  // Armor
+  { id: "arm_apron", name: "Avental Fofo", emoji: "👗", slot: "armor", rarity: "common", description: "Proteção na cozinha" },
+  { id: "arm_sweater", name: "Camisola Quentinha", emoji: "🧶", slot: "armor", rarity: "common", description: "Conforto é a melhor armadura" },
+  { id: "arm_cape", name: "Capa de Super-Herói", emoji: "🦸", slot: "armor", rarity: "rare", description: "Quem arruma a casa é herói" },
+  { id: "arm_armor", name: "Armadura de Diamante", emoji: "💎", slot: "armor", rarity: "epic", description: "Brilhante e indestrutível" },
+  { id: "arm_dragon", name: "Armadura de Dragão", emoji: "🐉", slot: "armor", rarity: "legendary", description: "Forjada em fogo de dragão" },
+  // Boots
+  { id: "boot_slippers", name: "Pantufas Fofas", emoji: "🧦", slot: "boots", rarity: "common", description: "Para andar pela casa em conforto" },
+  { id: "boot_garden", name: "Botas de Jardim", emoji: "🌱", slot: "boots", rarity: "common", description: "Perfeitas para o exterior" },
+  { id: "boot_speed", name: "Botas de Velocidade", emoji: "👟", slot: "boots", rarity: "rare", description: "Tarefas feitas num instante" },
+  { id: "boot_cloud", name: "Botas de Nuvem", emoji: "☁️", slot: "boots", rarity: "epic", description: "Anda sobre nuvens" },
+  { id: "boot_rocket", name: "Botas Foguete", emoji: "🚀", slot: "boots", rarity: "legendary", description: "Velocidade máxima garantida" },
+  // Accessories
+  { id: "acc_bell", name: "Sininho", emoji: "🔔", slot: "accessory", rarity: "common", description: "Toca quando terminas uma tarefa" },
+  { id: "acc_cat", name: "Gatinho de Ombro", emoji: "🐱", slot: "accessory", rarity: "common", description: "Companhia fofinha" },
+  { id: "acc_butterfly", name: "Borboleta Mágica", emoji: "🦋", slot: "accessory", rarity: "rare", description: "Voa ao teu lado" },
+  { id: "acc_fairy", name: "Fadinha Ajudante", emoji: "🧚", slot: "accessory", rarity: "epic", description: "Ajuda invisível nas tarefas" },
+  { id: "acc_phoenix", name: "Fénix Miniatura", emoji: "🔥", slot: "accessory", rarity: "legendary", description: "Renasce das cinzas da preguiça" },
+];
+
+const RARITY_WEIGHTS: Record<string, number> = { common: 50, rare: 30, epic: 15, legendary: 5 };
+
+export function rollLootBox(): LootItem {
+  // Weighted random: pick rarity first, then random item of that rarity
+  const totalWeight = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0);
+  let roll = Math.random() * totalWeight;
+  let selectedRarity: string = "common";
+  for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
+    roll -= weight;
+    if (roll <= 0) { selectedRarity = rarity; break; }
+  }
+  const pool = LOOT_POOL.filter((i) => i.rarity === selectedRarity);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+export function getPendingBoxes(points: number, boxesOpened: number): number {
+  return Math.max(0, Math.floor(points / 50) - boxesOpened);
+}
+
+export async function openLootBox(owner: string): Promise<LootItem | null> {
+  const ref = doc(db, "gamification", owner);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+
+  const data = snap.data();
+  const points = data.points || 0;
+  const boxesOpened = data.boxesOpened || 0;
+  const pending = getPendingBoxes(points, boxesOpened);
+  if (pending <= 0) return null;
+
+  const item = rollLootBox();
+  const inventory: InventoryItem[] = data.inventory || [];
+  const existing = inventory.find((i) => i.itemId === item.id);
+  if (existing) {
+    existing.count++;
+  } else {
+    inventory.push({ itemId: item.id, count: 1 });
+  }
+
+  await updateDoc(ref, { boxesOpened: boxesOpened + 1, inventory });
+  return item;
+}
+
+export async function equipItem(owner: string, itemId: string, slot: LootSlot): Promise<void> {
+  const ref = doc(db, "gamification", owner);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const equipped: EquippedItems = snap.data().equipped || {};
+  equipped[slot] = itemId;
+  await updateDoc(ref, { equipped });
+}
+
+export async function unequipItem(owner: string, slot: LootSlot): Promise<void> {
+  const ref = doc(db, "gamification", owner);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const equipped: EquippedItems = snap.data().equipped || {};
+  delete equipped[slot];
+  await updateDoc(ref, { equipped });
+}
+
 // ─── Level Up System ───────────────────────────────────────────
 
 export interface LevelUpResult {

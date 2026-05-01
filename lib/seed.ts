@@ -22,6 +22,30 @@ export async function seedTestAccount(owner: string, houseId: string) {
       "shopaholic", "doer", "architect", "century", "five_hundred"
     ],
     lastAction: "seed_test",
+    boxesOpened: 12,
+    inventory: [
+      { itemId: "helm_crown", count: 1 },
+      { itemId: "helm_flower", count: 2 },
+      { itemId: "wep_hammer", count: 1 },
+      { itemId: "wep_broom", count: 3 },
+      { itemId: "shd_heart", count: 1 },
+      { itemId: "shd_rainbow", count: 1 },
+      { itemId: "arm_cape", count: 1 },
+      { itemId: "arm_dragon", count: 1 },
+      { itemId: "boot_cloud", count: 1 },
+      { itemId: "boot_slippers", count: 2 },
+      { itemId: "acc_fairy", count: 1 },
+      { itemId: "acc_phoenix", count: 1 },
+      { itemId: "acc_cat", count: 2 },
+    ],
+    equipped: {
+      helmet: "helm_crown",
+      weapon: "wep_hammer",
+      shield: "shd_rainbow",
+      armor: "arm_dragon",
+      boots: "boot_cloud",
+      accessory: "acc_phoenix",
+    },
   });
 
   // 2. Sample shopping items
