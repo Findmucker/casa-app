@@ -165,7 +165,9 @@ export default function Dashboard() {
 
         {/* Grid panel overlay */}
         {showPanel && (
-          <div className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up bg-gradient-to-br ${
+          <div
+            onClick={(e) => { if (e.target === e.currentTarget) setShowPanel(false); }}
+            className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up bg-gradient-to-br ${
             darkMode
               ? "from-slate-900/98 via-purple-950/98 to-slate-900/98"
               : theme.phase === "morning"
@@ -195,50 +197,37 @@ export default function Dashboard() {
                 </button>
               ))}
             </div>
-            <div className="flex gap-4 mt-6">
-              <button
-                onClick={() => { setShowPanel(false); setShowHistory(true); }}
-                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
-              >
-                📜 Histórico
-              </button>
-              <button
-                onClick={() => { setShowPanel(false); setShowInvite(true); }}
-                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
-              >
-                🔗 Convidar
-              </button>
-              <button
-                onClick={() => { setShowPanel(false); setShowHouseMembers(true); }}
-                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
-              >
-                👥 Membros
-              </button>
-              <button
-                onClick={() => { setShowPanel(false); setShowMaintenance(true); }}
-                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
-              >
-                ⚙️ Manutenção
-              </button>
-              <button
-                onClick={() => { setShowPanel(false); setShowTutorial(true); }}
-                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
-              >
-                ❓ Tutorial
-              </button>
+            <div className="grid grid-cols-3 gap-3 px-6 max-w-sm mt-5">
+              {[
+                { emoji: "📜", label: "Histórico", action: () => { setShowPanel(false); setShowHistory(true); } },
+                { emoji: "🔗", label: "Convidar", action: () => { setShowPanel(false); setShowInvite(true); } },
+                { emoji: "👥", label: "Membros", action: () => { setShowPanel(false); setShowHouseMembers(true); } },
+                { emoji: "⚙️", label: "Manutenção", action: () => { setShowPanel(false); setShowMaintenance(true); } },
+                { emoji: "❓", label: "Tutorial", action: () => { setShowPanel(false); setShowTutorial(true); } },
+                { emoji: "🚪", label: "Sair", action: () => { logout(); } },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
+                    item.label === "Sair"
+                      ? darkMode
+                        ? "bg-red-950/40 border border-red-800/40 hover:bg-red-900/50"
+                        : "bg-red-50/60 border border-red-200/50 hover:bg-red-100/80"
+                      : darkMode
+                        ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                        : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                  }`}
+                >
+                  <span className="text-xl">{item.emoji}</span>
+                  <span className={`text-[10px] font-medium ${
+                    item.label === "Sair"
+                      ? darkMode ? "text-red-400" : "text-red-500"
+                      : darkMode ? "text-purple-200" : "text-rose-600"
+                  }`}>{item.label}</span>
+                </button>
+              ))}
             </div>
-            <button
-              onClick={() => { logout(); }}
-              className={`mt-3 text-xs transition-colors ${darkMode ? "text-red-400 hover:text-red-300" : "text-red-300 hover:text-red-500"}`}
-            >
-              🚪 Sair
-            </button>
-            <button
-              onClick={() => setShowPanel(false)}
-              className={`mt-4 text-sm transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
-            >
-              Cancelar
-            </button>
           </div>
         )}
 
