@@ -119,14 +119,20 @@ O ecra inicial mostra:
 
 ## Menu Central
 
-Ao tocar no titulo "A Nossa Casinha" no header, abre um menu com:
-- **Grid de tabs** — acesso rapido a todas as seccoes
+Ao tocar no titulo "A Nossa Casinha" no header, abre um menu organizado em seccoes:
+
+### Navegar
+Grid com todas as 10 tabs — tap para ir directamente.
+
+### Gestao
 - **Historico** — registo de acoes feitas na casa
 - **Convidar** — enviar convite para novos membros
 - **Membros** — ver todos os membros com avatar e stats
 - **Manutencao** — definicoes e gestao da casa
 - **Tutorial** — rever o tutorial inicial
-- **Sair** — logout
+
+### Sair
+Botao isolado para logout seguro.
 
 ---
 

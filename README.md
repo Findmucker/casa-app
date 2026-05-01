@@ -301,29 +301,32 @@ Projeto pessoal — feito com 💕
 
 ### Bugs
 - 🐛 Swipe left na meteorologia de um dia ([#31](https://github.com/Findmucker/casa-app/issues/31))
-- 🐛 Perfil translucido no modo noite ([#41](https://github.com/Findmucker/casa-app/issues/41))
+- 🐛 ItemRow definido dentro do componente causa re-mount ([#47](https://github.com/Findmucker/casa-app/issues/47))
+- 🐛 Memory leak em notificações de hábitos ([#45](https://github.com/Findmucker/casa-app/issues/45))
+- 🐛 Race conditions em gamification ([#44](https://github.com/Findmucker/casa-app/issues/44))
+
+### Acessibilidade & UX
+- ♿ Aria-labels e keyboard navigation ([#48](https://github.com/Findmucker/casa-app/issues/48))
 
 ### Temas
-- 🌙 Tema noite mais suave e legivel ([#40](https://github.com/Findmucker/casa-app/issues/40))
 - 🎀 Tema Fofinho melhorado ([#33](https://github.com/Findmucker/casa-app/issues/33))
 - 💀 Tema Dark Spooky ([#32](https://github.com/Findmucker/casa-app/issues/32))
 - 🤖 Tema Cyberpunk ([#34](https://github.com/Findmucker/casa-app/issues/34))
 - 🌿 Tema Nature Magical ([#35](https://github.com/Findmucker/casa-app/issues/35))
 
-### Financas
-- 💰 Reestruturar tab Gastinhos: Despesas + Poupancas + Rendimentos ([#36](https://github.com/Findmucker/casa-app/issues/36))
-- 📊 Graficos visuais para tab Gastinhos ([#37](https://github.com/Findmucker/casa-app/issues/37))
+### Finanças
+- 💰 Reestruturar tab Gastinhos: Despesas + Poupanças + Rendimentos ([#36](https://github.com/Findmucker/casa-app/issues/36))
+- 📊 Gráficos visuais para tab Gastinhos ([#37](https://github.com/Findmucker/casa-app/issues/37))
 
-### Avatares / Customizacao
+### Avatares / Customização
 - 👕 Tab Roupa Cima - 7 estilos ([#15](https://github.com/Findmucker/casa-app/issues/15))
 - 👖 Tab Roupa Baixo - 7 estilos ([#16](https://github.com/Findmucker/casa-app/issues/16))
-- 🎩 Tab Acessorios - 7 estilos ([#17](https://github.com/Findmucker/casa-app/issues/17))
+- 🎩 Tab Acessórios - 7 estilos ([#17](https://github.com/Findmucker/casa-app/issues/17))
 - ✨ Skins para animais avatar ([#21](https://github.com/Findmucker/casa-app/issues/21))
-- 👥 Usar avatares pixel art em vez de icones genericos ([#28](https://github.com/Findmucker/casa-app/issues/28))
 
 ### Features
-- 🏠 Titulo da casa customizavel ([#39](https://github.com/Findmucker/casa-app/issues/39))
+- 🏠 Título da casa customizável ([#39](https://github.com/Findmucker/casa-app/issues/39))
 - ❓ Melhorar Tutorial ([#38](https://github.com/Findmucker/casa-app/issues/38))
-- 💬 Enviar notificacao entre membros ([#23](https://github.com/Findmucker/casa-app/issues/23))
+- 💬 Enviar notificação entre membros ([#23](https://github.com/Findmucker/casa-app/issues/23))
 - 📍 Location-based notifications ([#18](https://github.com/Findmucker/casa-app/issues/18))
 - 🤖 Assistant Moniquinha ([#19](https://github.com/Findmucker/casa-app/issues/19))
