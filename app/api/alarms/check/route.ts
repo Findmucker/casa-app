@@ -19,24 +19,16 @@ function getAdmin() {
   return admin;
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   const adm = getAdmin();
   if (!adm) {
     return NextResponse.json(
-      { error: "Firebase Admin not configured" },
+      { error: "Firebase Admin not configured", hasProjectId: !!process.env.FIREBASE_PROJECT_ID, hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL, hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY },
       { status: 503 }
     );
   }
 
   const db = adm.firestore();
-  // Verify this is called by Vercel Cron (or allow in dev)
-  const authHeader = request.headers.get("authorization");
-  if (
-    process.env.NODE_ENV === "production" &&
-    authHeader !== `Bearer ${process.env.CRON_SECRET}`
-  ) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const now = new Date();
