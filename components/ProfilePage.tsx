@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useContext } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db, auth } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { HouseIdContext } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";

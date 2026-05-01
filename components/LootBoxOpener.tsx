@@ -41,8 +41,10 @@ export default function LootBoxOpener({ pendingBoxes, onOpen }: LootBoxOpenerPro
       setRevealedItem(result.item);
       setIsDuplicate(result.isDuplicate);
       setXpGained(result.xpGained);
+      setPhase("reveal");
+    } else {
+      setPhase("idle");
     }
-    setPhase("reveal");
   };
 
   const handleClose = () => {
@@ -97,7 +99,7 @@ export default function LootBoxOpener({ pendingBoxes, onOpen }: LootBoxOpenerPro
             <span className="absolute -top-3 -left-3 text-sm animate-sparkle" style={{ animationDelay: "0s" }}>✨</span>
             <span className="absolute -top-2 right-0 text-sm animate-sparkle" style={{ animationDelay: "0.2s" }}>💫</span>
             <span className="absolute bottom-0 -left-2 text-sm animate-sparkle" style={{ animationDelay: "0.4s" }}>⭐</span>
-            <span className="absolute -bottom-1 right--1 text-sm animate-sparkle" style={{ animationDelay: "0.3s" }}>✨</span>
+            <span className="absolute -bottom-1 -right-1 text-sm animate-sparkle" style={{ animationDelay: "0.3s" }}>✨</span>
             <span className={`text-6xl inline-block drop-shadow-lg ${RARITY_GLOW[revealedItem.rarity]}`}>
               {revealedItem.emoji}
             </span>

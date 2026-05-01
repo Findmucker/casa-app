@@ -251,6 +251,50 @@ export default function MaintenancePanel({ onClose }: MaintenancePanelProps) {
             </div>
           </button>
         )}
+
+        {houseId && user && (
+          <button
+            onClick={async () => {
+              setRunning(true);
+              setStatus("A limpar dados de teste...");
+              try {
+                const { deleteDoc: delDoc, getDocs: gDocs, collection: col } = await import("firebase/firestore");
+                const owner = user.displayName || user.email || "user";
+                // Reset gamification to zero
+                await setDoc(doc(db, "gamification", owner), {
+                  points: 0, totalCompleted: 0, maxStreak: 0,
+                  shoppingDone: 0, coisinhasDone: 0, projectsDone: 0,
+                  badges: [], lastAction: "reset", boxesOpened: 0,
+                  inventory: [], equipped: {}, avatar: null,
+                });
+                // Delete seeded items (prefixed with seed_)
+                const collections = ["shopping", "priorities_small", "priorities_big", "habits", "habit_checks", "expenses", "meal_plans"];
+                let removed = 0;
+                for (const colName of collections) {
+                  const snap = await gDocs(col(db, "houses", houseId, colName));
+                  for (const d of snap.docs) {
+                    if (d.id.startsWith("seed_")) {
+                      await delDoc(doc(db, "houses", houseId, colName, d.id));
+                      removed++;
+                    }
+                  }
+                }
+                setStatus(`✅ Modo teste desactivado! ${removed} items de teste removidos, stats resetados a zero.`);
+              } catch (e) {
+                setStatus(`❌ Erro: ${e}`);
+              }
+              setRunning(false);
+            }}
+            disabled={running}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/80 border border-red-200/40 shadow-sm hover:shadow-md active:scale-[0.98] transition-all disabled:opacity-50"
+          >
+            <span className="text-xl">🚪</span>
+            <div className="text-left flex-1">
+              <p className="text-sm font-semibold text-red-600">Sair do modo teste</p>
+              <p className="text-[11px] text-pink-400">Remove dados de teste e reseta XP/badges/inventário</p>
+            </div>
+          </button>
+        )}
       </div>
 
       {status && (
