@@ -47,52 +47,26 @@ export default function Dashboard() {
   const [showInvite, setShowInvite] = useState(false);
   const [showHouseMembers, setShowHouseMembers] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const hour = new Date().getHours();
+    return hour >= 20 || hour < 7;
+  });
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
 
-  // Load dark mode preference + auto sunrise/sunset + tutorial
+  // Auto dark mode based on hour + tutorial
   useEffect(() => {
-    const saved = localStorage.getItem("casa-dark-mode");
-    if (saved === "true") setDarkMode(true);
-    else if (saved !== "false") {
-      fetchSunTimes();
-    }
+    const interval = setInterval(() => {
+      const hour = new Date().getHours();
+      setDarkMode(hour >= 20 || hour < 7);
+    }, 60000);
     // Show tutorial on first visit
     if (!localStorage.getItem("casa-tutorial-done")) {
       setShowTutorial(true);
       localStorage.setItem("casa-tutorial-done", "true");
     }
+    return () => clearInterval(interval);
   }, []);
-
-  const fetchSunTimes = async () => {
-    try {
-      const res = await fetch(
-        "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&daily=sunrise,sunset&timezone=Europe/Lisbon&forecast_days=1"
-      );
-      const data = await res.json();
-      const sunrise = data.daily?.sunrise?.[0];
-      const sunset = data.daily?.sunset?.[0];
-      if (sunrise && sunset) {
-        const now = new Date();
-        const sunriseTime = new Date(sunrise);
-        const sunsetTime = new Date(sunset);
-        setDarkMode(now < sunriseTime || now > sunsetTime);
-      }
-    } catch {
-      // Fallback: dark between 20:00-07:00
-      const hour = new Date().getHours();
-      setDarkMode(hour >= 20 || hour < 7);
-    }
-  };
-
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => {
-      const next = !prev;
-      localStorage.setItem("casa-dark-mode", String(next));
-      return next;
-    });
-  };
 
   // Swipe detection
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -246,12 +220,6 @@ export default function Dashboard() {
                 className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
               >
                 👥 Membros
-              </button>
-              <button
-                onClick={() => { toggleDarkMode(); }}
-                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
-              >
-                {darkMode ? "☀️ Claro" : "🌙 Escuro"}
               </button>
               <button
                 onClick={() => { setShowPanel(false); setShowMaintenance(true); }}
