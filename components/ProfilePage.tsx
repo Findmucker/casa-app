@@ -27,7 +27,7 @@ import {
 import CharacterModel from "./CharacterModel";
 import Inventory from "./Inventory";
 import LootBoxOpener from "./LootBoxOpener";
-import AvatarBuilder from "./AvatarBuilder";
+import AvatarBuilder, { AnimeAnimalCharacter, type AvatarConfig } from "./AvatarBuilder";
 
 interface ProfilePageProps {
   onClose: () => void;
@@ -38,6 +38,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const [currentBadges, setCurrentBadges] = useState<string[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [equipped, setEquipped] = useState<EquippedItems>({});
+  const [avatarConfig, setAvatarConfig] = useState<AvatarConfig | null>(null);
   const [boxesOpened, setBoxesOpened] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"stats" | "inventory" | "avatar" | "settings">("stats");
@@ -59,6 +60,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
         setInventory(snap.data().inventory || []);
         setEquipped(snap.data().equipped || {});
         setBoxesOpened(snap.data().boxesOpened || 0);
+        if (snap.data().avatar) setAvatarConfig(snap.data().avatar);
       }
       setLoading(false);
     };
@@ -91,7 +93,11 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
 
         {/* Character Model */}
         <div className="flex justify-center">
-          <CharacterModel equipped={equipped} size="sm" />
+          {avatarConfig ? (
+            <AnimeAnimalCharacter config={avatarConfig} size={96} />
+          ) : (
+            <CharacterModel equipped={equipped} size="sm" />
+          )}
         </div>
 
         {/* Name + Title */}
@@ -183,7 +189,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
           }}
         />
       ) : activeTab === "avatar" ? (
-        <AvatarBuilder owner={user?.displayName || user?.email || "user"} />
+        <AvatarBuilder owner={user?.displayName || user?.email || "user"} onSave={(config) => setAvatarConfig(config)} />
       ) : (
         <SettingsTab user={user} />
       )}

@@ -533,6 +533,209 @@ body {
   animation: breathe 3s ease-in-out infinite;
 }
 
+/* Enhanced avatar idle sway — gentle body movement */
+@keyframes avatar-idle-sway {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-2px) rotate(0.5deg) scale(1.005); }
+  50% { transform: translateY(-3px) rotate(0deg) scale(1.01); }
+  75% { transform: translateY(-1px) rotate(-0.5deg) scale(1.005); }
+}
+
+.avatar-idle-sway {
+  animation: avatar-idle-sway 4s ease-in-out infinite;
+}
+
+/* Head subtle bob */
+@keyframes avatar-head-bob {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+  30% { transform: translateX(-50%) translateY(-1.5px) rotate(0.8deg); }
+  70% { transform: translateX(-50%) translateY(0.5px) rotate(-0.5deg); }
+}
+
+.avatar-head-bob {
+  animation: avatar-head-bob 3.5s ease-in-out infinite;
+}
+
+/* Arm gentle swing */
+@keyframes avatar-arm-left {
+  0%, 100% { transform: rotate(15deg); }
+  50% { transform: rotate(18deg) translateY(-1px); }
+}
+
+@keyframes avatar-arm-right {
+  0%, 100% { transform: rotate(-15deg); }
+  50% { transform: rotate(-18deg) translateY(-1px); }
+}
+
+.avatar-arm-left {
+  animation: avatar-arm-left 3s ease-in-out infinite;
+}
+
+.avatar-arm-right {
+  animation: avatar-arm-right 3s ease-in-out infinite 0.3s;
+}
+
+/* Ear twitch */
+@keyframes avatar-ear-twitch {
+  0%, 90%, 100% { transform: rotate(-15deg) scaleY(1); }
+  93% { transform: rotate(-12deg) scaleY(0.92); }
+  96% { transform: rotate(-16deg) scaleY(1.04); }
+}
+
+@keyframes avatar-ear-twitch-right {
+  0%, 88%, 100% { transform: rotate(15deg) scaleY(1); }
+  91% { transform: rotate(12deg) scaleY(0.92); }
+  94% { transform: rotate(16deg) scaleY(1.04); }
+}
+
+.avatar-ear-twitch-left {
+  animation: avatar-ear-twitch 5s ease-in-out infinite;
+}
+
+.avatar-ear-twitch-right {
+  animation: avatar-ear-twitch-right 5s ease-in-out infinite 0.8s;
+}
+
+/* Tail wag */
+@keyframes avatar-tail-wag {
+  0%, 100% { transform: rotate(-20deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(-28deg); }
+}
+
+.avatar-tail-wag {
+  animation: avatar-tail-wag 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* ─── Per-animal idle animations ──────────────────────────── */
+
+/* Panda: slow munching sway, heavy and relaxed */
+@keyframes avatar-idle-munch {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  20% { transform: translateY(-1px) rotate(0.3deg); }
+  40% { transform: translateY(0px) rotate(-0.2deg); }
+  60% { transform: translateY(-2px) rotate(0.2deg); }
+  80% { transform: translateY(-1px) rotate(-0.3deg); }
+}
+.avatar-idle-munch { animation: avatar-idle-munch 5s ease-in-out infinite; }
+
+/* Cat: grooming, elegant subtle movement */
+@keyframes avatar-idle-groom {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  15% { transform: translateY(-1px) rotate(1deg) scale(1.005); }
+  30% { transform: translateY(0px) rotate(0.5deg) scale(1); }
+  50% { transform: translateY(-2px) rotate(-0.5deg) scale(1.008); }
+  70% { transform: translateY(-1px) rotate(0deg) scale(1.003); }
+  85% { transform: translateY(0px) rotate(-0.3deg) scale(1); }
+}
+.avatar-idle-groom { animation: avatar-idle-groom 4s ease-in-out infinite; }
+
+/* Bunny: small hops */
+@keyframes avatar-idle-hop {
+  0%, 100% { transform: translateY(0) scaleY(1) scaleX(1); }
+  10% { transform: translateY(0) scaleY(0.95) scaleX(1.03); }
+  20% { transform: translateY(-6px) scaleY(1.06) scaleX(0.97); }
+  35% { transform: translateY(0px) scaleY(0.97) scaleX(1.02); }
+  45% { transform: translateY(0) scaleY(1) scaleX(1); }
+}
+.avatar-idle-hop { animation: avatar-idle-hop 3s ease-in-out infinite; }
+
+/* Fox: sly, shifty side-to-side */
+@keyframes avatar-idle-sly {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(2px) rotate(0.8deg); }
+  50% { transform: translateX(0px) rotate(0deg); }
+  75% { transform: translateX(-2px) rotate(-0.8deg); }
+}
+.avatar-idle-sly { animation: avatar-idle-sly 4.5s ease-in-out infinite; }
+
+/* Bear/Koala: sleepy, very slow heavy breathing */
+@keyframes avatar-idle-sleepy {
+  0%, 100% { transform: translateY(0) scaleY(1) rotate(0deg); }
+  30% { transform: translateY(-1px) scaleY(1.02) rotate(0.2deg); }
+  60% { transform: translateY(0px) scaleY(0.99) rotate(-0.1deg); }
+}
+.avatar-idle-sleepy { animation: avatar-idle-sleepy 6s ease-in-out infinite; }
+
+/* Dog: excited, bouncy fast movement */
+@keyframes avatar-idle-excited {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  12% { transform: translateY(-4px) rotate(1deg) scale(1.01); }
+  24% { transform: translateY(0px) rotate(0deg) scale(0.99); }
+  36% { transform: translateY(-3px) rotate(-0.8deg) scale(1.01); }
+  48% { transform: translateY(0px) rotate(0deg) scale(1); }
+}
+.avatar-idle-excited { animation: avatar-idle-excited 2.5s ease-in-out infinite; }
+
+/* Penguin: waddle side to side */
+@keyframes avatar-idle-waddle {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(3px) rotate(3deg); }
+  40% { transform: translateX(0px) rotate(0deg); }
+  60% { transform: translateX(-3px) rotate(-3deg); }
+  80% { transform: translateX(0px) rotate(0deg); }
+}
+.avatar-idle-waddle { animation: avatar-idle-waddle 3s ease-in-out infinite; }
+
+/* Hamster: nibble, fast tiny vibrations */
+@keyframes avatar-idle-nibble {
+  0%, 100% { transform: translateY(0) scale(1); }
+  5% { transform: translateY(-0.5px) scale(1.005); }
+  10% { transform: translateY(0) scale(0.998); }
+  15% { transform: translateY(-0.5px) scale(1.003); }
+  20% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.01); }
+  55% { transform: translateY(0) scale(0.995); }
+}
+.avatar-idle-nibble { animation: avatar-idle-nibble 2.8s ease-in-out infinite; }
+
+/* Owl: slow blink, barely moves */
+@keyframes avatar-idle-blink {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  48% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(1px) scaleY(0.98); }
+  52% { transform: translateY(0) scaleY(1); }
+  70% { transform: translateY(-1px) scaleY(1.01); }
+}
+.avatar-idle-blink { animation: avatar-idle-blink 5s ease-in-out infinite; }
+
+/* Frog: croaking puff up */
+@keyframes avatar-idle-croak {
+  0%, 100% { transform: translateY(0) scaleX(1) scaleY(1); }
+  40% { transform: translateY(0) scaleX(1) scaleY(1); }
+  45% { transform: translateY(1px) scaleX(1.06) scaleY(0.94); }
+  50% { transform: translateY(0px) scaleX(1.08) scaleY(0.92); }
+  55% { transform: translateY(-1px) scaleX(1.03) scaleY(0.97); }
+  60% { transform: translateY(0) scaleX(1) scaleY(1); }
+}
+.avatar-idle-croak { animation: avatar-idle-croak 4s ease-in-out infinite; }
+
+/* Fast tail wag for excited animals (dog) */
+@keyframes avatar-tail-wag-fast {
+  0%, 100% { transform: rotate(-20deg); }
+  15% { transform: rotate(-5deg); }
+  30% { transform: rotate(-30deg); }
+  45% { transform: rotate(-8deg); }
+  60% { transform: rotate(-28deg); }
+  75% { transform: rotate(-10deg); }
+  90% { transform: rotate(-25deg); }
+}
+.avatar-tail-wag-fast {
+  animation: avatar-tail-wag-fast 1s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* Sly slow tail sway for fox */
+@keyframes avatar-tail-sway {
+  0%, 100% { transform: rotate(-20deg); }
+  50% { transform: rotate(-10deg) translateX(3px); }
+}
+.avatar-tail-sway {
+  animation: avatar-tail-sway 3.5s ease-in-out infinite;
+  transform-origin: top center;
+}
+
 /* Loot box shake */
 @keyframes box-shake {
   0%, 100% { transform: rotate(0deg) scale(1); }
