@@ -187,24 +187,6 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
     <div className="flex flex-col h-full">
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40 space-y-2">
-        {/* Filter tabs (only for small/coisinhas) */}
-        {type === "small" && (
-          <div className="flex gap-1.5 overflow-x-auto">
-            {FILTER_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setFilterTab(tab.value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all active:scale-95 ${
-                  filterTab === tab.value
-                    ? "bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-sm shadow-pink-200/50"
-                    : "bg-pink-50 text-pink-400 hover:bg-pink-100"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        )}
         <div className="flex gap-2">
           {/* Assignee cycle button (only for small) */}
           {type === "small" && (
