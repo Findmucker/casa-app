@@ -57,6 +57,7 @@ export interface ShoppingItem {
   addedBy: string;
   done: boolean;
   urgent: boolean;
+  category?: string;
   createdAt: unknown;
 }
 
@@ -67,6 +68,7 @@ export interface SmallPriorityItem {
   order: number;
   price?: number;
   notes?: string;
+  category?: string;
   assignee?: "eduardo" | "moniquinha" | "ambos";
   createdAt: unknown;
 }

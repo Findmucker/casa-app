@@ -137,3 +137,9 @@ npx vercel --prod
 ## Licença
 
 Projeto pessoal — feito com 💕
+
+## Roadmap / TODO
+
+- 🔔 **Notificações push** — alertar quando items são adicionados ou eventos criados
+- 📍 **Location-based notifications** — lembrar comprinhas quando perto do supermercado
+- 🤖 **Assistant Moniquinha** — assistente personalizada para a app

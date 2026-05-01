@@ -227,3 +227,15 @@ body {
   animation: drift linear forwards;
   opacity: 0;
 }
+
+/* Category complete celebration */
+@keyframes category-complete {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.05); background-color: rgba(251, 207, 232, 0.5); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.animate-category-complete {
+  animation: category-complete 0.8s ease-out;
+}

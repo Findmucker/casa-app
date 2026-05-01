@@ -137,7 +137,7 @@ export default function ProjectList() {
         {!loading && items.length === 0 && (
           <div className="text-center text-pink-300 py-12">
             <div className="text-5xl mb-3 animate-float">🏡</div>
-            <p className="text-sm">Nenhum projeto ainda!</p>
+            <p className="text-sm">Nenhum projetinho ainda!</p>
             <p className="text-xs text-pink-200 mt-1">Adiciona algo em cima</p>
           </div>
         )}

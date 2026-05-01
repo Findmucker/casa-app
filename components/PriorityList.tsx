@@ -6,6 +6,12 @@ import {
   type SmallPriorityItem,
   type BigPriorityItem,
 } from "@/lib/hooks";
+import {
+  COISINHAS_CATEGORIES,
+  COISINHAS_CATEGORY_ORDER,
+  guessCategory,
+  getAllCategoryNames,
+} from "@/lib/categories";
 import AutocompleteInput from "./AutocompleteInput";
 
 type PriorityItem = SmallPriorityItem | BigPriorityItem;
@@ -54,6 +60,7 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesText, setNotesText] = useState("");
   const [celebrating, setCelebrating] = useState<string | null>(null);
+  const [celebratingCategory, setCelebratingCategory] = useState<string | null>(null);
 
   const COMMON_COISINHAS = [
     "Aspirador", "Toalhas", "Cortinas", "Almofadas", "Velas", "Plantas",
@@ -83,9 +90,19 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
     if (!item.done) {
       setCelebrating(item.id);
       setTimeout(() => setCelebrating(null), 600);
+      // Check if category complete
+      const cat = item.category || guessCategory(item.name, COISINHAS_CATEGORIES);
+      const catUndone = filteredItems.filter(
+        (i) => !((i as SmallPriorityItem).done) && i.id !== item.id &&
+          ((i as SmallPriorityItem).category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
+      );
+      if (catUndone.length === 0) {
+        setCelebratingCategory(cat);
+        setTimeout(() => setCelebratingCategory(null), 1500);
+      }
     }
     await update(item.id, { done: !item.done });
-  }, [update]);
+  }, [update, filteredItems]);
 
   const handleAdd = async () => {
     const name = newName.trim();
@@ -94,11 +111,13 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
     const maxOrder = items.length > 0 ? Math.max(...items.map((i) => i.order)) : 0;
 
     if (type === "small") {
+      const category = guessCategory(name, COISINHAS_CATEGORIES);
       await add({
         name,
         done: false,
         order: maxOrder + 1,
         assignee: newAssignee,
+        category,
         ...(newPrice ? { price: parseFloat(newPrice) } : {}),
       } as Omit<SmallPriorityItem, "id">);
     } else {
@@ -191,8 +210,8 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder={
               type === "small"
-                ? "Coisinha para comprar..."
-                : "Projeto novo..."
+                ? "Coisinha nova..."
+                : "Projetinho novo..."
             }
             suggestions={nameSuggestions}
             className="flex-1 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
@@ -231,9 +250,38 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
               {type === "small" ? "🪴" : "🏡"}
             </div>
             <p className="text-sm">
-              {type === "small" ? "Nenhuma coisinha por agora!" : "Nenhum projeto ainda!"}
+              {type === "small" ? "Nenhuma coisinha por agora!" : "Nenhum projetinho ainda!"}
             </p>
             <p className="text-xs text-pink-200 mt-1">Adiciona algo em cima</p>
+          </div>
+        )}
+
+        {/* Category progress trackers (small only) */}
+        {type === "small" && !loading && filteredItems.length > 0 && (
+          <div className="flex flex-wrap gap-2 pb-3">
+            {COISINHAS_CATEGORY_ORDER.map((cat) => {
+              const catItems = filteredItems.filter(
+                (i) => ((i as SmallPriorityItem).category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
+              );
+              if (catItems.length === 0) return null;
+              const catDone = catItems.filter((i) => (i as SmallPriorityItem).done).length;
+              const isComplete = catDone === catItems.length;
+              const isCelebrating = celebratingCategory === cat;
+              return (
+                <div
+                  key={cat}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
+                    isComplete
+                      ? "bg-green-100 text-green-600"
+                      : "bg-pink-50 text-pink-500"
+                  } ${isCelebrating ? "animate-category-complete" : ""}`}
+                >
+                  <span>{cat.split(" ")[0]}</span>
+                  <span>{catDone}/{catItems.length}</span>
+                  {isComplete && <span>✓</span>}
+                </div>
+              );
+            })}
           </div>
         )}
 

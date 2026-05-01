@@ -2,6 +2,12 @@
 
 import { useState, useRef, useCallback, useMemo } from "react";
 import { useCollection, type ShoppingItem } from "@/lib/hooks";
+import {
+  SHOPPING_CATEGORIES,
+  SHOPPING_CATEGORY_ORDER,
+  guessCategory,
+  getAllCategoryNames,
+} from "@/lib/categories";
 import AutocompleteInput from "./AutocompleteInput";
 
 const COMMON_SHOPPING = [
@@ -20,39 +26,85 @@ export default function ShoppingList() {
   const [newUrgent, setNewUrgent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [celebrating, setCelebrating] = useState<string | null>(null);
+  const [celebratingCategory, setCelebratingCategory] = useState<string | null>(null);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
 
   const suggestions = useMemo(() => {
     const fromHistory = items.map((i) => i.name);
-    const combined = [...new Set([...fromHistory, ...COMMON_SHOPPING])];
-    return combined;
+    return [...new Set([...fromHistory, ...COMMON_SHOPPING])];
   }, [items]);
 
-  const handleCheck = useCallback(async (item: ShoppingItem) => {
+  const categoryNames = getAllCategoryNames(SHOPPING_CATEGORIES);
+
+  // Assign categories to items that don't have one
+  const categorizedItems = useMemo(() => {
+    return items.map((item) => ({
+      ...item,
+      category: item.category || guessCategory(item.name, SHOPPING_CATEGORIES),
+    }));
+  }, [items]);
+
+  const undone = categorizedItems.filter((i) => !i.done);
+  const done = categorizedItems.filter((i) => i.done);
+  const urgentItems = undone.filter((i) => i.urgent);
+  const normalItems = undone.filter((i) => !i.urgent);
+
+  // Group normal items by category
+  const groupedByCategory = useMemo(() => {
+    const groups: Record<string, typeof normalItems> = {};
+    for (const cat of SHOPPING_CATEGORY_ORDER) {
+      const catItems = normalItems.filter((i) => i.category === cat);
+      if (catItems.length > 0) groups[cat] = catItems;
+    }
+    return groups;
+  }, [normalItems]);
+
+  // Progress stats
+  const totalUndone = undone.length;
+  const totalAll = items.length;
+  const totalDone = done.length;
+
+  const handleCheck = useCallback(async (item: ShoppingItem & { category?: string }) => {
     if (!item.done) {
       setCelebrating(item.id);
       setTimeout(() => setCelebrating(null), 600);
+
+      // Check if this completes the category
+      const cat = item.category || guessCategory(item.name, SHOPPING_CATEGORIES);
+      const catUndone = normalItems.filter((i) => i.category === cat && i.id !== item.id);
+      if (catUndone.length === 0) {
+        setCelebratingCategory(cat);
+        setTimeout(() => setCelebratingCategory(null), 1500);
+        // Auto-collapse completed category
+        setCollapsedCategories((prev) => new Set([...prev, cat]));
+      }
     }
     await update(item.id, { done: !item.done });
-  }, [update]);
+  }, [update, normalItems]);
 
   const handleAdd = async () => {
     const name = newItem.trim();
     if (!name) return;
-    await add({ name, addedBy: "", done: false, urgent: newUrgent } as Omit<ShoppingItem, "id">);
+    const category = guessCategory(name, SHOPPING_CATEGORIES);
+    await add({ name, addedBy: "", done: false, urgent: newUrgent, category } as Omit<ShoppingItem, "id">);
     setNewItem("");
     setNewUrgent(false);
     inputRef.current?.focus();
   };
 
-  // Split into urgent undone, normal undone, done
-  const undone = items.filter((i) => !i.done);
-  const urgentItems = undone.filter((i) => i.urgent);
-  const normalItems = undone.filter((i) => !i.urgent);
-  const done = items.filter((i) => i.done);
+  const toggleCollapse = (cat: string) => {
+    setCollapsedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  };
 
-  const ItemRow = ({ item, isDone }: { item: ShoppingItem; isDone: boolean }) => (
+  const ItemRow = ({ item, isDone }: { item: ShoppingItem & { category?: string }; isDone: boolean }) => (
     <div
-      className={`flex items-center gap-3 rounded-2xl p-4 transition-all ${
+      className={`flex items-center gap-3 rounded-2xl p-3.5 transition-all ${
         isDone
           ? "bg-pink-50/40"
           : item.urgent
@@ -64,7 +116,7 @@ export default function ShoppingList() {
       <div className="relative">
         <button
           onClick={() => handleCheck(item)}
-          className={`h-7 w-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm transition-all active:scale-90 ${
+          className={`h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm transition-all active:scale-90 ${
             isDone
               ? "bg-gradient-to-r from-pink-300 to-rose-300 text-white shadow-sm shadow-pink-200/50"
               : item.urgent
@@ -78,23 +130,45 @@ export default function ShoppingList() {
           <div className="absolute inset-0 flex items-center justify-center confetti-burst pointer-events-none">
             <span className="absolute text-xs">💕</span>
             <span className="absolute text-xs">✨</span>
-            <span className="absolute text-xs">💗</span>
-            <span className="absolute text-xs">🩷</span>
           </div>
         )}
       </div>
 
       {/* Name */}
-      <span className={`flex-1 text-base ${
-        isDone ? "text-pink-300 line-through" : "text-rose-800"
-      }`}>
-        {item.urgent && !isDone && (
-          <span className="text-xs mr-1.5">🔥</span>
-        )}
+      <span className={`flex-1 text-base ${isDone ? "text-pink-300 line-through" : "text-rose-800"}`}>
+        {item.urgent && !isDone && <span className="text-xs mr-1.5">🔥</span>}
         {item.name}
       </span>
 
-      {/* Urgent toggle (only for undone) */}
+      {/* Category edit */}
+      {!isDone && editingCategory === item.id && (
+        <select
+          value={item.category || "📦 Outros"}
+          onChange={(e) => {
+            update(item.id, { category: e.target.value });
+            setEditingCategory(null);
+          }}
+          onBlur={() => setEditingCategory(null)}
+          className="text-xs rounded-xl border border-pink-200 bg-white px-2 py-1 text-rose-700 focus:outline-none"
+          autoFocus
+        >
+          {categoryNames.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      )}
+
+      {/* Category badge (tap to edit) */}
+      {!isDone && editingCategory !== item.id && (
+        <button
+          onClick={() => setEditingCategory(item.id)}
+          className="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-400 hover:bg-pink-100 transition-all"
+        >
+          {(item.category || "📦").split(" ")[0]}
+        </button>
+      )}
+
+      {/* Urgent toggle */}
       {!isDone && (
         <button
           onClick={() => update(item.id, { urgent: !item.urgent })}
@@ -104,7 +178,7 @@ export default function ShoppingList() {
               : "bg-pink-50 text-pink-300 hover:text-pink-500"
           }`}
         >
-          {item.urgent ? "urgente" : "normal"}
+          {item.urgent ? "🔥" : ""}
         </button>
       )}
 
@@ -122,6 +196,24 @@ export default function ShoppingList() {
     <div className="flex flex-col h-full">
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40 space-y-2">
+        {/* Global progress */}
+        {totalAll > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-rose-400">
+              🛒 {totalDone}/{totalAll} comprinhas feitas!
+            </span>
+            <div className="flex-1 h-2 bg-pink-100/60 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-pink-300 to-rose-400 rounded-full transition-all duration-500"
+                style={{ width: `${totalAll > 0 ? (totalDone / totalAll) * 100 : 0}%` }}
+              />
+            </div>
+            {totalDone === totalAll && totalAll > 0 && (
+              <span className="text-xs animate-bounce">🎉</span>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2">
           <AutocompleteInput
             inputRef={inputRef}
@@ -140,7 +232,6 @@ export default function ShoppingList() {
             +
           </button>
         </div>
-        {/* Urgent toggle for new items */}
         <button
           onClick={() => setNewUrgent(!newUrgent)}
           className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-all active:scale-95 ${
@@ -158,14 +249,14 @@ export default function ShoppingList() {
       <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
         {loading && (
           <div className="text-center text-pink-300 py-12 animate-pulse-soft">
-            <div className="text-3xl mb-2">🧺</div>
+            <div className="text-3xl mb-2">🛒</div>
             <p className="text-sm">A carregar...</p>
           </div>
         )}
 
         {!loading && undone.length === 0 && done.length === 0 && (
           <div className="text-center text-pink-300 py-12">
-            <div className="text-5xl mb-3 animate-float">🧺</div>
+            <div className="text-5xl mb-3 animate-float">🛒</div>
             <p className="text-sm">Nada para comprar!</p>
             <p className="text-xs text-pink-200 mt-1">Adiciona algo em cima</p>
           </div>
@@ -186,28 +277,60 @@ export default function ShoppingList() {
           </>
         )}
 
-        {/* Normal section */}
-        {normalItems.length > 0 && (
-          <>
-            {urgentItems.length > 0 && (
-              <div className="text-xs font-semibold text-pink-300 uppercase tracking-wider pt-3 pb-1 flex items-center gap-2">
-                <span>🕊️ Quando der</span>
-                <span className="bg-pink-100 text-pink-400 px-2 py-0.5 rounded-full text-[10px]">
-                  {normalItems.length}
+        {/* Categorized sections */}
+        {Object.entries(groupedByCategory).map(([category, catItems]) => {
+          const isCollapsed = collapsedCategories.has(category);
+          const catDone = categorizedItems.filter(
+            (i) => i.done && i.category === category
+          ).length;
+          const catTotal = catItems.length + catDone;
+          const isComplete = celebratingCategory === category;
+
+          return (
+            <div key={category} className="mt-3">
+              {/* Category header */}
+              <button
+                onClick={() => toggleCollapse(category)}
+                className={`w-full flex items-center gap-2 pb-2 transition-all ${
+                  isComplete ? "animate-category-complete" : ""
+                }`}
+              >
+                <span className="text-xs font-semibold text-rose-500 uppercase tracking-wider">
+                  {category}
                 </span>
-              </div>
-            )}
-            {normalItems.map((item) => (
-              <ItemRow key={item.id} item={item} isDone={false} />
-            ))}
-          </>
-        )}
+                <span className="bg-pink-100 text-pink-500 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                  {catDone}/{catTotal}
+                </span>
+                {/* Mini progress */}
+                <div className="flex-1 h-1.5 bg-pink-100/60 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-pink-300 to-rose-400 rounded-full transition-all duration-500"
+                    style={{ width: `${catTotal > 0 ? (catDone / catTotal) * 100 : 0}%` }}
+                  />
+                </div>
+                {isComplete && (
+                  <span className="text-sm animate-bounce">🎉</span>
+                )}
+                <span className="text-pink-300 text-xs">{isCollapsed ? "▶" : "▼"}</span>
+              </button>
+
+              {/* Category items */}
+              {!isCollapsed && (
+                <div className="space-y-2">
+                  {catItems.map((item) => (
+                    <ItemRow key={item.id} item={item} isDone={false} />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
         {/* Done section */}
         {done.length > 0 && (
           <>
             <div className="text-xs font-semibold text-pink-300 uppercase tracking-wider pt-4 pb-1 flex items-center gap-2">
-              <span>Comprado</span>
+              <span>✓ Compradinho</span>
               <span className="bg-pink-100 text-pink-400 px-2 py-0.5 rounded-full text-[10px]">
                 {done.length}
               </span>

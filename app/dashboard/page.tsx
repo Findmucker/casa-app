@@ -8,11 +8,11 @@ import EventList from "@/components/EventList";
 import Weather from "@/components/Weather";
 
 const ALL_TABS = [
-  { id: "shopping", label: "Compras", emoji: "🧺" },
+  { id: "shopping", label: "Comprinhas", emoji: "🛒" },
   { id: "small", label: "Coisinhas", emoji: "🪴" },
-  { id: "big", label: "Projetos", emoji: "🏡" },
-  { id: "events", label: "Eventos", emoji: "🎉" },
-  { id: "weather", label: "Tempo", emoji: "🌤️" },
+  { id: "big", label: "Projetinhos", emoji: "🏠" },
+  { id: "events", label: "Eventinhos", emoji: "🎉" },
+  { id: "weather", label: "Tempinho", emoji: "🌤️" },
 ] as const;
 
 type TabId = (typeof ALL_TABS)[number]["id"];
