@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useContext } from "react";
 import ShoppingList from "@/components/ShoppingList";
 import PriorityList from "@/components/PriorityList";
 import ProjectList from "@/components/ProjectList";
@@ -15,6 +15,9 @@ import MaintenancePanel from "@/components/MaintenancePanel";
 import Gamification from "@/components/Gamification";
 import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
+import InvitePanel from "@/components/InvitePanel";
+import { HouseIdContext } from "@/lib/hooks";
+import { useAuth } from "@/lib/auth";
 
 const ALL_TABS = [
   { id: "home", label: "Início", emoji: "✨" },
@@ -39,7 +42,10 @@ export default function Dashboard() {
   const [showGamification, setShowGamification] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const { user, logout } = useAuth();
+  const houseId = useContext(HouseIdContext);
 
   // Load dark mode preference + auto sunrise/sunset
   useEffect(() => {
@@ -222,10 +228,16 @@ export default function Dashboard() {
                 📜 Histórico
               </button>
               <button
+                onClick={() => { setShowPanel(false); setShowInvite(true); }}
+                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
+              >
+                🔗 Convidar
+              </button>
+              <button
                 onClick={() => { toggleDarkMode(); }}
                 className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
               >
-                {darkMode ? "☀️ Modo claro" : "🌙 Modo escuro"}
+                {darkMode ? "☀️ Claro" : "🌙 Escuro"}
               </button>
               <button
                 onClick={() => { setShowPanel(false); setShowMaintenance(true); }}
@@ -234,6 +246,12 @@ export default function Dashboard() {
                 ⚙️ Manutenção
               </button>
             </div>
+            <button
+              onClick={() => { logout(); }}
+              className={`mt-3 text-xs transition-colors ${darkMode ? "text-red-400 hover:text-red-300" : "text-red-300 hover:text-red-500"}`}
+            >
+              🚪 Sair
+            </button>
             <button
               onClick={() => setShowPanel(false)}
               className={`mt-4 text-sm transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
@@ -248,6 +266,7 @@ export default function Dashboard() {
         {showGamification && <Gamification onClose={() => setShowGamification(false)} />}
         {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} onNavigate={(tab) => switchTab(tab as TabId)} />}
         {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
+        {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
       </main>
 
       {/* Bottom tabs - scrollable */}

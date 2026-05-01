@@ -1,7 +1,7 @@
 // Update ShoppingItem to support urgency
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
   collection,
   query,
@@ -16,6 +16,10 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "./firebase";
+
+// Optional context import (won't break if not provided)
+import { createContext } from "react";
+export const HouseIdContext = createContext<string | null>(null);
 
 // ─── Auth ────────────────────────────────────────────────────
 export function usePin() {
@@ -146,10 +150,26 @@ export function useCollection<T extends { id: string }>(
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const houseId = useContext(HouseIdContext);
+
+  // Build collection path: houses/{houseId}/{name} or root {name}
+  const getCollectionRef = () => {
+    if (houseId) {
+      return collection(db, "houses", houseId, collectionName);
+    }
+    return collection(db, collectionName);
+  };
+
+  const getDocRef = (id: string) => {
+    if (houseId) {
+      return doc(db, "houses", houseId, collectionName, id);
+    }
+    return doc(db, collectionName, id);
+  };
 
   const buildQuery = () =>
     query(
-      collection(db, collectionName),
+      getCollectionRef(),
       orderBy(orderField, orderField === "order" ? "asc" : "desc")
     );
 
@@ -184,15 +204,14 @@ export function useCollection<T extends { id: string }>(
     });
 
     return () => unsub();
-  }, [collectionName, orderField]);
+  }, [collectionName, orderField, houseId]);
 
   const add = async (data: Omit<T, "id">) => {
     try {
-      await addDoc(collection(db, collectionName), {
+      await addDoc(getCollectionRef(), {
         ...data,
         createdAt: serverTimestamp(),
       });
-      // Refetch to guarantee UI updates even if onSnapshot is blocked
       await refetch();
     } catch (e) {
       console.error("Add error:", e);
@@ -200,12 +219,11 @@ export function useCollection<T extends { id: string }>(
   };
 
   const update = async (id: string, data: Partial<T>) => {
-    // Optimistic update
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...data } : item))
     );
     try {
-      await updateDoc(doc(db, collectionName, id), data as Record<string, unknown>);
+      await updateDoc(getDocRef(id), data as Record<string, unknown>);
     } catch (e) {
       console.error("Update error:", e);
       await refetch();
@@ -213,11 +231,9 @@ export function useCollection<T extends { id: string }>(
   };
 
   const remove = async (id: string) => {
-    // Optimistic remove
     setItems((prev) => prev.filter((item) => item.id !== id));
     try {
-      await deleteDoc(doc(db, collectionName, id));
-      // Refetch to guarantee UI updates
+      await deleteDoc(getDocRef(id));
       await refetch();
     } catch (e) {
       console.error("Delete error:", e);

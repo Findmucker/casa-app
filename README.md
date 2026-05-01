@@ -100,7 +100,8 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - **Database:** Firebase Firestore (real-time sync)
 - **Weather:** Open-Meteo API (grátis, sem API key)
 - **Deploy:** Vercel (conectado ao GitHub, auto-deploy)
-- **Auth:** PIN + owner picker (localStorage)
+- **Auth:** Firebase Auth (email/password + Google login)
+- **Multi-tenant:** Cada casa tem dados isolados, convites por link
 
 ## Setup Local
 
@@ -215,4 +216,3 @@ Projeto pessoal — feito com 💕
 
 - 📍 **Location-based notifications** — lembrar comprinhas quando perto do supermercado
 - 🤖 **Assistant Moniquinha** — assistente personalizada para a app
-- 👤 **Utilizadores/Autenticação** — sistema de auth real (Firebase Auth, contas, permissões)
