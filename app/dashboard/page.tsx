@@ -37,20 +37,13 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50">
       {/* Header */}
-      <header className="bg-white/60 backdrop-blur-md border-b border-pink-100/50 px-4 py-3.5 flex items-center justify-between animate-fade-in-up">
-        <button
-          onClick={() => setShowMaintenance(true)}
-          className="w-8 h-8 flex items-center justify-center rounded-full text-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-all active:scale-90"
-        >
-          ⚙️
-        </button>
+      <header className="bg-white/60 backdrop-blur-md border-b border-pink-100/50 px-4 py-3.5 flex items-center justify-center animate-fade-in-up">
         <button
           onClick={() => setShowPanel(!showPanel)}
           className="text-lg font-bold text-rose-400 tracking-wide hover:text-rose-500 active:scale-95 transition-all"
         >
           🏡 A Nossa Casinha
         </button>
-        <div className="w-8" />
       </header>
 
       {/* Content */}
@@ -94,6 +87,12 @@ export default function Dashboard() {
               className="mt-8 text-sm text-pink-400 hover:text-pink-600 transition-colors"
             >
               Cancelar
+            </button>
+            <button
+              onClick={() => { setShowPanel(false); setShowMaintenance(true); }}
+              className="mt-4 text-xs text-pink-300 hover:text-pink-500 transition-colors"
+            >
+              ⚙️ Manutenção
             </button>
           </div>
         )}
