@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   collection,
   getDocs,
@@ -8,8 +8,10 @@ import {
   doc,
   query,
   orderBy,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { HouseIdContext } from "@/lib/hooks";
 import { guessCategory, SHOPPING_CATEGORIES, COISINHAS_CATEGORIES, PROJECTS_CATEGORIES } from "@/lib/categories";
 
 // Manual overrides for items that guessCategory can't catch
@@ -55,6 +57,29 @@ interface MaintenancePanelProps {
 export default function MaintenancePanel({ onClose }: MaintenancePanelProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
+  const houseId = useContext(HouseIdContext);
+
+  const migrateToHouse = async () => {
+    if (!houseId) { setStatus("❌ Sem casa configurada"); return; }
+    setRunning(true);
+    setStatus("A migrar dados para a casa...");
+    let migrated = 0;
+
+    try {
+      const collections = ["shopping", "priorities_small", "priorities_big", "habits", "habit_checks", "expenses", "meal_plans"];
+      for (const colName of collections) {
+        const snap = await getDocs(collection(db, colName));
+        for (const d of snap.docs) {
+          await setDoc(doc(db, "houses", houseId, colName, d.id), d.data());
+          migrated++;
+        }
+      }
+      setStatus(`✅ ${migrated} items migrados para a casa!`);
+    } catch (e) {
+      setStatus(`❌ Erro: ${e}`);
+    }
+    setRunning(false);
+  };
 
   const fixCategories = async () => {
     setRunning(true);
@@ -184,6 +209,20 @@ export default function MaintenancePanel({ onClose }: MaintenancePanelProps) {
             <p className="text-[11px] text-pink-400">Remove coisinhas já concluídas</p>
           </div>
         </button>
+
+        {houseId && (
+          <button
+            onClick={migrateToHouse}
+            disabled={running}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/80 border border-pink-100/40 shadow-sm hover:shadow-md active:scale-[0.98] transition-all disabled:opacity-50"
+          >
+            <span className="text-xl">📦</span>
+            <div className="text-left flex-1">
+              <p className="text-sm font-semibold text-rose-700">Migrar dados para a casa</p>
+              <p className="text-[11px] text-pink-400">Copia dados antigos para a casa atual</p>
+            </div>
+          </button>
+        )}
       </div>
 
       {status && (
