@@ -177,7 +177,6 @@ export function useCollection<T extends { id: string }>(
         ...data,
         createdAt: serverTimestamp(),
       });
-      await refetch();
     } catch (e) {
       console.error("Add error:", e);
     }
@@ -199,7 +198,6 @@ export function useCollection<T extends { id: string }>(
     setItems((prev) => prev.filter((item) => item.id !== id));
     try {
       await deleteDoc(getDocRef(id));
-      await refetch();
     } catch (e) {
       console.error("Delete error:", e);
       await refetch();

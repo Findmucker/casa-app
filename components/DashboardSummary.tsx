@@ -64,13 +64,12 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
 
     // Urgent items
     const urgentShopping = shopping.filter((s) => !s.done && s.urgent).length;
-    const urgentCoisinhas = 0;
 
     return {
       shoppingPending, shoppingDone, coisinhasPending, coisinhasDone,
       projectsInProgress, projectsDone, todayChecks, totalHabits,
       monthExpenses, maxStreak, weeklyPct, weeklyDone,
-      urgentShopping, urgentCoisinhas,
+      urgentShopping,
     };
   }, [shopping, coisinhas, projects, habits, checks, expenses, today, currentMonth]);
 
@@ -107,22 +106,15 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
       </div>
 
       {/* Urgent alerts */}
-      {(stats.urgentShopping > 0 || stats.urgentCoisinhas > 0) && (
+      {stats.urgentShopping > 0 && (
         <div className="mx-4 mb-3 p-3 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 border border-red-200/50">
           <p className="text-xs font-bold text-red-500 flex items-center gap-1">
             🚨 Urgente
           </p>
           <div className="flex gap-3 mt-1">
-            {stats.urgentShopping > 0 && (
-              <button onClick={() => onNavigate("shopping")} className="text-[11px] text-red-600 font-medium hover:underline">
-                {stats.urgentShopping} comprinha{stats.urgentShopping > 1 ? "s" : ""}
-              </button>
-            )}
-            {stats.urgentCoisinhas > 0 && (
-              <button onClick={() => onNavigate("small")} className="text-[11px] text-red-600 font-medium hover:underline">
-                {stats.urgentCoisinhas} coisinha{stats.urgentCoisinhas > 1 ? "s" : ""}
-              </button>
-            )}
+            <button onClick={() => onNavigate("shopping")} className="text-[11px] text-red-600 font-medium hover:underline">
+              {stats.urgentShopping} comprinha{stats.urgentShopping > 1 ? "s" : ""}
+            </button>
           </div>
         </div>
       )}

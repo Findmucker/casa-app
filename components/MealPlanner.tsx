@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useCollection, type MealPlan } from "@/lib/hooks";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { useCollection, type MealPlan, type ShoppingItem } from "@/lib/hooks";
 
 const MEAL_SLOTS = [
   { key: "breakfast", label: "Pequeno-almoço", emoji: "🥐" },
@@ -18,6 +16,7 @@ const WEEKDAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export default function MealPlanner() {
   const { items, loading, add, update } = useCollection<MealPlan>("meal_plans", "createdAt");
+  const { add: addShopping } = useCollection<ShoppingItem>("shopping", "createdAt");
   const [editingSlot, setEditingSlot] = useState<{ date: string; slot: SlotKey } | null>(null);
   const [slotText, setSlotText] = useState("");
   const [ingredientsModal, setIngredientsModal] = useState<string | null>(null);
@@ -79,15 +78,15 @@ export default function MealPlanner() {
 
   const sendToShopping = async () => {
     if (!ingredients.trim()) return;
-    const items = ingredients.split("\n").filter((l) => l.trim());
-    for (const item of items) {
-      await addDoc(collection(db, "shopping"), {
+    const lines = ingredients.split("\n").filter((l) => l.trim());
+    for (const item of lines) {
+      await addShopping({
         name: item.trim(),
         addedBy: "meal-planner",
         done: false,
         urgent: false,
-        createdAt: serverTimestamp(),
-      });
+        createdAt: null,
+      } as Omit<ShoppingItem, "id">);
     }
     setIngredients("");
     setIngredientsModal(null);
