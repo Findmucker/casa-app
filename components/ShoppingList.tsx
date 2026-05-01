@@ -112,6 +112,16 @@ export default function ShoppingList() {
     });
   };
 
+  const allCategories = Object.keys(groupedByCategory || {});
+  const allCollapsed = allCategories.length > 0 && allCategories.every((c) => collapsedCategories.has(c));
+  const toggleAll = () => {
+    if (allCollapsed) {
+      setCollapsedCategories(new Set());
+    } else {
+      setCollapsedCategories(new Set(allCategories));
+    }
+  };
+
   const ItemRow = ({ item, isDone }: { item: ShoppingItem & { category?: string }; isDone: boolean }) => (
     <div
       className={`flex items-center gap-3 rounded-2xl p-3.5 transition-all ${
@@ -288,6 +298,14 @@ export default function ShoppingList() {
         )}
 
         {/* Categorized sections */}
+        {Object.keys(groupedByCategory).length > 1 && (
+          <button
+            onClick={toggleAll}
+            className="text-[11px] text-pink-400 hover:text-pink-600 transition-colors self-end"
+          >
+            {allCollapsed ? "▼ Expandir tudo" : "▲ Minimizar tudo"}
+          </button>
+        )}
         {Object.entries(groupedByCategory).map(([category, catItems]) => {
           const isCollapsed = collapsedCategories.has(category);
           const catDone = categorizedItems.filter(

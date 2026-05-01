@@ -410,6 +410,19 @@ export default function ProjectList() {
           </div>
         )}
 
+        {!loading && Object.keys(groupedByCategory).length > 1 && (
+          <button
+            onClick={() => {
+              const cats = Object.keys(groupedByCategory);
+              const allCol = cats.every((c) => collapsedCategories.has(c));
+              setCollapsedCategories(allCol ? new Set() : new Set(cats));
+            }}
+            className="text-[11px] text-pink-400 hover:text-pink-600 transition-colors mb-2 self-end"
+          >
+            {Object.keys(groupedByCategory).every((c) => collapsedCategories.has(c)) ? "▼ Expandir tudo" : "▲ Minimizar tudo"}
+          </button>
+        )}
+
         {!loading && Object.entries(groupedByCategory).map(([category, catItems]) => {
           const isCollapsed = collapsedCategories.has(category);
           const doneCount = catItems.filter((i) => i.status === "concluido").length;

@@ -200,6 +200,18 @@ export default function PriorityList() {
         )}
 
         {/* Category boxes */}
+        {!loading && items.length > 0 && (
+          <button
+            onClick={() => {
+              const cats = COISINHAS_CATEGORY_ORDER.filter((c) => items.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c));
+              const allCol = cats.every((c) => collapsedCategories.has(c));
+              setCollapsedCategories(allCol ? new Set() : new Set(cats));
+            }}
+            className="text-[11px] text-pink-400 hover:text-pink-600 transition-colors mb-2 self-end"
+          >
+            {COISINHAS_CATEGORY_ORDER.filter((c) => items.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c)).every((c) => collapsedCategories.has(c)) ? "▼ Expandir tudo" : "▲ Minimizar tudo"}
+          </button>
+        )}
         {!loading && items.length > 0 && COISINHAS_CATEGORY_ORDER.map((cat) => {
           const catItems = items.filter(
             (i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
