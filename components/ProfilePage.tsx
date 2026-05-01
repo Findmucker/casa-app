@@ -157,6 +157,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
           stats={stats}
           boxesOpened={boxesOpened}
           user={user}
+          level={level}
           onUpdate={() => {
             // Reload data
             const owner = user?.displayName || user?.email || "user";
@@ -182,14 +183,16 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
 import type { RPGStat } from "@/lib/gamification";
 import type { User } from "firebase/auth";
 
-function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate }: {
+function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate, level }: {
   inventory: InventoryItem[];
   equipped: EquippedItems;
   stats: GameStats;
   boxesOpened: number;
   user: User | null;
   onUpdate: () => void;
+  level: number;
 }) {
+  const [subTab, setSubTab] = useState<"equip" | "items">("equip");
   const owner = user?.displayName || user?.email || "user";
   const pending = getPendingBoxes(stats.points, boxesOpened);
 
@@ -211,18 +214,81 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate 
 
   return (
     <div className="mt-2 pb-8">
-      {/* Loot Box Opener */}
-      <div className="mx-4 mb-4 rounded-2xl bg-gradient-to-b from-purple-900/40 to-indigo-950/40 border border-purple-700/30 p-3">
-        <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
+      {/* Sub-tabs */}
+      <div className="flex gap-2 justify-center mb-4 px-4">
+        <button
+          onClick={() => setSubTab("equip")}
+          className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-all active:scale-95 ${
+            subTab === "equip"
+              ? "bg-amber-500/30 text-amber-300 border border-amber-400/40"
+              : "bg-purple-900/30 text-purple-400 border border-purple-700/30"
+          }`}
+        >
+          🗡️ Equipamento
+        </button>
+        <button
+          onClick={() => setSubTab("items")}
+          className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-all active:scale-95 ${
+            subTab === "items"
+              ? "bg-amber-500/30 text-amber-300 border border-amber-400/40"
+              : "bg-purple-900/30 text-purple-400 border border-purple-700/30"
+          }`}
+        >
+          🎒 Items
+        </button>
       </div>
 
-      {/* Inventory Grid */}
-      <Inventory
-        inventory={inventory}
-        equipped={equipped}
-        onEquip={handleEquip}
-        onUnequip={handleUnequip}
-      />
+      {subTab === "equip" ? (
+        <>
+          {/* Equipment - WoW Style Paper Doll */}
+          <div className="px-5">
+            <div className="relative bg-gradient-to-b from-indigo-950/60 to-purple-950/60 rounded-2xl border border-pink-300/20 p-4 shadow-inner shadow-purple-900/30">
+              <div className="grid grid-cols-5 grid-rows-4 gap-1.5 items-center justify-items-center min-h-[220px]">
+                <div className="col-start-3 row-start-1">
+                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "crown")!} unlocked={EQUIPMENT.find((e) => e.slot === "crown")!.condition(stats, level)} rarity="legendary" />
+                </div>
+                <div className="col-start-1 row-start-2">
+                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "weapon")!} unlocked={EQUIPMENT.find((e) => e.slot === "weapon")!.condition(stats, level)} rarity="epic" />
+                </div>
+                <div className="col-start-2 col-span-3 row-start-2 flex items-center justify-center">
+                  <CharacterModel equipped={equipped} size="sm" />
+                </div>
+                <div className="col-start-5 row-start-2">
+                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "shield")!} unlocked={EQUIPMENT.find((e) => e.slot === "shield")!.condition(stats, level)} rarity="rare" />
+                </div>
+                <div className="col-start-1 row-start-3">
+                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "gloves")!} unlocked={EQUIPMENT.find((e) => e.slot === "gloves")!.condition(stats, level)} rarity="epic" />
+                </div>
+                <div className="col-start-5 row-start-3">
+                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "ring")!} unlocked={EQUIPMENT.find((e) => e.slot === "ring")!.condition(stats, level)} rarity="rare" />
+                </div>
+                <div className="col-start-3 row-start-4">
+                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "boots")!} unlocked={EQUIPMENT.find((e) => e.slot === "boots")!.condition(stats, level)} rarity="common" />
+                </div>
+              </div>
+              <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-pink-400/30 rounded-tl" />
+              <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-pink-400/30 rounded-tr" />
+              <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-pink-400/30 rounded-bl" />
+              <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-pink-400/30 rounded-br" />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Loot Box Opener */}
+          <div className="mx-4 mb-4 rounded-2xl bg-gradient-to-b from-purple-900/40 to-indigo-950/40 border border-purple-700/30 p-3">
+            <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
+          </div>
+
+          {/* Inventory Grid */}
+          <Inventory
+            inventory={inventory}
+            equipped={equipped}
+            onEquip={handleEquip}
+            onUnequip={handleUnequip}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -256,42 +322,6 @@ function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats;
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Equipment - WoW Style Paper Doll */}
-      <div className="px-5 mt-5">
-        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3">Equipamento</h3>
-        <div className="relative bg-gradient-to-b from-indigo-950/60 to-purple-950/60 rounded-2xl border border-pink-300/20 p-4 shadow-inner shadow-purple-900/30">
-          <div className="grid grid-cols-5 grid-rows-4 gap-1.5 items-center justify-items-center min-h-[220px]">
-            <div className="col-start-3 row-start-1">
-              <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "crown")!} unlocked={EQUIPMENT.find((e) => e.slot === "crown")!.condition(stats, level)} rarity="legendary" />
-            </div>
-            <div className="col-start-1 row-start-2">
-              <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "weapon")!} unlocked={EQUIPMENT.find((e) => e.slot === "weapon")!.condition(stats, level)} rarity="epic" />
-            </div>
-            <div className="col-start-2 col-span-3 row-start-2 flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-300/30 to-purple-400/30 border-2 border-pink-300/40 flex items-center justify-center text-4xl shadow-lg shadow-pink-500/20 animate-float">
-                🧙
-              </div>
-            </div>
-            <div className="col-start-5 row-start-2">
-              <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "shield")!} unlocked={EQUIPMENT.find((e) => e.slot === "shield")!.condition(stats, level)} rarity="rare" />
-            </div>
-            <div className="col-start-1 row-start-3">
-              <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "gloves")!} unlocked={EQUIPMENT.find((e) => e.slot === "gloves")!.condition(stats, level)} rarity="epic" />
-            </div>
-            <div className="col-start-5 row-start-3">
-              <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "ring")!} unlocked={EQUIPMENT.find((e) => e.slot === "ring")!.condition(stats, level)} rarity="rare" />
-            </div>
-            <div className="col-start-3 row-start-4">
-              <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "boots")!} unlocked={EQUIPMENT.find((e) => e.slot === "boots")!.condition(stats, level)} rarity="common" />
-            </div>
-          </div>
-          <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-pink-400/30 rounded-tl" />
-          <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-pink-400/30 rounded-tr" />
-          <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-pink-400/30 rounded-bl" />
-          <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-pink-400/30 rounded-br" />
         </div>
       </div>
 
