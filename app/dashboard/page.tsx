@@ -20,6 +20,7 @@ import InvitePanel from "@/components/InvitePanel";
 import HouseMembers from "@/components/HouseMembers";
 import { HouseIdContext } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
+import { useTimeTheme } from "@/lib/themes";
 
 const ALL_TABS = [
   { id: "home", label: "Início", emoji: "✨" },
@@ -47,25 +48,17 @@ export default function Dashboard() {
   const [showInvite, setShowInvite] = useState(false);
   const [showHouseMembers, setShowHouseMembers] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    const hour = new Date().getHours();
-    return hour >= 20 || hour < 7;
-  });
+  const theme = useTimeTheme();
+  const darkMode = theme.isDark;
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
 
-  // Auto dark mode based on hour + tutorial
+  // Tutorial on first visit
   useEffect(() => {
-    const interval = setInterval(() => {
-      const hour = new Date().getHours();
-      setDarkMode(hour >= 20 || hour < 7);
-    }, 60000);
-    // Show tutorial on first visit
     if (!localStorage.getItem("casa-tutorial-done")) {
       setShowTutorial(true);
       localStorage.setItem("casa-tutorial-done", "true");
     }
-    return () => clearInterval(interval);
   }, []);
 
   // Swipe detection
@@ -118,11 +111,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`flex flex-col h-screen transition-colors duration-500 ${
-      darkMode
-        ? "dark-mode bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900"
-        : "bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50"
-    }`}>
+    <div className={`flex flex-col h-screen transition-all duration-1000 ${theme.cssClass} bg-gradient-to-br ${theme.bgGradient}`}>
       {/* Header */}
       <header className={`backdrop-blur-md border-b px-4 py-3 flex items-center justify-between transition-colors duration-500 ${
         darkMode
@@ -176,10 +165,14 @@ export default function Dashboard() {
 
         {/* Grid panel overlay */}
         {showPanel && (
-          <div className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up ${
+          <div className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up bg-gradient-to-br ${
             darkMode
-              ? "bg-gradient-to-br from-slate-900/98 via-purple-950/98 to-slate-900/98"
-              : "bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98"
+              ? "from-slate-900/98 via-purple-950/98 to-slate-900/98"
+              : theme.phase === "morning"
+                ? "from-amber-50/98 via-yellow-50/98 to-orange-50/98"
+                : theme.phase === "dusk"
+                  ? "from-orange-100/98 via-rose-200/98 to-purple-200/98"
+                  : "from-pink-50/98 via-rose-50/98 to-purple-50/98"
           }`}>
             <p className={`text-sm font-semibold mb-4 ${darkMode ? "text-purple-300" : "text-rose-400"}`}>Ir para...</p>
             <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
