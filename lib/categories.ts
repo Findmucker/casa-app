@@ -54,14 +54,15 @@ export const COISINHAS_CATEGORY_ORDER = [
 ];
 
 export const PROJECTS_CATEGORIES: Record<string, string[]> = {
-  "🎨 Pintura": ["pintar", "pintura", "tinta"],
-  "🏗️ Obras & Estrutura": ["telhado", "telhas", "teto falso", "chão", "parede", "cimento", "reboco", "isolante", "terraço", "sótão", "garagem"],
-  "🚪 Portas & Janelas": ["porta", "janela", "portão", "portadas", "vidro", "caixilharia"],
-  "⚡ Eletricidade & Automação": ["eléctrico", "elétrico", "eléctricas", "elétricas", "automação", "automatizar", "interruptor", "tomada", "luz"],
-  "🔧 Reparações": ["arranjar", "reparar", "consertar", "substituir", "trocar", "calhas", "escoamento"],
-  "🍳 Cozinha": ["cozinha", "exaustor", "armário", "móveis", "bancada"],
-  "🏡 Exterior": ["exterior", "jardim", "galinheira", "churrasqueira", "varanda", "terraço"],
-  "🔥 Aquecimento": ["lareira", "recuperador", "aquecimento", "calor"],
+  "🎨 Pintura": ["pintar", "pintura", "tinta", "verniz", "primário", "rolo", "trincha"],
+  "🏗️ Obras & Estrutura": ["telhado", "telhas", "teto falso", "teto", "chão", "parede", "cimento", "reboco", "isolante", "isolamento", "terraço", "sótão", "garagem", "escadas", "fundação", "estrutura", "demolir", "construir"],
+  "🚪 Portas & Janelas": ["porta", "janela", "portão", "portadas", "vidro", "caixilharia", "fechadura", "dobradiça", "aro", "soleira"],
+  "⚡ Eletricidade & Automação": ["eléctrico", "elétrico", "eléctricas", "elétricas", "automação", "automatizar", "interruptor", "tomada", "luz", "quadro elétrico", "disjuntor", "led", "sensor", "câmara", "alarme"],
+  "🔧 Reparações": ["arranjar", "reparar", "consertar", "substituir", "calhas", "escoamento", "canalização", "fuga", "infiltração", "humidade"],
+  "🍳 Cozinha": ["cozinha", "exaustor", "armário", "móveis", "bancada", "lava-louça", "forno", "placa", "frigorifico"],
+  "🏡 Exterior": ["exterior", "jardim", "galinheira", "churrasqueira", "varanda", "muro", "vedação", "portail", "piscina", "rega", "relva", "árvore", "poda", "calçada", "pavimento"],
+  "🔥 Aquecimento": ["lareira", "recuperador", "aquecimento", "calor", "radiador", "caldeira", "ar condicionado", "climatização", "pellets"],
+  "💧 Canalização": ["canalização", "torneira", "cano", "tubo", "esgoto", "fossa", "bomba", "pressão", "água quente"],
   "📦 Outros": [],
 };
 
@@ -71,6 +72,7 @@ export const PROJECTS_CATEGORY_ORDER = [
   "🚪 Portas & Janelas",
   "⚡ Eletricidade & Automação",
   "🔧 Reparações",
+  "💧 Canalização",
   "🍳 Cozinha",
   "🏡 Exterior",
   "🔥 Aquecimento",
