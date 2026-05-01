@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import ShoppingList from "@/components/ShoppingList";
 import PriorityList from "@/components/PriorityList";
 import ProjectList from "@/components/ProjectList";
@@ -42,6 +42,16 @@ export default function Dashboard() {
 
   // Swipe detection
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // Scroll active tab into view
+  useEffect(() => {
+    if (!navRef.current) return;
+    const activeBtn = navRef.current.querySelector(`[data-tab="${activeTab}"]`) as HTMLElement | null;
+    if (activeBtn) {
+      activeBtn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }, [activeTab]);
 
   const switchTab = useCallback((id: TabId) => {
     if (id === activeTab && !showPanel) return;
@@ -174,10 +184,11 @@ export default function Dashboard() {
 
       {/* Bottom tabs - scrollable */}
       <nav className="bg-white/70 backdrop-blur-md border-t border-pink-100/50 safe-area-bottom">
-        <div className="flex overflow-x-auto scrollbar-hide">
+        <div ref={navRef} className="flex overflow-x-auto scrollbar-hide">
           {ALL_TABS.map((tab) => (
             <button
               key={tab.id}
+              data-tab={tab.id}
               onClick={() => switchTab(tab.id)}
               className={`flex-shrink-0 min-w-[56px] flex flex-col items-center gap-0.5 py-2.5 px-1.5 transition-all duration-300 relative ${
                 activeTab === tab.id && !showPanel
