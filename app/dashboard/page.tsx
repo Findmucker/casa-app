@@ -50,9 +50,7 @@ export default function Dashboard() {
       <main className="flex-1 overflow-hidden relative">
         <div className={`h-full transition-all duration-300 ${animating ? "opacity-0 translate-x-3" : "opacity-100 translate-x-0"}`}>
           {activeTab === "shopping" && <ShoppingList />}
-          {activeTab === "small" && (
-            <PriorityList collectionName="priorities_small" type="small" />
-          )}
+          {activeTab === "small" && <PriorityList />}
           {activeTab === "big" && <ProjectList />}
           {activeTab === "events" && <EventList />}
           {activeTab === "weather" && <Weather />}

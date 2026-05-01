@@ -6,20 +6,33 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 
 ## Funcionalidades
 
-### 🛒 Lista de Compras
+### 🛒 Comprinhas (Lista de Compras)
 - Adicionar/remover items com preço estimado
 - Atribuir a pessoa (Eduardo, Moniquinha, ou Ambos)
 - Marcar como comprado com animação de celebração
+- **Auto-categorização** por tipo (Frescos, Carnes, Frutas, Padaria, Despensa, Bebidas, Snacks, Higiene, Pets)
+- Categorias colapsáveis com progress tracker por secção
+- Ordenado por fluxo de supermercado
+- Marcar items como urgentes (aparecem no topo)
 
 ### 🪴 Coisinhas (Tarefas pequenas)
-- Priorização por ordem (arrastar cima/baixo)
-- Filtro por pessoa
-- Notas em cada item
+- Auto-categorização (Casa, Cozinha, Decoração, Organização, Bricolage, WC, Tech, Jardim, Roupa, Tarefazinhas)
+- Categorias em caixas colapsáveis com progresso
+- Priorização por ordem (mover cima/baixo)
+- Atribuir a pessoa + notas em cada item
 - Autocomplete com sugestões
+- Animações de celebração ao completar categorias
 
-### 🏡 Projetos (Tarefas grandes)
+### 🏠 Projetinhos (Projetos grandes)
+- Auto-categorização (Pintura, Obras, Portas/Janelas, Eletricidade, Reparações, Canalização, Cozinha, Exterior, Aquecimento)
 - Status: Pendente → A fazer → Feito
-- Notas detalhadas por projeto
+- Subtarefas, orçamento, notas detalhadas
+- Categorias colapsáveis com contadores de estado
+
+### ⚙️ Manutenção
+- Reorganizar categorias automaticamente
+- Limpar comprinhas/coisinhas já concluídas
+- Acessível via menu do dashboard (tap no título)
 
 ### 🎉 Eventos
 - Criar eventos com data e participantes
@@ -96,8 +109,10 @@ casa-app/
 │   └── globals.css           # Animações e estilos globais
 ├── components/
 │   ├── EventList.tsx         # Gestão de eventos + meteorologia
-│   ├── PriorityList.tsx      # Coisinhas + Projetos
-│   ├── ShoppingList.tsx      # Lista de compras
+│   ├── PriorityList.tsx      # Coisinhas (tarefas pequenas)
+│   ├── ProjectList.tsx       # Projetinhos (projetos grandes)
+│   ├── ShoppingList.tsx      # Comprinhas (lista de compras)
+│   ├── MaintenancePanel.tsx  # Painel de manutenção/utilitários
 │   ├── Weather.tsx           # Previsão meteorológica
 │   ├── Greeting.tsx          # Saudação personalizada
 │   ├── OwnerPicker.tsx       # Seleção Eduardo/Moniquinha
@@ -106,6 +121,7 @@ casa-app/
 ├── lib/
 │   ├── firebase.ts           # Config Firebase
 │   ├── hooks.ts              # useCollection hook (real-time Firestore)
+│   ├── categories.ts         # Categorias + auto-classificação
 │   └── share.ts              # Gerar/validar shareId para eventos
 └── public/
     └── manifest.json         # PWA manifest
