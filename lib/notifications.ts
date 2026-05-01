@@ -29,7 +29,7 @@ export async function requestNotificationPermission(owner: string): Promise<bool
   return true;
 }
 
-// Schedule a local notification at a specific time
+// Schedule a local notification at a specific time (non-recursive, single fire)
 export function scheduleLocalNotification(title: string, body: string, timeStr: string): number | null {
   if (!("Notification" in window) || Notification.permission !== "granted") return null;
 
@@ -52,8 +52,8 @@ export function scheduleLocalNotification(title: string, body: string, timeStr: 
       badge: "/icon-192.png",
       tag: `habit-${title}`,
     });
-    // Reschedule for next day
-    scheduleLocalNotification(title, body, timeStr);
+    // No recursive reschedule — the HabitList useEffect handles rescheduling
+    // when habits array changes or on next render cycle
   }, delay);
 
   return timerId;

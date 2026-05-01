@@ -106,6 +106,11 @@ export default function Dashboard() {
     const dy = e.changedTouches[0].clientY - touchStart.current.y;
     touchStart.current = null;
 
+    // Don't swipe tabs if touch originated inside a horizontally scrollable element
+    const target = e.target as HTMLElement;
+    const scrollParent = target.closest(".overflow-x-auto, .scrollbar-hide");
+    if (scrollParent && (scrollParent as HTMLElement).scrollWidth > (scrollParent as HTMLElement).clientWidth) return;
+
     // Only swipe if horizontal movement > 80px and > vertical
     if (Math.abs(dx) < 80 || Math.abs(dx) < Math.abs(dy)) return;
 
