@@ -301,9 +301,11 @@ Projeto pessoal — feito com 💕
 
 ### Bugs
 - 🐛 Swipe left na meteorologia de um dia ([#31](https://github.com/Findmucker/casa-app/issues/31))
-- 🐛 ItemRow definido dentro do componente causa re-mount ([#47](https://github.com/Findmucker/casa-app/issues/47))
-- 🐛 Memory leak em notificações de hábitos ([#45](https://github.com/Findmucker/casa-app/issues/45))
-- 🐛 Race conditions em gamification ([#44](https://github.com/Findmucker/casa-app/issues/44))
+- 🐛 scheduleLocalNotification recursiva acumula timers ([#54](https://github.com/Findmucker/casa-app/issues/54))
+
+### Refactor & Performance
+- 🔧 Extrair sub-componentes inline em PriorityList e EventList ([#52](https://github.com/Findmucker/casa-app/issues/52))
+- 🔧 Memoizar callbacks com useCallback em listas grandes ([#53](https://github.com/Findmucker/casa-app/issues/53))
 
 ### Acessibilidade & UX
 - ♿ Aria-labels e keyboard navigation ([#48](https://github.com/Findmucker/casa-app/issues/48))
