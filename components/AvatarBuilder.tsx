@@ -88,9 +88,6 @@ const SLOT_INFO: { key: AvatarSlot; label: string; emoji: string }[] = [
   { key: "animal", label: "Animal", emoji: "🐾" },
   { key: "eyes", label: "Olhos", emoji: "👁️" },
   { key: "mouth", label: "Boca", emoji: "👄" },
-  { key: "top", label: "Top", emoji: "👕" },
-  { key: "bottom", label: "Bottom", emoji: "👖" },
-  { key: "accessory", label: "Acess.", emoji: "✨" },
 ];
 
 // ─── Main Component ───────────────────────────────────────────
