@@ -120,11 +120,13 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
 
   const handleCreate = async () => {
     if (!title.trim()) return;
-    const participants = currentUser ? [currentUser] : [];
+    // Creator is auto-included
+    const creator = currentUser || (typeof window !== "undefined" ? localStorage.getItem("casa-owner") : null);
+    const participants = creator ? [creator] : [];
     await add({
       title: title.trim(),
       date,
-      guests: parseInt(guests) || 0,
+      guests: Math.max(parseInt(guests) || 0, participants.length),
       participants,
       done: false,
     } as unknown as Omit<CasaEvent, "id">);
