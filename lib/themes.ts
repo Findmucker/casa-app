@@ -33,7 +33,7 @@ const THEMES: Record<TimePhase, ThemeConfig> = {
   night: {
     phase: "night",
     cssClass: "dark-mode",
-    bgGradient: "from-[#2e2a4a] via-[#3d3566] to-[#2e2a4a]",
+    bgGradient: "from-[#363258] via-[#453d6e] to-[#363258]",
     isDark: true,
   },
 };

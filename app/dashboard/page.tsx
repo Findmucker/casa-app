@@ -182,7 +182,7 @@ export default function Dashboard() {
             onClick={(e) => { if (e.target === e.currentTarget) setShowPanel(false); }}
             className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up bg-gradient-to-br ${
             darkMode
-              ? "from-[#2e2a4a]/98 via-[#3d3566]/98 to-[#2e2a4a]/98"
+              ? "from-[#363258]/98 via-[#453d6e]/98 to-[#363258]/98"
               : theme.phase === "morning"
                 ? "from-amber-50/98 via-yellow-50/98 to-orange-50/98"
                 : theme.phase === "dusk"
