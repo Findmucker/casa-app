@@ -48,8 +48,8 @@ const MOUTH_STYLES = [
   { id: 2, name: "Gatinho", type: "cat" },
   { id: 3, name: "Surpreso", type: "o" },
   { id: 4, name: "Tímido", type: "line" },
-  { id: 5, name: "Travesso", type: "smirk" },
-  { id: 6, name: "Feliz", type: "wide" },
+  { id: 5, name: "Dentes", type: "teeth" },
+  { id: 6, name: "Língua", type: "tongue" },
 ];
 
 const TOP_STYLES = [
@@ -537,7 +537,7 @@ function getPixelGrid(animalId: number): { pixels: (string | null)[][]; palette:
   }
 }
 
-function PixelAnimal({ size, animalId, idle, eyes, top, bottom, accessory }: { size: number; animalId: number; idle: string; eyes: typeof EYE_STYLES[0]; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) {
+function PixelAnimal({ size, animalId, idle, eyes, mouth, top, bottom, accessory }: { size: number; animalId: number; idle: string; eyes: typeof EYE_STYLES[0]; mouth: typeof MOUTH_STYLES[0]; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) {
   const p = size / 16;
   const { pixels } = getPixelGrid(animalId);
   const idleClass = `avatar-idle-${idle}`;
@@ -590,6 +590,11 @@ function PixelAnimal({ size, animalId, idle, eyes, top, bottom, accessory }: { s
             );
           })
         ))}
+      </div>
+
+      {/* 8-bit Mouth overlay — positioned at row 9-10, centered (x 6-9) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ width: `${16*p}px`, height: `${19*p}px` }}>
+        <PixelMouth type={mouth.type} p={p} />
       </div>
 
       {/* Clothing overlay (top) */}
@@ -665,7 +670,7 @@ export function AnimeAnimalCharacter({ config, size }: { config: AvatarConfig; s
   const s = size / 240; // scale factor
 
   // All animals use 8-bit pixel art renderer
-  return <PixelAnimal size={size} animalId={animal.id} idle={animal.idle} eyes={eyes} top={top} bottom={bottom} accessory={accessory} />;
+  return <PixelAnimal size={size} animalId={animal.id} idle={animal.idle} eyes={eyes} mouth={mouth} top={top} bottom={bottom} accessory={accessory} />;
 
   // Fur texture overlay as a semi-transparent noise pattern
   const furTexture = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23ffffff' opacity='0.07'/%3E%3Ccircle cx='4' cy='3' r='0.4' fill='%23000000' opacity='0.05'/%3E%3Ccircle cx='2' cy='5' r='0.5' fill='%23ffffff' opacity='0.04'/%3E%3C/svg%3E")`;
@@ -1066,9 +1071,87 @@ function EyePreview8bit({ style }: { style: typeof EYE_STYLES[0] }) {
   );
 }
 
+// ─── 8-bit Pixel Mouth Component ─────────────────────────────
+
+function PixelMouth({ type, p }: { type: string; p: number }) {
+  // Mouth pixels positioned at row 9-10 area of the 16x19 grid
+  // Each mouth is a small pixel pattern (4-6px wide) centered at x=6-9, y=9-10
+  const M = "#5d4037"; // mouth line color (dark brown)
+  const R = "#ef5350"; // tongue/inside red
+  const W = "#ffffff"; // teeth white
+  const P = "#ff8a9e"; // pink (tongue light)
+
+  // For preview mode (small p), render at 0,0 relative; for sprite mode, render at row 9
+  const isPreview = p <= 5;
+  const offsetY = isPreview ? 0 : 9 * p;
+  const offsetX = isPreview ? 0 : 6 * p;
+
+  const renderPixels = (pixels: { x: number; y: number; c: string }[]) => (
+    <div className="relative" style={{ width: `${4*p}px`, height: `${2*p}px`, left: isPreview ? 0 : undefined }}>
+      {pixels.map((px, i) => (
+        <div key={i} className="absolute" style={{ left: `${px.x * p}px`, top: `${px.y * p}px`, width: `${p + 0.3}px`, height: `${p + 0.3}px`, backgroundColor: px.c }} />
+      ))}
+    </div>
+  );
+
+  const mouthPixels: Record<string, { x: number; y: number; c: string }[]> = {
+    // Sorriso: curved smile ◡
+    smile: [
+      { x: 0, y: 0, c: M }, { x: 3, y: 0, c: M },
+      { x: 1, y: 1, c: M }, { x: 2, y: 1, c: M },
+    ],
+    // Aberto: open mouth with dark inside
+    open: [
+      { x: 0, y: 0, c: M }, { x: 1, y: 0, c: M }, { x: 2, y: 0, c: M }, { x: 3, y: 0, c: M },
+      { x: 0, y: 1, c: M }, { x: 1, y: 1, c: R }, { x: 2, y: 1, c: R }, { x: 3, y: 1, c: M },
+    ],
+    // Gatinho: ω shape (anime cat mouth)
+    cat: [
+      { x: 0, y: 0, c: M }, { x: 3, y: 0, c: M },
+      { x: 0, y: 1, c: M }, { x: 1, y: 1, c: M }, { x: 2, y: 1, c: M }, { x: 3, y: 1, c: M },
+      { x: 1, y: 0, c: M },
+    ],
+    // Surpreso: small O
+    o: [
+      { x: 1, y: 0, c: M }, { x: 2, y: 0, c: M },
+      { x: 0, y: 0, c: M }, { x: 3, y: 0, c: M },
+      { x: 1, y: 1, c: M }, { x: 2, y: 1, c: M },
+    ],
+    // Tímido: small line —
+    line: [
+      { x: 1, y: 0, c: M }, { x: 2, y: 0, c: M },
+    ],
+    // Dentes: open smile showing teeth
+    teeth: [
+      { x: 0, y: 0, c: M }, { x: 1, y: 0, c: M }, { x: 2, y: 0, c: M }, { x: 3, y: 0, c: M },
+      { x: 0, y: 1, c: M }, { x: 1, y: 1, c: W }, { x: 2, y: 1, c: W }, { x: 3, y: 1, c: M },
+    ],
+    // Língua: smile with tongue sticking out
+    tongue: [
+      { x: 0, y: 0, c: M }, { x: 3, y: 0, c: M },
+      { x: 1, y: 1, c: M }, { x: 2, y: 1, c: P },
+    ],
+  };
+
+  const pixels = mouthPixels[type] || mouthPixels.smile;
+
+  if (isPreview) {
+    return renderPixels(pixels);
+  }
+
+  // Sprite overlay mode — position within the 16x19 grid
+  return (
+    <div className="absolute" style={{ left: `${offsetX}px`, top: `${offsetY}px`, width: `${4*p}px`, height: `${2*p}px` }}>
+      {pixels.map((px, i) => (
+        <div key={i} className="absolute" style={{ left: `${px.x * p}px`, top: `${px.y * p}px`, width: `${p + 0.3}px`, height: `${p + 0.3}px`, backgroundColor: px.c }} />
+      ))}
+    </div>
+  );
+}
+
 function MouthPreviewSmall({ type }: { type: string }) {
-  const labels: Record<string, string> = { smile: "◡", open: "◠", cat: "ω", o: "○", line: "—", smirk: "⌒", wide: "◡◡" };
-  return <span className="text-lg text-purple-300">{labels[type] || "◡"}</span>;
+  // 8-bit pixel mouth preview
+  return <PixelMouth type={type} p={4} />;
 }
 
 function AccessoryPreviewSmall({ type }: { type: string }) {
