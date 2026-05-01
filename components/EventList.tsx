@@ -536,14 +536,9 @@ function EventCard({
                 {weather.precipProb > 30 && <span className="text-blue-400"> 💧{weather.precipProb}%</span>}
               </span>
             )}
-            {participants.length > 0 && (
+            {(participants.length > 0 || event.guests > 0) && (
               <span className="text-[11px] text-purple-400">
-                👥 {participants.length}
-              </span>
-            )}
-            {event.guests > 0 && participants.length === 0 && (
-              <span className="text-[11px] text-purple-400">
-                👥 {event.guests} pessoas
+                👥 {participants.length}{event.guests > 0 ? `/${event.guests}` : ""}
               </span>
             )}
             {items.length > 0 && (
@@ -580,8 +575,27 @@ function EventCard({
           {/* Participants */}
           <div>
             <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider mb-1.5">
-              👥 Participantes
+              👥 Participantes ({participants.length}{event.guests > 0 ? `/${event.guests} esperados` : ""})
             </p>
+            {/* Expected guests control */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs text-purple-400">Esperados:</span>
+              <button
+                onClick={() => onUpdateEvent({ guests: Math.max(0, (event.guests || 0) - 1) })}
+                className="w-7 h-7 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
+              >
+                −
+              </button>
+              <span className="text-sm font-semibold text-purple-600 min-w-[20px] text-center">
+                {event.guests || 0}
+              </span>
+              <button
+                onClick={() => onUpdateEvent({ guests: (event.guests || 0) + 1 })}
+                className="w-7 h-7 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
+              >
+                +
+              </button>
+            </div>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {participants.map((p) => (
                 <span
