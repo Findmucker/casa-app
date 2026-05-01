@@ -359,11 +359,8 @@ function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats;
 
 // ─── Settings Tab ──────────────────────────────────────────────
 
-const AVATAR_OPTIONS = ["🧙", "🦸", "🧝", "🧚", "🦊", "🐱", "🐶", "🦄", "🐉", "🌸", "🌺", "💫", "⭐", "🔮", "🎭", "👑"];
-
 function SettingsTab({ user }: { user: User | null }) {
   const [displayName, setDisplayName] = useState(user?.displayName || "");
-  const [selectedAvatar, setSelectedAvatar] = useState("🧙");
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -375,7 +372,7 @@ function SettingsTab({ user }: { user: User | null }) {
     setSaving(true);
     try {
       await updateProfile(user, { displayName });
-      await updateDoc(doc(db, "users", user.uid), { name: displayName, avatar: selectedAvatar });
+      await updateDoc(doc(db, "users", user.uid), { name: displayName });
       setStatus("✨ Perfil atualizado!");
       setTimeout(() => setStatus(null), 3000);
     } catch (e) {
@@ -422,26 +419,6 @@ function SettingsTab({ user }: { user: User | null }) {
 
   return (
     <div className="px-5 mt-2 pb-8 space-y-5">
-      {/* Avatar selector */}
-      <div>
-        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Avatar</h3>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {AVATAR_OPTIONS.map((av) => (
-            <button
-              key={av}
-              onClick={() => setSelectedAvatar(av)}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all active:scale-90 ${
-                selectedAvatar === av
-                  ? "bg-rose-500/60 border-2 border-rose-400/60 scale-110 shadow-md shadow-rose-400/20"
-                  : "bg-white/60 border border-purple-200/40 hover:bg-white/80"
-              }`}
-            >
-              {av}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Display name */}
       <div>
         <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Nome</h3>
