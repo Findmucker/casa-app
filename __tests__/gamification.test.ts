@@ -48,6 +48,7 @@ describe("Gamification - Stats Calculation", () => {
     shoppingDone: 20,
     coisinhasDone: 15,
     projectsDone: 5,
+    habitsDone: 10,
   };
 
   it("should calculate 6 RPG stats", () => {
@@ -72,19 +73,19 @@ describe("Gamification - Stats Calculation", () => {
 
 describe("Gamification - Badges", () => {
   it("should detect new badges", () => {
-    const stats: GameStats = { points: 0, totalCompleted: 1, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0 };
+    const stats: GameStats = { points: 0, totalCompleted: 1, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 };
     const newBadges = checkNewBadges(stats, []);
     expect(newBadges.some((b) => b.id === "first_step")).toBe(true);
   });
 
   it("should not return already earned badges", () => {
-    const stats: GameStats = { points: 0, totalCompleted: 1, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0 };
+    const stats: GameStats = { points: 0, totalCompleted: 1, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 };
     const newBadges = checkNewBadges(stats, ["first_step"]);
     expect(newBadges.some((b) => b.id === "first_step")).toBe(false);
   });
 
   it("should detect streak badges", () => {
-    const stats: GameStats = { points: 0, totalCompleted: 0, maxStreak: 5, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0 };
+    const stats: GameStats = { points: 0, totalCompleted: 0, maxStreak: 5, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 };
     const newBadges = checkNewBadges(stats, []);
     expect(newBadges.some((b) => b.id === "on_fire")).toBe(true);
   });
@@ -96,13 +97,13 @@ describe("Gamification - Equipment", () => {
   });
 
   it("should unlock weapon with 3+ projects", () => {
-    const stats: GameStats = { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 3 };
+    const stats: GameStats = { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 3, habitsDone: 0 };
     const weapon = EQUIPMENT.find((e) => e.slot === "weapon");
     expect(weapon?.condition(stats, 1)).toBe(true);
   });
 
   it("should lock crown below level 10", () => {
-    const stats: GameStats = { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0 };
+    const stats: GameStats = { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 };
     const crown = EQUIPMENT.find((e) => e.slot === "crown");
     expect(crown?.condition(stats, 5)).toBe(false);
     expect(crown?.condition(stats, 10)).toBe(true);
@@ -132,7 +133,7 @@ describe("Gamification - Loot System", () => {
 
 describe("Gamification - Level Up Detection", () => {
   it("should detect level up when crossing threshold", () => {
-    const stats: GameStats = { points: 50, totalCompleted: 10, maxStreak: 5, shoppingDone: 10, coisinhasDone: 5, projectsDone: 3 };
+    const stats: GameStats = { points: 50, totalCompleted: 10, maxStreak: 5, shoppingDone: 10, coisinhasDone: 5, projectsDone: 3, habitsDone: 0 };
     const result = checkLevelUp(49, 50, stats, "shopping_done");
     expect(result.leveledUp).toBe(true);
     expect(result.oldLevel).toBe(1);
@@ -140,13 +141,13 @@ describe("Gamification - Level Up Detection", () => {
   });
 
   it("should not detect level up within same level", () => {
-    const stats: GameStats = { points: 30, totalCompleted: 5, maxStreak: 2, shoppingDone: 5, coisinhasDone: 3, projectsDone: 1 };
+    const stats: GameStats = { points: 30, totalCompleted: 5, maxStreak: 2, shoppingDone: 5, coisinhasDone: 3, projectsDone: 1, habitsDone: 0 };
     const result = checkLevelUp(29, 30, stats, "shopping_done");
     expect(result.leveledUp).toBe(false);
   });
 
   it("should return new title on level up", () => {
-    const stats: GameStats = { points: 250, totalCompleted: 50, maxStreak: 10, shoppingDone: 20, coisinhasDone: 20, projectsDone: 5 };
+    const stats: GameStats = { points: 250, totalCompleted: 50, maxStreak: 10, shoppingDone: 20, coisinhasDone: 20, projectsDone: 5, habitsDone: 0 };
     const result = checkLevelUp(249, 250, stats, "project_done");
     expect(result.newTitle).toBeTruthy();
   });

@@ -69,7 +69,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
 
   if (loading || !stats) {
     return (
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 z-50 flex items-center justify-center">
         <div className="animate-pulse text-4xl">⚔️</div>
       </div>
     );
@@ -81,12 +81,12 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const userName = user?.displayName || user?.email?.split("@")[0] || "Herói";
 
   return (
-    <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 z-50 overflow-y-auto animate-fade-in-up">
+    <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 z-50 overflow-y-auto animate-fade-in-up">
       {/* Header */}
       <div className="relative pt-6 pb-4 text-center">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-purple-400 hover:text-purple-200 text-sm transition-colors"
+          className="absolute top-4 right-4 text-rose-400 hover:text-rose-600 text-sm transition-colors"
         >
           ✕
         </button>
@@ -101,16 +101,16 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
         </div>
 
         {/* Name + Title */}
-        <h2 className="mt-3 text-xl font-bold text-white">{userName}</h2>
-        <p className="text-amber-400 text-sm font-medium">{title}</p>
+        <h2 className="mt-3 text-xl font-bold text-rose-800">{userName}</h2>
+        <p className="text-purple-600 text-sm font-medium">{title}</p>
 
         {/* Level + XP Bar */}
         <div className="mt-3 mx-auto max-w-[200px]">
-          <div className="flex justify-between text-[10px] text-purple-300 mb-1">
+          <div className="flex justify-between text-[10px] text-purple-600 mb-1">
             <span>Nível {level}</span>
             <span>{xpInLevel}/{xpForNext} XP</span>
           </div>
-          <div className="h-2.5 rounded-full bg-purple-900/60 border border-purple-700/40 overflow-hidden">
+          <div className="h-2.5 rounded-full bg-purple-200/60 border border-purple-300/40 overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
               style={{ width: `${(xpInLevel / xpForNext) * 100}%` }}
@@ -119,7 +119,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
         </div>
 
         {/* Points */}
-        <p className="mt-2 text-purple-300 text-xs">{stats.points} pontos totais</p>
+        <p className="mt-2 text-purple-600 text-xs">{stats.points} pontos totais</p>
 
         {/* Tab switcher */}
         <div className="flex gap-2 justify-center mt-4">
@@ -127,8 +127,8 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             onClick={() => setActiveTab("stats")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
               activeTab === "stats"
-                ? "bg-purple-600/60 text-white border border-purple-400/40"
-                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+                ? "bg-rose-500/80 text-white border border-rose-400/40 shadow-sm"
+                : "bg-white/60 text-purple-600 border border-purple-200/60 hover:bg-white/80"
             }`}
           >
             ⚔️ Stats
@@ -137,8 +137,8 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             onClick={() => setActiveTab("inventory")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
               activeTab === "inventory"
-                ? "bg-purple-600/60 text-white border border-purple-400/40"
-                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+                ? "bg-rose-500/80 text-white border border-rose-400/40 shadow-sm"
+                : "bg-white/60 text-purple-600 border border-purple-200/60 hover:bg-white/80"
             }`}
           >
             🎒 Inventário
@@ -147,8 +147,8 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             onClick={() => setActiveTab("avatar")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
               activeTab === "avatar"
-                ? "bg-purple-600/60 text-white border border-purple-400/40"
-                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+                ? "bg-rose-500/80 text-white border border-rose-400/40 shadow-sm"
+                : "bg-white/60 text-purple-600 border border-purple-200/60 hover:bg-white/80"
             }`}
           >
             🐼 Avatar
@@ -157,8 +157,8 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             onClick={() => setActiveTab("settings")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
               activeTab === "settings"
-                ? "bg-purple-600/60 text-white border border-purple-400/40"
-                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+                ? "bg-rose-500/80 text-white border border-rose-400/40 shadow-sm"
+                : "bg-white/60 text-purple-600 border border-purple-200/60 hover:bg-white/80"
             }`}
           >
             ⚙️ Perfil
@@ -233,7 +233,7 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
   return (
     <div className="mt-2 pb-8">
       {/* Loot Box Opener */}
-      <div className="mx-4 mb-3 rounded-2xl bg-gradient-to-b from-purple-900/40 to-indigo-950/40 border border-purple-700/30 p-3">
+      <div className="mx-4 mb-3 rounded-2xl bg-gradient-to-b from-white/70 to-purple-50/70 border border-purple-200/40 p-3 shadow-sm">
         <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
       </div>
 
@@ -306,17 +306,17 @@ function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats;
     <>
       {/* Stats */}
       <div className="px-5 mt-2">
-        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Atributos</h3>
+        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Atributos</h3>
         <div className="space-y-2">
           {rpgStats.map((stat) => (
             <div key={stat.key} className="flex items-center gap-2">
               <span className="text-lg w-7 text-center">{stat.emoji}</span>
               <div className="flex-1">
                 <div className="flex justify-between text-[11px] mb-0.5">
-                  <span className="text-purple-200 font-medium">{stat.name}</span>
-                  <span className="text-purple-400">{stat.value}/{stat.maxValue}</span>
+                  <span className="text-rose-700 font-medium">{stat.name}</span>
+                  <span className="text-purple-600">{stat.value}/{stat.maxValue}</span>
                 </div>
-                <div className="h-2 rounded-full bg-purple-900/60 border border-purple-800/40 overflow-hidden">
+                <div className="h-2 rounded-full bg-purple-200/60 border border-purple-200/40 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -333,7 +333,7 @@ function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats;
 
       {/* Badges */}
       <div className="px-5 mt-5 pb-8">
-        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Conquistas</h3>
+        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Conquistas</h3>
         <div className="grid grid-cols-3 gap-2">
           {BADGES.map((badge) => {
             const earned = currentBadges.includes(badge.id) || badge.condition(stats);
@@ -342,15 +342,15 @@ function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats;
                 key={badge.id}
                 className={`flex flex-col items-center p-2.5 rounded-xl border transition-all ${
                   earned
-                    ? "bg-purple-800/40 border-amber-500/30 animate-spring-in"
-                    : "bg-purple-950/40 border-purple-800/30 opacity-50"
+                    ? "bg-white/80 border-rose-300/50 shadow-sm animate-spring-in"
+                    : "bg-white/40 border-purple-200/30 opacity-50"
                 }`}
               >
                 <span className="text-xl">{earned ? badge.emoji : "🔒"}</span>
-                <span className="text-[10px] text-purple-200 mt-1 font-medium text-center">
+                <span className="text-[10px] text-rose-700 mt-1 font-medium text-center">
                   {badge.name}
                 </span>
-                <span className="text-[9px] text-purple-400 text-center">{badge.description}</span>
+                <span className="text-[9px] text-purple-500 text-center">{badge.description}</span>
               </div>
             );
           })}
@@ -427,7 +427,7 @@ function SettingsTab({ user }: { user: User | null }) {
     <div className="px-5 mt-2 pb-8 space-y-5">
       {/* Avatar selector */}
       <div>
-        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Avatar</h3>
+        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Avatar</h3>
         <div className="flex flex-wrap gap-2 justify-center">
           {AVATAR_OPTIONS.map((av) => (
             <button
@@ -435,8 +435,8 @@ function SettingsTab({ user }: { user: User | null }) {
               onClick={() => setSelectedAvatar(av)}
               className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all active:scale-90 ${
                 selectedAvatar === av
-                  ? "bg-purple-600/60 border-2 border-amber-400/60 scale-110 shadow-md shadow-amber-400/20"
-                  : "bg-purple-900/40 border border-purple-700/30 hover:bg-purple-800/40"
+                  ? "bg-rose-500/60 border-2 border-rose-400/60 scale-110 shadow-md shadow-rose-400/20"
+                  : "bg-white/60 border border-purple-200/40 hover:bg-white/80"
               }`}
             >
               {av}
@@ -447,12 +447,12 @@ function SettingsTab({ user }: { user: User | null }) {
 
       {/* Display name */}
       <div>
-        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Nome</h3>
+        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Nome</h3>
         <input
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="w-full rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition-all"
+          className="w-full rounded-xl bg-white/70 border border-purple-200/40 px-4 py-2.5 text-sm text-rose-800 placeholder-purple-400 focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400/30 transition-all"
           placeholder="O teu nome..."
         />
       </div>
@@ -460,26 +460,26 @@ function SettingsTab({ user }: { user: User | null }) {
       <button
         onClick={handleSaveProfile}
         disabled={saving}
-        className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 py-2.5 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-50 shadow-md shadow-purple-500/20"
+        className="w-full rounded-xl bg-gradient-to-r from-rose-400 to-pink-500 py-2.5 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-50 shadow-md shadow-rose-400/20"
       >
         {saving ? "A guardar..." : "Guardar perfil"}
       </button>
 
       {/* Email */}
       <div>
-        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Email</h3>
+        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Email</h3>
         <div className="flex gap-2">
           <input
             type="email"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
-            className="flex-1 rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 transition-all"
+            className="flex-1 rounded-xl bg-white/70 border border-purple-200/40 px-4 py-2.5 text-sm text-rose-800 placeholder-purple-400 focus:outline-none focus:border-rose-400 transition-all"
             placeholder="novo@email.com"
           />
           <button
             onClick={handleChangeEmail}
             disabled={saving || newEmail === user?.email}
-            className="px-4 rounded-xl bg-purple-700/50 text-purple-200 text-sm font-medium hover:bg-purple-600/50 disabled:opacity-30 transition-all active:scale-95"
+            className="px-4 rounded-xl bg-rose-100 text-rose-600 text-sm font-medium hover:bg-rose-200 disabled:opacity-30 transition-all active:scale-95"
           >
             Alterar
           </button>
@@ -488,26 +488,26 @@ function SettingsTab({ user }: { user: User | null }) {
 
       {/* Password */}
       <div>
-        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Nova Password</h3>
+        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Nova Password</h3>
         <div className="space-y-2">
           <input
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 transition-all"
+            className="w-full rounded-xl bg-white/70 border border-purple-200/40 px-4 py-2.5 text-sm text-rose-800 placeholder-purple-400 focus:outline-none focus:border-rose-400 transition-all"
             placeholder="Nova password..."
           />
           <input
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-xl bg-purple-900/40 border border-purple-700/30 px-4 py-2.5 text-sm text-white placeholder-purple-500 focus:outline-none focus:border-purple-500 transition-all"
+            className="w-full rounded-xl bg-white/70 border border-purple-200/40 px-4 py-2.5 text-sm text-rose-800 placeholder-purple-400 focus:outline-none focus:border-rose-400 transition-all"
             placeholder="Confirmar password..."
           />
           <button
             onClick={handleChangePassword}
             disabled={saving || !newPassword}
-            className="w-full rounded-xl bg-purple-700/50 text-purple-200 py-2.5 text-sm font-medium hover:bg-purple-600/50 disabled:opacity-30 transition-all active:scale-95"
+            className="w-full rounded-xl bg-rose-100 text-rose-600 py-2.5 text-sm font-medium hover:bg-rose-200 disabled:opacity-30 transition-all active:scale-95"
           >
             Alterar password
           </button>
@@ -516,11 +516,11 @@ function SettingsTab({ user }: { user: User | null }) {
 
       {/* Status message */}
       {status && (
-        <p className="text-sm text-center text-amber-300 animate-spring-in">{status}</p>
+        <p className="text-sm text-center text-rose-600 animate-spring-in">{status}</p>
       )}
 
       {/* Account info */}
-      <div className="pt-2 border-t border-purple-800/30">
+      <div className="pt-2 border-t border-purple-200/40">
         <p className="text-[11px] text-purple-500 text-center">
           Conta: {user?.email} | UID: {user?.uid?.slice(0, 8)}...
         </p>

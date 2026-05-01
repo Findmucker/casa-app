@@ -26,6 +26,7 @@ export interface GameStats {
   shoppingDone: number;
   coisinhasDone: number;
   projectsDone: number;
+  habitsDone: number;
 }
 
 export const BADGES: Badge[] = [
@@ -50,6 +51,7 @@ export async function awardPoints(owner: string, amount: number, reason: string)
     if (reason === "shopping_done") updates.shoppingDone = increment(1);
     if (reason === "coisinha_done") updates.coisinhasDone = increment(1);
     if (reason === "project_done") updates.projectsDone = increment(1);
+    if (reason === "habit_check") updates.habitsDone = increment(1);
     await updateDoc(ref, updates);
   }
 }
@@ -68,7 +70,7 @@ export async function updateStreak(owner: string, streak: number) {
 export async function getStats(owner: string): Promise<GameStats> {
   const ref = doc(db, "gamification", owner);
   const snap = await getDoc(ref);
-  if (!snap.exists()) return { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0 };
+  if (!snap.exists()) return { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 };
   return snap.data() as GameStats;
 }
 
@@ -114,12 +116,12 @@ export interface RPGStat {
 
 export function calculateStats(stats: GameStats): RPGStat[] {
   return [
-    { key: "str", name: "Força", emoji: "⚔️", value: Math.min(stats.projectsDone * 2, 100), maxValue: 100, description: "Projetinhos concluídos" },
-    { key: "int", name: "Inteligência", emoji: "🧠", value: Math.min(stats.coisinhasDone, 100), maxValue: 100, description: "Coisinhas feitas" },
-    { key: "dex", name: "Destreza", emoji: "🏃", value: Math.min(stats.maxStreak * 3, 100), maxValue: 100, description: "Melhor streak" },
-    { key: "cha", name: "Carisma", emoji: "💰", value: Math.min(stats.totalCompleted, 100), maxValue: 100, description: "Total completado" },
-    { key: "vit", name: "Vitalidade", emoji: "❤️", value: Math.min(stats.maxStreak * 5, 100), maxValue: 100, description: "Hábitos de saúde" },
-    { key: "lck", name: "Sorte", emoji: "🛒", value: Math.min(stats.shoppingDone, 100), maxValue: 100, description: "Comprinhas feitas" },
+    { key: "str", name: "Força", emoji: "⚔️", value: Math.min(stats.projectsDone * 3, 100), maxValue: 100, description: "Projetinhos concluídos" },
+    { key: "int", name: "Inteligência", emoji: "🧠", value: Math.min(Math.round(stats.coisinhasDone * 1.5), 100), maxValue: 100, description: "Coisinhas feitas" },
+    { key: "dex", name: "Destreza", emoji: "🏃", value: Math.min(stats.shoppingDone * 2, 100), maxValue: 100, description: "Comprinhas feitas" },
+    { key: "cha", name: "Carisma", emoji: "💬", value: Math.min(Math.round(stats.totalCompleted * 0.5), 100), maxValue: 100, description: "Colaboração total" },
+    { key: "vit", name: "Vitalidade", emoji: "❤️", value: Math.min((stats.habitsDone || 0) * 2, 100), maxValue: 100, description: "Hábitos completados" },
+    { key: "lck", name: "Sorte", emoji: "🍀", value: Math.min(stats.maxStreak * 4, 100), maxValue: 100, description: "Melhor streak" },
   ];
 }
 

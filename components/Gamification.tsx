@@ -20,7 +20,7 @@ export default function Gamification({ onClose }: GamificationProps) {
         setStats(data);
         setEarnedBadges(data.badges || []);
       } else {
-        setStats({ points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0 });
+        setStats({ points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 });
       }
     });
     return () => unsub();

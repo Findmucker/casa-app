@@ -85,13 +85,13 @@ const ACCESSORY_STYLES = [
 ];
 
 const BACKGROUND_STYLES = [
-  { id: 0, name: "Roxo", color1: "#1a0533", color2: "#2d1b4e" },
-  { id: 1, name: "Azul", color1: "#0a1628", color2: "#1a3a5c" },
-  { id: 2, name: "Rosa", color1: "#2d0a1a", color2: "#4a1942" },
-  { id: 3, name: "Verde", color1: "#0a2618", color2: "#1a4a32" },
-  { id: 4, name: "Dourado", color1: "#2a1f0a", color2: "#4a3a1a" },
-  { id: 5, name: "Vermelho", color1: "#2a0a0a", color2: "#4a1a1a" },
-  { id: 6, name: "Cinza", color1: "#1a1a1a", color2: "#2d2d2d" },
+  { id: 0, name: "Floresta", color1: "#0d3b1e", color2: "#1a5c32", biome: "forest" },
+  { id: 1, name: "Oceano", color1: "#0a1e3d", color2: "#1a4a7a", biome: "ocean" },
+  { id: 2, name: "Deserto", color1: "#4a3a1a", color2: "#c2956b", biome: "desert" },
+  { id: 3, name: "Neve", color1: "#b8d4e8", color2: "#e8f0f8", biome: "snow" },
+  { id: 4, name: "Vulcão", color1: "#1a0505", color2: "#4a1a0a", biome: "volcano" },
+  { id: 5, name: "Céu", color1: "#87ceeb", color2: "#e0f0ff", biome: "sky" },
+  { id: 6, name: "Espaço", color1: "#05050f", color2: "#1a1a3d", biome: "space" },
 ];
 
 const EFFECT_STYLES = [
@@ -177,7 +177,7 @@ export default function AvatarBuilder({ owner, onSave }: AvatarBuilderProps) {
           <div className="relative mx-auto w-full max-w-[300px] aspect-square mb-5 rounded-2xl overflow-hidden border-2 border-purple-400/30 shadow-2xl">
             {/* Dynamic background */}
             <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${bg.color1}, ${bg.color2})` }} />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(255,255,255,0.05),transparent_60%)]" />
+            <BiomeOverlay biome={bg.biome} />
             {/* Floor reflection */}
             <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-black/30 to-transparent" />
             <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[60%] h-[8%] bg-white/5 rounded-full blur-md" />
@@ -1188,6 +1188,140 @@ function AccessoryPreviewSmall({ type }: { type: string }) {
 function EffectPreviewSmall({ type }: { type: string }) {
   const emojis: Record<string, string> = { none: "✕", stars: "⭐", hearts: "💕", sparkles: "✨", bubbles: "🫧", snow: "❄️", pixels: "▪️" };
   return <span className="text-xl">{emojis[type] || "✕"}</span>;
+}
+
+// ─── Biome Overlay ────────────────────────────────────────────
+
+function BiomeOverlay({ biome }: { biome: string }) {
+  const pixelStyle = (left: string, bottom: string, color: string, w = "4px", h = "4px") => ({
+    position: "absolute" as const, left, bottom, width: w, height: h, backgroundColor: color,
+  });
+
+  switch (biome) {
+    case "forest":
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Trees */}
+          <div style={pixelStyle("10%", "20%", "#0a5c1e", "8px", "24px")} />
+          <div style={pixelStyle("8%", "44%", "#1a8c3a", "12px", "8px")} />
+          <div style={pixelStyle("9%", "52%", "#15732e", "10px", "6px")} />
+          <div style={pixelStyle("80%", "25%", "#0a5c1e", "8px", "20px")} />
+          <div style={pixelStyle("78%", "45%", "#1a8c3a", "12px", "8px")} />
+          <div style={pixelStyle("79%", "53%", "#15732e", "10px", "6px")} />
+          <div style={pixelStyle("45%", "15%", "#0a5c1e", "6px", "16px")} />
+          <div style={pixelStyle("43%", "31%", "#22a044", "10px", "6px")} />
+          {/* Grass floor */}
+          <div className="absolute bottom-0 left-0 right-0 h-[15%] bg-gradient-to-t from-[#1a5c32] to-transparent" />
+          <div style={pixelStyle("15%", "2%", "#2d8c4a", "6px", "6px")} />
+          <div style={pixelStyle("35%", "4%", "#22a044", "4px", "4px")} />
+          <div style={pixelStyle("60%", "1%", "#2d8c4a", "5px", "5px")} />
+          <div style={pixelStyle("75%", "3%", "#1a6e35", "4px", "6px")} />
+        </div>
+      );
+    case "ocean":
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Waves */}
+          <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-[#0a3a6a] to-transparent opacity-60" />
+          <div className="absolute bottom-[35%] left-0 right-0 h-[4px] bg-[#3a8ad4]/30" style={{ borderRadius: "50%" }} />
+          <div className="absolute bottom-[28%] left-[10%] right-[10%] h-[3px] bg-[#5aace8]/20" style={{ borderRadius: "50%" }} />
+          <div className="absolute bottom-[20%] left-[5%] right-[15%] h-[3px] bg-[#3a8ad4]/25" style={{ borderRadius: "50%" }} />
+          {/* Bubbles */}
+          <div style={pixelStyle("20%", "10%", "#5aace8", "4px", "4px")} className="rounded-full opacity-40" />
+          <div style={pixelStyle("70%", "15%", "#7ac4f0", "3px", "3px")} className="rounded-full opacity-30" />
+          <div style={pixelStyle("40%", "8%", "#5aace8", "5px", "5px")} className="rounded-full opacity-35" />
+          {/* Fish pixel */}
+          <div style={pixelStyle("25%", "18%", "#ffaa33", "6px", "3px")} />
+          <div style={pixelStyle("23%", "19%", "#ffaa33", "2px", "2px")} />
+        </div>
+      );
+    case "desert":
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Sand dunes */}
+          <div className="absolute bottom-0 left-0 right-0 h-[25%] bg-gradient-to-t from-[#d4a055] to-transparent" />
+          <div className="absolute bottom-[20%] left-[5%] w-[40%] h-[12%] bg-[#c2956b] rounded-t-full opacity-50" />
+          <div className="absolute bottom-[18%] right-[10%] w-[35%] h-[10%] bg-[#b8864a] rounded-t-full opacity-40" />
+          {/* Cactus */}
+          <div style={pixelStyle("75%", "25%", "#2d7a2d", "4px", "16px")} />
+          <div style={pixelStyle("73%", "35%", "#2d7a2d", "4px", "4px")} />
+          <div style={pixelStyle("77%", "30%", "#2d7a2d", "4px", "4px")} />
+          {/* Sun */}
+          <div className="absolute top-[10%] right-[15%] w-[20px] h-[20px] bg-[#ffcc00] rounded-full opacity-60" />
+        </div>
+      );
+    case "snow":
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Snow ground */}
+          <div className="absolute bottom-0 left-0 right-0 h-[20%] bg-gradient-to-t from-white/80 to-transparent" />
+          {/* Snow hills */}
+          <div className="absolute bottom-[15%] left-[0%] w-[50%] h-[10%] bg-white/50 rounded-t-full" />
+          <div className="absolute bottom-[12%] right-[0%] w-[40%] h-[8%] bg-white/40 rounded-t-full" />
+          {/* Snowflakes */}
+          <div style={pixelStyle("15%", "70%", "#ffffff", "3px", "3px")} className="opacity-60" />
+          <div style={pixelStyle("45%", "80%", "#ffffff", "2px", "2px")} className="opacity-50" />
+          <div style={pixelStyle("70%", "65%", "#ffffff", "3px", "3px")} className="opacity-40" />
+          <div style={pixelStyle("30%", "55%", "#ffffff", "2px", "2px")} className="opacity-50" />
+          {/* Pine tree */}
+          <div style={pixelStyle("85%", "20%", "#2d5a3a", "6px", "18px")} />
+          <div style={pixelStyle("83%", "38%", "#3a7a4a", "10px", "6px")} />
+          <div style={pixelStyle("84%", "44%", "#2d6a3e", "8px", "5px")} />
+        </div>
+      );
+    case "volcano":
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Volcano shape */}
+          <div className="absolute bottom-0 left-[20%] w-0 h-0" style={{ borderLeft: "60px solid transparent", borderRight: "60px solid transparent", borderBottom: "80px solid #3a1a0a" }} />
+          {/* Lava glow */}
+          <div className="absolute bottom-[60%] left-[43%] w-[14%] h-[6%] bg-[#ff4400] rounded-full opacity-50 blur-sm" />
+          <div className="absolute bottom-[55%] left-[45%] w-[10%] h-[4%] bg-[#ffaa00] rounded-full opacity-40" />
+          {/* Lava floor */}
+          <div className="absolute bottom-0 left-0 right-0 h-[8%] bg-gradient-to-t from-[#ff4400]/30 to-transparent" />
+          {/* Embers */}
+          <div style={pixelStyle("35%", "65%", "#ff6600", "3px", "3px")} className="opacity-60" />
+          <div style={pixelStyle("55%", "70%", "#ffaa00", "2px", "2px")} className="opacity-50" />
+          <div style={pixelStyle("42%", "75%", "#ff4400", "2px", "2px")} className="opacity-40" />
+        </div>
+      );
+    case "sky":
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Clouds */}
+          <div className="absolute top-[15%] left-[10%] w-[30%] h-[10%] bg-white/60 rounded-full blur-[2px]" />
+          <div className="absolute top-[12%] left-[18%] w-[20%] h-[8%] bg-white/50 rounded-full blur-[1px]" />
+          <div className="absolute top-[30%] right-[15%] w-[25%] h-[8%] bg-white/40 rounded-full blur-[2px]" />
+          <div className="absolute top-[28%] right-[20%] w-[15%] h-[6%] bg-white/50 rounded-full" />
+          {/* Sun */}
+          <div className="absolute top-[8%] right-[10%] w-[24px] h-[24px] bg-[#ffd700] rounded-full opacity-70 shadow-lg shadow-yellow-400/30" />
+          {/* Ground - grass */}
+          <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-gradient-to-t from-[#4a8c3a] to-[#6aac5a]" />
+        </div>
+      );
+    case "space":
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Stars */}
+          <div style={pixelStyle("10%", "80%", "#ffffff", "2px", "2px")} className="opacity-80" />
+          <div style={pixelStyle("25%", "70%", "#ffffff", "1px", "1px")} className="opacity-60" />
+          <div style={pixelStyle("40%", "85%", "#aaccff", "2px", "2px")} className="opacity-70" />
+          <div style={pixelStyle("60%", "75%", "#ffffff", "1px", "1px")} className="opacity-50" />
+          <div style={pixelStyle("75%", "90%", "#ffddaa", "2px", "2px")} className="opacity-60" />
+          <div style={pixelStyle("85%", "65%", "#ffffff", "1px", "1px")} className="opacity-70" />
+          <div style={pixelStyle("50%", "60%", "#aaddff", "2px", "2px")} className="opacity-40" />
+          <div style={pixelStyle("15%", "50%", "#ffffff", "1px", "1px")} className="opacity-50" />
+          <div style={pixelStyle("90%", "45%", "#ffccaa", "2px", "2px")} className="opacity-60" />
+          {/* Planet */}
+          <div className="absolute top-[12%] left-[15%] w-[28px] h-[28px] bg-gradient-to-br from-[#6a4aaa] to-[#3a2a6a] rounded-full opacity-60" />
+          <div className="absolute top-[14%] left-[17%] w-[8px] h-[3px] bg-[#9a7acc]/40 rounded-full" />
+          {/* Nebula glow */}
+          <div className="absolute top-[40%] right-[20%] w-[40%] h-[30%] bg-[#5533aa]/10 rounded-full blur-xl" />
+        </div>
+      );
+    default:
+      return null;
+  }
 }
 
 // ─── Avatar Background Effects ───────────────────────────────
