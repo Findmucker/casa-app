@@ -75,6 +75,11 @@ export default function Inventory({ inventory, equipped, onEquip, onUnequip }: I
           {filtered.map((item) => (
             <button
               key={item.id}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData("text/plain", item.id);
+                e.dataTransfer.effectAllowed = "move";
+              }}
               onClick={() => {
                 if (item.isEquipped) {
                   onUnequip(item.slot);
@@ -82,7 +87,7 @@ export default function Inventory({ inventory, equipped, onEquip, onUnequip }: I
                   onEquip(item.id, item.slot);
                 }
               }}
-              className={`relative flex flex-col items-center p-2 rounded-xl border-2 bg-gradient-to-b transition-all active:scale-90 shadow-md ${RARITY_BORDER[item.rarity]} ${RARITY_BG[item.rarity]} ${
+              className={`relative flex flex-col items-center p-2 rounded-xl border-2 bg-gradient-to-b transition-all active:scale-90 shadow-md cursor-grab active:cursor-grabbing ${RARITY_BORDER[item.rarity]} ${RARITY_BG[item.rarity]} ${
                 item.isEquipped ? "ring-2 ring-amber-400/60 scale-105" : ""
               }`}
             >

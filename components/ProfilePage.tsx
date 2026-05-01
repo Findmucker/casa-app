@@ -193,7 +193,6 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
   onUpdate: () => void;
   level: number;
 }) {
-  const [subTab, setSubTab] = useState<"equip" | "items">("equip");
   const owner = user?.displayName || user?.email || "user";
   const pending = getPendingBoxes(stats.points, boxesOpened);
 
@@ -215,107 +214,69 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
 
   return (
     <div className="mt-2 pb-8">
-      {/* Sub-tabs */}
-      <div className="flex gap-2 justify-center mb-4 px-4">
-        <button
-          onClick={() => setSubTab("equip")}
-          className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-all active:scale-95 ${
-            subTab === "equip"
-              ? "bg-amber-500/30 text-amber-300 border border-amber-400/40"
-              : "bg-purple-900/30 text-purple-400 border border-purple-700/30"
-          }`}
-        >
-          🗡️ Equipamento
-        </button>
-        <button
-          onClick={() => setSubTab("items")}
-          className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-all active:scale-95 ${
-            subTab === "items"
-              ? "bg-amber-500/30 text-amber-300 border border-amber-400/40"
-              : "bg-purple-900/30 text-purple-400 border border-purple-700/30"
-          }`}
-        >
-          🎒 Items
-        </button>
+      {/* Loot Box Opener */}
+      <div className="mx-4 mb-3 rounded-2xl bg-gradient-to-b from-purple-900/40 to-indigo-950/40 border border-purple-700/30 p-3">
+        <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
       </div>
 
-      {subTab === "equip" ? (
-        <>
-          {/* Equipment - WoW TBC Style Character Panel */}
-          <div className="px-3">
-            {/* Panel frame — dark parchment with golden trim */}
-            <div className="relative rounded-xl overflow-hidden border-2 border-amber-700/40 shadow-xl shadow-black/30">
-              {/* Background gradient mimicking WoW dark panel */}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#1a1025] via-[#14091e] to-[#0d0614]" />
-              {/* Subtle ornamental texture */}
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)]" />
+      {/* Equipment - WoW TBC Style Character Panel */}
+      <div className="px-3 mb-4">
+        <div className="relative rounded-xl overflow-hidden border-2 border-amber-700/40 shadow-xl shadow-black/30">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1025] via-[#14091e] to-[#0d0614]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)]" />
 
-              {/* Top bar — golden with character name */}
-              <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/40 via-amber-800/30 to-amber-900/40 border-b border-amber-700/30">
-                <p className="text-center text-amber-200 text-[11px] font-bold tracking-wide uppercase">Equipamento</p>
+          <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/40 via-amber-800/30 to-amber-900/40 border-b border-amber-700/30">
+            <p className="text-center text-amber-200 text-[11px] font-bold tracking-wide uppercase">Equipamento</p>
+          </div>
+
+          <div className="relative px-2 py-4">
+            <div className="flex items-stretch justify-between gap-1">
+              <div className="flex flex-col gap-2 justify-center items-center">
+                <LootEquipSlot slot="helmet" equipped={equipped} label="Cabeça" onUnequip={handleUnequip} onEquip={handleEquip} />
+                <LootEquipSlot slot="weapon" equipped={equipped} label="Arma" onUnequip={handleUnequip} onEquip={handleEquip} />
+                <LootEquipSlot slot="armor" equipped={equipped} label="Corpo" onUnequip={handleUnequip} onEquip={handleEquip} />
               </div>
 
-              <div className="relative px-2 py-4">
-                {/* Main layout: left slots | character | right slots */}
-                <div className="flex items-stretch justify-between gap-1">
-                  {/* Left column */}
-                  <div className="flex flex-col gap-2 justify-center items-center">
-                    <LootEquipSlot slot="helmet" equipped={equipped} label="Cabeça" onUnequip={handleUnequip} />
-                    <LootEquipSlot slot="weapon" equipped={equipped} label="Arma" onUnequip={handleUnequip} />
-                    <LootEquipSlot slot="armor" equipped={equipped} label="Corpo" onUnequip={handleUnequip} />
-                  </div>
-
-                  {/* Center — Character model */}
-                  <div className="flex-1 flex flex-col items-center justify-center min-h-[200px]">
-                    <div className="relative">
-                      {/* Glowing aura behind character */}
-                      <div className="absolute inset-0 blur-xl bg-purple-500/10 rounded-full scale-150" />
-                      <CharacterModel equipped={equipped} size="md" />
-                    </div>
-                  </div>
-
-                  {/* Right column */}
-                  <div className="flex flex-col gap-2 justify-center items-center">
-                    <LootEquipSlot slot="shield" equipped={equipped} label="Escudo" onUnequip={handleUnequip} />
-                    <LootEquipSlot slot="boots" equipped={equipped} label="Botas" onUnequip={handleUnequip} />
-                    <LootEquipSlot slot="accessory" equipped={equipped} label="Acess." onUnequip={handleUnequip} />
-                  </div>
+              <div className="flex-1 flex flex-col items-center justify-center min-h-[200px]">
+                <div className="relative">
+                  <div className="absolute inset-0 blur-xl bg-purple-500/10 rounded-full scale-150" />
+                  <CharacterModel equipped={equipped} size="md" />
                 </div>
               </div>
 
-              {/* Bottom stats bar */}
-              <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/20 via-purple-900/20 to-amber-900/20 border-t border-amber-700/20">
-                <div className="flex justify-around text-[9px] text-purple-300">
-                  <span>Nv. {level}</span>
-                  <span>{stats.points} pts</span>
-                  <span>{stats.totalCompleted} feitos</span>
-                </div>
+              <div className="flex flex-col gap-2 justify-center items-center">
+                <LootEquipSlot slot="shield" equipped={equipped} label="Escudo" onUnequip={handleUnequip} onEquip={handleEquip} />
+                <LootEquipSlot slot="boots" equipped={equipped} label="Botas" onUnequip={handleUnequip} onEquip={handleEquip} />
+                <LootEquipSlot slot="accessory" equipped={equipped} label="Acess." onUnequip={handleUnequip} onEquip={handleEquip} />
               </div>
-
-              {/* Corner ornaments */}
-              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-amber-500/50 rounded-tl-lg" />
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-amber-500/50 rounded-tr-lg" />
-              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-amber-500/50 rounded-bl-lg" />
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-amber-500/50 rounded-br-lg" />
             </div>
           </div>
-        </>
-      ) : (
-        <>
-          {/* Loot Box Opener */}
-          <div className="mx-4 mb-4 rounded-2xl bg-gradient-to-b from-purple-900/40 to-indigo-950/40 border border-purple-700/30 p-3">
-            <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
+
+          <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/20 via-purple-900/20 to-amber-900/20 border-t border-amber-700/20">
+            <div className="flex justify-around text-[9px] text-purple-300">
+              <span>Nv. {level}</span>
+              <span>{stats.points} pts</span>
+              <span>{stats.totalCompleted} feitos</span>
+            </div>
           </div>
 
-          {/* Inventory Grid */}
-          <Inventory
-            inventory={inventory}
-            equipped={equipped}
-            onEquip={handleEquip}
-            onUnequip={handleUnequip}
-          />
-        </>
-      )}
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-amber-500/50 rounded-tl-lg" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-amber-500/50 rounded-tr-lg" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-amber-500/50 rounded-bl-lg" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-amber-500/50 rounded-br-lg" />
+        </div>
+      </div>
+
+      {/* Inventory Grid — drag items to slots above */}
+      <div className="px-4">
+        <p className="text-[10px] text-purple-500 text-center mb-2">Arrasta items para os slots acima ou toca para equipar</p>
+      </div>
+      <Inventory
+        inventory={inventory}
+        equipped={equipped}
+        onEquip={handleEquip}
+        onUnequip={handleUnequip}
+      />
     </div>
   );
 }
@@ -684,37 +645,62 @@ function WowSlot({ eq, unlocked, rarity, label }: { eq: Equipment; unlocked: boo
   );
 }
 
-// Loot-based equipment slot — shows the equipped loot item from inventory
-function LootEquipSlot({ slot, equipped, label, onUnequip }: { slot: LootSlot; equipped: EquippedItems; label: string; onUnequip: (slot: LootSlot) => void }) {
+// Loot-based equipment slot — shows the equipped loot item from inventory, accepts drag
+function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: LootSlot; equipped: EquippedItems; label: string; onUnequip: (slot: LootSlot) => void; onEquip: (itemId: string, slot: LootSlot) => void }) {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const itemId = equipped[slot];
   const item = itemId ? LOOT_POOL.find((i) => i.id === itemId) : null;
 
   const rarityBorder = item
     ? { common: "border-[#1eff00]/50", rare: "border-[#0070dd]/50", epic: "border-[#a335ee]/50", legendary: "border-[#ff8000]/50" }[item.rarity] || ""
-    : "border-amber-900/30";
+    : "";
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    const draggedItemId = e.dataTransfer.types.includes("text/plain") ? true : false;
+    if (draggedItemId) setDragOver(true);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const draggedItemId = e.dataTransfer.getData("text/plain");
+    const draggedItem = LOOT_POOL.find((i) => i.id === draggedItemId);
+    if (draggedItem && draggedItem.slot === slot) {
+      onEquip(draggedItemId, slot);
+    }
+  };
 
   return (
     <div className="relative flex flex-col items-center">
-      <button
-        onClick={() => item ? setShowTooltip(!showTooltip) : null}
-        className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-md ${rarityBorder} ${
-          item
-            ? "bg-gradient-to-b from-[#2a1f3d] to-[#1a0f2e] hover:from-[#352750] hover:to-[#231740]"
-            : "bg-gradient-to-b from-[#1a1025] to-[#0d0614] opacity-50"
-        }`}
-        style={{
-          boxShadow: item
-            ? `inset 0 1px 3px rgba(0,0,0,0.6), 0 0 6px ${item.rarity === "legendary" ? "rgba(255,128,0,0.2)" : item.rarity === "epic" ? "rgba(163,53,238,0.2)" : item.rarity === "rare" ? "rgba(0,112,221,0.15)" : "rgba(30,255,0,0.1)"}`
-            : "inset 0 2px 4px rgba(0,0,0,0.8)",
-        }}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
       >
-        {item ? (
-          <span className="drop-shadow-md">{item.emoji}</span>
-        ) : (
-          <span className="text-amber-900/30 text-xs">✦</span>
-        )}
-      </button>
+        <button
+          onClick={() => item ? setShowTooltip(!showTooltip) : null}
+          className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-md ${
+            dragOver ? "border-amber-400/80 scale-110" : item ? rarityBorder : "border-slate-600/30"
+          } ${
+            item
+              ? "bg-gradient-to-b from-[#2a1f3d] to-[#1a0f2e] hover:from-[#352750] hover:to-[#231740]"
+              : "bg-gradient-to-b from-[#2a2a2f] to-[#1e1e22]"
+          }`}
+          style={{
+            boxShadow: item
+              ? `inset 0 1px 3px rgba(0,0,0,0.6), 0 0 6px ${item.rarity === "legendary" ? "rgba(255,128,0,0.2)" : item.rarity === "epic" ? "rgba(163,53,238,0.2)" : item.rarity === "rare" ? "rgba(0,112,221,0.15)" : "rgba(30,255,0,0.1)"}`
+              : "inset 0 2px 6px rgba(0,0,0,0.5)",
+          }}
+        >
+          {item ? (
+            <span className="drop-shadow-md">{item.emoji}</span>
+          ) : (
+            <span className="text-slate-500/40 text-xs">✦</span>
+          )}
+        </button>
+      </div>
       <span className="text-[8px] text-amber-300/60 mt-0.5 font-medium">{label}</span>
 
       {/* Tooltip */}
