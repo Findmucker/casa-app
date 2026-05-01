@@ -34,7 +34,7 @@ export default function OwnerPicker({ onSelect }: OwnerPickerProps) {
             <span className="text-sm font-semibold text-rose-500">Moniquinha</span>
           </button>
         </div>
-        <p className="text-xs text-pink-300">Para os alarmes saberem para quem tocar</p>
+        <p className="text-xs text-pink-300">Para personalizar a experiência 💕</p>
       </div>
     </div>
   );

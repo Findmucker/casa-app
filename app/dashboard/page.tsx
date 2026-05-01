@@ -1,20 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import ShoppingList from "@/components/ShoppingList";
 import PriorityList from "@/components/PriorityList";
 import ProjectList from "@/components/ProjectList";
-import AlarmList from "@/components/AlarmList";
 import EventList from "@/components/EventList";
 import Weather from "@/components/Weather";
-import { requestNotificationPermission, registerPushToken } from "@/lib/notifications";
 
 const ALL_TABS = [
   { id: "shopping", label: "Compras", emoji: "🧺" },
   { id: "small", label: "Coisinhas", emoji: "🪴" },
   { id: "big", label: "Projetos", emoji: "🏡" },
   { id: "events", label: "Eventos", emoji: "🎉" },
-  { id: "alarms", label: "Alarmes", emoji: "⏰" },
   { id: "weather", label: "Tempo", emoji: "🌤️" },
 ] as const;
 
@@ -25,14 +22,6 @@ export default function Dashboard() {
   const [animating, setAnimating] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
   const prevTab = useRef<TabId>(activeTab);
-
-  useEffect(() => {
-    requestNotificationPermission();
-    const owner = localStorage.getItem("casa-owner") as "eduardo" | "moniquinha" | null;
-    if (owner) {
-      registerPushToken(owner);
-    }
-  }, []);
 
   const switchTab = (id: TabId) => {
     if (id === activeTab && !showPanel) return;
@@ -64,7 +53,6 @@ export default function Dashboard() {
           )}
           {activeTab === "big" && <ProjectList />}
           {activeTab === "events" && <EventList />}
-          {activeTab === "alarms" && <AlarmList />}
           {activeTab === "weather" && <Weather />}
         </div>
 

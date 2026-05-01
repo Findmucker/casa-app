@@ -1,7 +1,7 @@
 // Update ShoppingItem to support urgency
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   collection,
   query,
@@ -16,14 +16,6 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { notify } from "./notifications";
-
-// Collection display names for notifications
-const COLLECTION_LABELS: Record<string, string> = {
-  shopping: "🛒 Compras",
-  priorities_small: "🪴 Coisinhas",
-  priorities_big: "🏡 Projetos",
-};
 
 // ─── Auth ────────────────────────────────────────────────────
 export function usePin() {
@@ -103,8 +95,6 @@ export function useCollection<T extends { id: string }>(
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
-  const prevMapRef = useRef<Map<string, T> | null>(null);
-  const isFirstSnapshot = useRef(true);
 
   const buildQuery = () =>
     query(
@@ -137,45 +127,6 @@ export function useCollection<T extends { id: string }>(
 
       setItems(data);
       setLoading(false);
-
-      // Notifications
-      const currentMap = new Map(data.map((item) => [item.id, item]));
-      try {
-        if (!isFirstSnapshot.current && prevMapRef.current) {
-          const prev = prevMapRef.current;
-          const label = COLLECTION_LABELS[collectionName] || collectionName;
-
-          for (const [, item] of currentMap) {
-            const name = (item as Record<string, unknown>).name as string;
-            if (name && !prev.has(item.id)) {
-              notify(label, `Novo: ${name}`);
-            }
-          }
-          for (const [id, item] of prev) {
-            if (!currentMap.has(id)) {
-              const name = (item as Record<string, unknown>).name as string;
-              if (name) notify(label, `Removido: ${name}`);
-            }
-          }
-          if (collectionName === "shopping") {
-            for (const [, item] of currentMap) {
-              const prevItem = prev.get(item.id);
-              if (prevItem) {
-                const wasUrgent = (prevItem as Record<string, unknown>).urgent;
-                const isUrgent = (item as Record<string, unknown>).urgent;
-                const name = (item as Record<string, unknown>).name as string;
-                if (!wasUrgent && isUrgent && name) {
-                  notify("🔥 Urgente!", name);
-                }
-              }
-            }
-          }
-        }
-      } catch (e) {
-        console.warn("Notification error:", e);
-      }
-      isFirstSnapshot.current = false;
-      prevMapRef.current = currentMap;
     }, (error) => {
       console.error("Firestore snapshot error:", error);
       setLoading(false);

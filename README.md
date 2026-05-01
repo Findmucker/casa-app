@@ -32,11 +32,6 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
   - Confirmação com detalhes do evento antes de participar
 - Histórico de eventos passados com opção de clonar
 
-### ⏰ Alarmes (em desenvolvimento)
-- Alarmes por pessoa
-- Push notifications via FCM
-- Requer cron externo (cron-job.org)
-
 ### 🌤️ Meteorologia
 - Previsão a 7 dias (Open-Meteo API)
 - Temperatura, vento, precipitação
@@ -47,7 +42,6 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - **Framework:** Next.js 16.2.4 (App Router, Turbopack)
 - **UI:** Tailwind CSS v4, design pink/purple/rose
 - **Database:** Firebase Firestore (real-time sync)
-- **Notifications:** Firebase Cloud Messaging (FCM)
 - **Weather:** Open-Meteo API (grátis, sem API key)
 - **Deploy:** Vercel (conectado ao GitHub, auto-deploy)
 - **Auth:** PIN + owner picker (localStorage)
@@ -74,14 +68,6 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-
-# Firebase Admin (para alarmes/push - opcional)
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_CLIENT_EMAIL=your_service_account_email
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-
-# FCM (para push notifications - opcional)
-NEXT_PUBLIC_VAPID_KEY=your_vapid_key
 ```
 
 ### 3. Configurar Firebase
@@ -112,20 +98,17 @@ casa-app/
 │   ├── EventList.tsx         # Gestão de eventos + meteorologia
 │   ├── PriorityList.tsx      # Coisinhas + Projetos
 │   ├── ShoppingList.tsx      # Lista de compras
-│   ├── AlarmList.tsx         # Alarmes por pessoa
 │   ├── Weather.tsx           # Previsão meteorológica
 │   ├── Greeting.tsx          # Saudação personalizada
 │   ├── OwnerPicker.tsx       # Seleção Eduardo/Moniquinha
 │   ├── PinScreen.tsx         # Ecrã de PIN
 │   └── AutocompleteInput.tsx # Input com sugestões
 ├── lib/
-│   ├── firebase.ts           # Config Firebase + FCM
+│   ├── firebase.ts           # Config Firebase
 │   ├── hooks.ts              # useCollection hook (real-time Firestore)
-│   ├── notifications.ts      # Push notifications
 │   └── share.ts              # Gerar/validar shareId para eventos
 └── public/
-    ├── manifest.json         # PWA manifest
-    └── firebase-messaging-sw.js  # Service worker FCM
+    └── manifest.json         # PWA manifest
 ```
 
 ## Firestore Collections
@@ -137,8 +120,8 @@ casa-app/
 | `priorities_big` | Projetos (tarefas grandes) |
 | `events` | Eventos |
 | `events/{id}/items` | Items de cada evento (compras + tarefas) |
-| `alarms` | Alarmes/lembretes |
-| `fcm_tokens` | Tokens FCM por pessoa |
+| `alarms` | Alarmes (descontinuado) |
+| `fcm_tokens` | Tokens FCM (descontinuado) |
 | `config/events-share` | ShareId para link público |
 | `config/pin` | PIN de acesso |
 
@@ -150,14 +133,6 @@ O projeto está ligado ao Vercel via GitHub. Cada push para `master` faz deploy 
 # Deploy manual (se necessário)
 npx vercel --prod
 ```
-
-## Alarmes (Setup Adicional)
-
-Os alarmes requerem um cron externo para verificar e enviar push notifications:
-
-1. Configurar variáveis Firebase Admin no Vercel
-2. Registar em [cron-job.org](https://cron-job.org) (grátis)
-3. Criar job que faz GET a `https://your-domain.vercel.app/api/alarms/check` a cada minuto
 
 ## Licença
 
