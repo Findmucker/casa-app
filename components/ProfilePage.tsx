@@ -27,6 +27,7 @@ import {
 import CharacterModel from "./CharacterModel";
 import Inventory from "./Inventory";
 import LootBoxOpener from "./LootBoxOpener";
+import AvatarBuilder from "./AvatarBuilder";
 
 interface ProfilePageProps {
   onClose: () => void;
@@ -39,7 +40,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const [equipped, setEquipped] = useState<EquippedItems>({});
   const [boxesOpened, setBoxesOpened] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"stats" | "inventory" | "settings">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "inventory" | "avatar" | "settings">("stats");
   const { user } = useAuth();
   const houseId = useContext(HouseIdContext);
 
@@ -137,6 +138,16 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             🎒 Inventário
           </button>
           <button
+            onClick={() => setActiveTab("avatar")}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+              activeTab === "avatar"
+                ? "bg-purple-600/60 text-white border border-purple-400/40"
+                : "bg-purple-900/40 text-purple-400 border border-purple-700/30 hover:bg-purple-800/40"
+            }`}
+          >
+            🐼 Avatar
+          </button>
+          <button
             onClick={() => setActiveTab("settings")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
               activeTab === "settings"
@@ -160,7 +171,6 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
           user={user}
           level={level}
           onUpdate={() => {
-            // Reload data
             const owner = user?.displayName || user?.email || "user";
             const ref = doc(db, "gamification", owner);
             getDoc(ref).then((snap) => {
@@ -172,6 +182,8 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
             });
           }}
         />
+      ) : activeTab === "avatar" ? (
+        <AvatarBuilder owner={user?.displayName || user?.email || "user"} />
       ) : (
         <SettingsTab user={user} />
       )}
