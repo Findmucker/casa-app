@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment, runTransaction } from "firebase/firestore";
 import { db } from "./firebase";
 
 export const POINTS = {
@@ -43,28 +43,47 @@ export const BADGES: Badge[] = [
 
 export async function awardPoints(owner: string, amount: number, reason: string) {
   const ref = doc(db, "gamification", owner);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, { points: amount, totalCompleted: 1, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, badges: [], lastAction: reason });
-  } else {
-    const updates: Record<string, unknown> = { points: increment(amount), totalCompleted: increment(1), lastAction: reason };
-    if (reason === "shopping_done") updates.shoppingDone = increment(1);
-    if (reason === "coisinha_done") updates.coisinhasDone = increment(1);
-    if (reason === "project_done") updates.projectsDone = increment(1);
-    if (reason === "habit_check") updates.habitsDone = increment(1);
-    await updateDoc(ref, updates);
-  }
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) {
+      transaction.set(ref, {
+        points: amount,
+        totalCompleted: 1,
+        maxStreak: 0,
+        shoppingDone: reason === "shopping_done" ? 1 : 0,
+        coisinhasDone: reason === "coisinha_done" ? 1 : 0,
+        projectsDone: reason === "project_done" ? 1 : 0,
+        habitsDone: reason === "habit_check" ? 1 : 0,
+        badges: [],
+        lastAction: reason,
+      });
+    } else {
+      const data = snap.data();
+      const updates: Record<string, unknown> = {
+        points: (data.points || 0) + amount,
+        totalCompleted: (data.totalCompleted || 0) + 1,
+        lastAction: reason,
+      };
+      if (reason === "shopping_done") updates.shoppingDone = (data.shoppingDone || 0) + 1;
+      if (reason === "coisinha_done") updates.coisinhasDone = (data.coisinhasDone || 0) + 1;
+      if (reason === "project_done") updates.projectsDone = (data.projectsDone || 0) + 1;
+      if (reason === "habit_check") updates.habitsDone = (data.habitsDone || 0) + 1;
+      transaction.update(ref, updates);
+    }
+  });
 }
 
 export async function updateStreak(owner: string, streak: number) {
   const ref = doc(db, "gamification", owner);
-  const snap = await getDoc(ref);
-  if (snap.exists()) {
-    const current = snap.data().maxStreak || 0;
-    if (streak > current) {
-      await updateDoc(ref, { maxStreak: streak });
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (snap.exists()) {
+      const current = snap.data().maxStreak || 0;
+      if (streak > current) {
+        transaction.update(ref, { maxStreak: streak });
+      }
     }
-  }
+  });
 }
 
 export async function getStats(owner: string): Promise<GameStats> {
@@ -272,51 +291,58 @@ export interface LootBoxResult {
 
 export async function openLootBox(owner: string): Promise<LootBoxResult | null> {
   const ref = doc(db, "gamification", owner);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
-
-  const data = snap.data();
-  const points = data.points || 0;
-  const boxesOpened = data.boxesOpened || 0;
-  const pending = getPendingBoxes(points, boxesOpened);
-  if (pending <= 0) return null;
-
   const item = rollLootBox();
-  const inventory: InventoryItem[] = data.inventory || [];
-  const existing = inventory.find((i) => i.itemId === item.id);
 
-  if (existing) {
-    // Duplicate — convert to XP
-    const xpGained = DUPLICATE_XP[item.rarity] || 5;
-    await updateDoc(ref, {
-      boxesOpened: boxesOpened + 1,
-      points: increment(xpGained),
-    });
-    return { item, isDuplicate: true, xpGained };
-  } else {
-    // New item — add to inventory
-    inventory.push({ itemId: item.id, count: 1 });
-    await updateDoc(ref, { boxesOpened: boxesOpened + 1, inventory });
-    return { item, isDuplicate: false, xpGained: 0 };
-  }
+  return await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) return null;
+
+    const data = snap.data();
+    const points = data.points || 0;
+    const boxesOpened = data.boxesOpened || 0;
+    const pending = getPendingBoxes(points, boxesOpened);
+    if (pending <= 0) return null;
+
+    const inventory: InventoryItem[] = data.inventory || [];
+    const existing = inventory.find((i) => i.itemId === item.id);
+
+    if (existing) {
+      // Duplicate — convert to XP
+      const xpGained = DUPLICATE_XP[item.rarity] || 5;
+      transaction.update(ref, {
+        boxesOpened: boxesOpened + 1,
+        points: points + xpGained,
+      });
+      return { item, isDuplicate: true, xpGained };
+    } else {
+      // New item — add to inventory
+      inventory.push({ itemId: item.id, count: 1 });
+      transaction.update(ref, { boxesOpened: boxesOpened + 1, inventory });
+      return { item, isDuplicate: false, xpGained: 0 };
+    }
+  });
 }
 
 export async function equipItem(owner: string, itemId: string, slot: LootSlot): Promise<void> {
   const ref = doc(db, "gamification", owner);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const equipped: EquippedItems = snap.data().equipped || {};
-  equipped[slot] = itemId;
-  await updateDoc(ref, { equipped });
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) return;
+    const equipped: EquippedItems = snap.data().equipped || {};
+    equipped[slot] = itemId;
+    transaction.update(ref, { equipped });
+  });
 }
 
 export async function unequipItem(owner: string, slot: LootSlot): Promise<void> {
   const ref = doc(db, "gamification", owner);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const equipped: EquippedItems = snap.data().equipped || {};
-  delete equipped[slot];
-  await updateDoc(ref, { equipped });
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) return;
+    const equipped: EquippedItems = snap.data().equipped || {};
+    delete equipped[slot];
+    transaction.update(ref, { equipped });
+  });
 }
 
 // ─── Level Up System ───────────────────────────────────────────
@@ -353,17 +379,18 @@ export function checkLevelUp(oldPoints: number, newPoints: number, stats: GameSt
 
 export async function awardXPWithRewards(owner: string, baseAmount: number, reason: string): Promise<LevelUpResult> {
   const ref = doc(db, "gamification", owner);
+  // Get old points before awarding
   const snap = await getDoc(ref);
   const oldPoints = snap.exists() ? (snap.data().points || 0) : 0;
 
-  // Award base points
+  // Award base points (atomic)
   await awardPoints(owner, baseAmount, reason);
 
   // Check for loot/level up
   const newStats = await getStats(owner);
   const result = checkLevelUp(oldPoints, newStats.points, newStats, reason);
 
-  // If loot dropped, award bonus XP
+  // If loot dropped, award bonus XP (atomic)
   if (result.lootDrop) {
     await awardPoints(owner, result.lootDrop.xp, `loot_${result.lootDrop.id}`);
   }
