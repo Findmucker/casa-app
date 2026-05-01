@@ -38,6 +38,7 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - Check diário que reseta à meia-noite
 - Streak counter com 🔥 e animações
 - Hora configurável por hábito
+- **Atribuir a pessoa** (dinâmico por membros da casa)
 - Push notifications (com permissão)
 - Pílula como hábito default
 
@@ -58,15 +59,32 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - Dots coloridos por tipo (hábitos, coisinhas, projetos)
 - Tap num dia para ver detalhes
 
+### 📅 Calendarzinho
+- Vista mensal com grid
+- Dots coloridos por tipo (hábitos, coisinhas, projetos, feriados)
+- **Feriados portugueses** automáticos (fixos + Páscoa/Carnaval)
+- Datas especiais (Dia dos Namorados, Natal, etc.)
+- Tap num dia para ver detalhes
+
 ### ✨ Dashboard Resumo
 - Cards com status de todas as áreas
 - Barra de progresso semanal
 - Acesso rápido a cada secção
 
-### 🏆 Gamificação
+### ❓ Tutorial
+- Tutorial interativo passo-a-passo na primeira utilização
+- Acessível a qualquer momento via menu
+- Explica todas as funcionalidades da app
+
+### 🏆 Gamificação & Perfil RPG
 - Sistema de pontos (+1 compra, +2 coisinha, +5 projeto, +2 hábito)
-- Níveis (cada 50 pontos)
+- Níveis (cada 50 pontos) com títulos progressivos
 - 9 badges desbloqueáveis
+- **Perfil RPG** com ficha de personagem completa
+  - 6 atributos (STR, INT, DEX, CHA, VIT, LCK) baseados em atividade real
+  - 6 equipamentos desbloqueáveis por conquistas
+  - Sistema de loot aleatório (common/rare/epic/legendary)
+  - Level-up com notificação e recompensas
 - Streak tracking
 
 ### 🔍 Pesquisa Global
@@ -102,6 +120,7 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - **Deploy:** Vercel (conectado ao GitHub, auto-deploy)
 - **Auth:** Firebase Auth (email/password + Google login)
 - **Multi-tenant:** Cada casa tem dados isolados, convites por link
+- **Nomes dinâmicos:** Assignees e payers adaptam-se aos membros da casa
 
 ## Setup Local
 
@@ -166,7 +185,9 @@ casa-app/
 │   ├── MealPlanner.tsx       # Receitinhas (plano refeições)
 │   ├── Calendar.tsx          # Calendarzinho (vista mensal)
 │   ├── DashboardSummary.tsx  # Resumo com cards e progresso
-│   ├── Gamification.tsx      # Pontos, níveis, badges
+│   ├── Gamification.tsx      # Pontos, níveis, badges (legacy)
+│   ├── ProfilePage.tsx       # Perfil RPG completo
+│   ├── Tutorial.tsx          # Tutorial interativo da app
 │   ├── SearchOverlay.tsx     # Pesquisa global
 │   ├── HistoryPanel.tsx      # Histórico de completados
 │   ├── MaintenancePanel.tsx  # Painel de manutenção/utilitários

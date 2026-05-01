@@ -6,6 +6,63 @@ import { useCollection, type SmallPriorityItem, type BigPriorityItem, type Habit
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
+// Portuguese holidays (fixed dates)
+const HOLIDAYS_FIXED: Record<string, string> = {
+  "01-01": "🎆 Ano Novo",
+  "02-14": "💕 Dia dos Namorados",
+  "03-19": "👨 Dia do Pai",
+  "04-25": "🇵🇹 Dia da Liberdade",
+  "05-01": "✊ Dia do Trabalhador",
+  "05-04": "👩 Dia da Mãe",
+  "06-01": "👶 Dia da Criança",
+  "06-10": "🇵🇹 Dia de Portugal",
+  "06-13": "🙏 Santo António",
+  "08-15": "🙏 Assunção de Maria",
+  "10-05": "🇵🇹 Implantação da República",
+  "10-31": "🎃 Halloween",
+  "11-01": "🙏 Dia de Todos os Santos",
+  "12-01": "🇵🇹 Restauração da Independência",
+  "12-08": "🙏 Imaculada Conceição",
+  "12-24": "🎄 Véspera de Natal",
+  "12-25": "🎄 Natal",
+  "12-31": "🎇 Véspera de Ano Novo",
+};
+
+// Easter-based holidays (calculated per year)
+function getEasterDate(year: number): Date {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function getMovingHolidays(year: number): Record<string, string> {
+  const easter = getEasterDate(year);
+  const fmt = (d: Date) => d.toISOString().split("T")[0];
+  const offset = (days: number) => {
+    const d = new Date(easter);
+    d.setDate(d.getDate() + days);
+    return fmt(d);
+  };
+  return {
+    [offset(-47)]: "🎭 Carnaval",
+    [offset(-2)]: "✝️ Sexta-feira Santa",
+    [offset(0)]: "🐣 Páscoa",
+    [offset(60)]: "🙏 Corpo de Deus",
+  };
+}
+
 interface CalendarDot {
   color: string;
   label: string;
@@ -52,8 +109,19 @@ export default function Calendar() {
       }
     });
 
+    // Holidays (amber)
+    const year = viewDate.getFullYear();
+    Object.entries(HOLIDAYS_FIXED).forEach(([mmdd, label]) => {
+      const dateStr = `${year}-${mmdd}`;
+      addDot(dateStr, { color: "bg-amber-400", label, type: "event" });
+    });
+    const moving = getMovingHolidays(year);
+    Object.entries(moving).forEach(([dateStr, label]) => {
+      addDot(dateStr, { color: "bg-amber-400", label, type: "event" });
+    });
+
     return map;
-  }, [habits, checks, coisinhas, projects]);
+  }, [habits, checks, coisinhas, projects, viewDate]);
 
   // Calendar grid
   const calendarDays = useMemo(() => {

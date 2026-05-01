@@ -13,6 +13,8 @@ import Calendar from "@/components/Calendar";
 import DashboardSummary from "@/components/DashboardSummary";
 import MaintenancePanel from "@/components/MaintenancePanel";
 import Gamification from "@/components/Gamification";
+import ProfilePage from "@/components/ProfilePage";
+import Tutorial from "@/components/Tutorial";
 import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
@@ -43,17 +45,22 @@ export default function Dashboard() {
   const [showSearch, setShowSearch] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
 
-  // Load dark mode preference + auto sunrise/sunset
+  // Load dark mode preference + auto sunrise/sunset + tutorial
   useEffect(() => {
     const saved = localStorage.getItem("casa-dark-mode");
     if (saved === "true") setDarkMode(true);
     else if (saved !== "false") {
-      // Auto mode: fetch sunrise/sunset
       fetchSunTimes();
+    }
+    // Show tutorial on first visit
+    if (!localStorage.getItem("casa-tutorial-done")) {
+      setShowTutorial(true);
+      localStorage.setItem("casa-tutorial-done", "true");
     }
   }, []);
 
@@ -245,6 +252,12 @@ export default function Dashboard() {
               >
                 ⚙️ Manutenção
               </button>
+              <button
+                onClick={() => { setShowPanel(false); setShowTutorial(true); }}
+                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
+              >
+                ❓ Tutorial
+              </button>
             </div>
             <button
               onClick={() => { logout(); }}
@@ -263,10 +276,11 @@ export default function Dashboard() {
 
         {/* Overlays */}
         {showMaintenance && <MaintenancePanel onClose={() => setShowMaintenance(false)} />}
-        {showGamification && <Gamification onClose={() => setShowGamification(false)} />}
+        {showGamification && <ProfilePage onClose={() => setShowGamification(false)} />}
         {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} onNavigate={(tab) => switchTab(tab as TabId)} />}
         {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
+        {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
       </main>
 
       {/* Bottom tabs - scrollable */}

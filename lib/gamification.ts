@@ -75,3 +75,154 @@ export async function getStats(owner: string): Promise<GameStats> {
 export function checkNewBadges(stats: GameStats, currentBadges: string[]): Badge[] {
   return BADGES.filter((b) => b.condition(stats) && !currentBadges.includes(b.id));
 }
+
+// ─── RPG Profile ────────────────────────────────────────────────
+
+export const TITLES = [
+  { level: 1, title: "Aprendiz da Casa" },
+  { level: 3, title: "Ajudante Doméstico" },
+  { level: 5, title: "Organizador" },
+  { level: 7, title: "Mestre das Tarefas" },
+  { level: 10, title: "Guardião da Casa" },
+  { level: 15, title: "Lenda Doméstica" },
+  { level: 20, title: "Rei/Rainha da Casa" },
+  { level: 30, title: "Divindade do Lar" },
+];
+
+export function getTitle(level: number): string {
+  let title = TITLES[0].title;
+  for (const t of TITLES) {
+    if (level >= t.level) title = t.title;
+  }
+  return title;
+}
+
+export function getLevel(points: number): { level: number; xpInLevel: number; xpForNext: number } {
+  const level = Math.floor(points / 50) + 1;
+  const xpInLevel = points % 50;
+  return { level, xpInLevel, xpForNext: 50 };
+}
+
+export interface RPGStat {
+  key: string;
+  name: string;
+  emoji: string;
+  value: number;
+  maxValue: number;
+  description: string;
+}
+
+export function calculateStats(stats: GameStats): RPGStat[] {
+  return [
+    { key: "str", name: "Força", emoji: "⚔️", value: Math.min(stats.projectsDone * 2, 100), maxValue: 100, description: "Projetinhos concluídos" },
+    { key: "int", name: "Inteligência", emoji: "🧠", value: Math.min(stats.coisinhasDone, 100), maxValue: 100, description: "Coisinhas feitas" },
+    { key: "dex", name: "Destreza", emoji: "🏃", value: Math.min(stats.maxStreak * 3, 100), maxValue: 100, description: "Melhor streak" },
+    { key: "cha", name: "Carisma", emoji: "💰", value: Math.min(stats.totalCompleted, 100), maxValue: 100, description: "Total completado" },
+    { key: "vit", name: "Vitalidade", emoji: "❤️", value: Math.min(stats.maxStreak * 5, 100), maxValue: 100, description: "Hábitos de saúde" },
+    { key: "lck", name: "Sorte", emoji: "🛒", value: Math.min(stats.shoppingDone, 100), maxValue: 100, description: "Comprinhas feitas" },
+  ];
+}
+
+export interface Equipment {
+  slot: string;
+  name: string;
+  emoji: string;
+  lockedEmoji: string;
+  description: string;
+  condition: (stats: GameStats, level: number) => boolean;
+}
+
+export const EQUIPMENT: Equipment[] = [
+  { slot: "weapon", name: "Espada do Construtor", emoji: "🗡️", lockedEmoji: "❓", description: "Completar 3 projetinhos", condition: (s) => s.projectsDone >= 3 },
+  { slot: "shield", name: "Escudo da Consistência", emoji: "🛡️", lockedEmoji: "❓", description: "10 dias de streak", condition: (s) => s.maxStreak >= 10 },
+  { slot: "crown", name: "Coroa Real", emoji: "👑", lockedEmoji: "❓", description: "Atingir nível 10", condition: (_, l) => l >= 10 },
+  { slot: "gloves", name: "Luvas do Faz-Tudo", emoji: "🧤", lockedEmoji: "❓", description: "50 coisinhas feitas", condition: (s) => s.coisinhasDone >= 50 },
+  { slot: "boots", name: "Botas do Maratonista", emoji: "👟", lockedEmoji: "❓", description: "30 comprinhas feitas", condition: (s) => s.shoppingDone >= 30 },
+  { slot: "ring", name: "Anel da Comunidade", emoji: "💍", lockedEmoji: "❓", description: "100 pontos totais", condition: (s) => s.points >= 100 },
+];
+
+// ─── Rewards & Loot ────────────────────────────────────────────
+
+export interface Reward {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  xp: number;
+  rarity: "common" | "rare" | "epic" | "legendary";
+  trigger: string; // which action triggers this
+}
+
+export const LOOT_TABLE: Reward[] = [
+  { id: "potion_xp", name: "Poção de XP", emoji: "🧪", description: "+10 XP bónus", xp: 10, rarity: "common", trigger: "shopping_done" },
+  { id: "scroll_wisdom", name: "Pergaminho de Sabedoria", emoji: "📜", description: "+15 XP bónus", xp: 15, rarity: "common", trigger: "coisinha_done" },
+  { id: "gem_power", name: "Gema de Poder", emoji: "💎", description: "+25 XP bónus", xp: 25, rarity: "rare", trigger: "project_done" },
+  { id: "elixir_streak", name: "Elixir de Fogo", emoji: "🔮", description: "+30 XP por streak", xp: 30, rarity: "rare", trigger: "streak_5" },
+  { id: "crown_shard", name: "Fragmento de Coroa", emoji: "✨", description: "+50 XP épico", xp: 50, rarity: "epic", trigger: "streak_10" },
+  { id: "star_legendary", name: "Estrela Lendária", emoji: "🌟", description: "+100 XP lendário", xp: 100, rarity: "legendary", trigger: "streak_30" },
+];
+
+export function rollLoot(trigger: string): Reward | null {
+  const possible = LOOT_TABLE.filter((r) => r.trigger === trigger);
+  if (possible.length === 0) return null;
+  // Drop chance: common 40%, rare 20%, epic 10%, legendary 5%
+  const chances: Record<string, number> = { common: 0.4, rare: 0.2, epic: 0.1, legendary: 0.05 };
+  const roll = Math.random();
+  for (const reward of possible) {
+    if (roll < (chances[reward.rarity] || 0)) return reward;
+  }
+  return null;
+}
+
+// ─── Level Up System ───────────────────────────────────────────
+
+export interface LevelUpResult {
+  leveledUp: boolean;
+  oldLevel: number;
+  newLevel: number;
+  newTitle: string;
+  unlockedEquipment: Equipment[];
+  lootDrop: Reward | null;
+}
+
+export function checkLevelUp(oldPoints: number, newPoints: number, stats: GameStats, trigger: string): LevelUpResult {
+  const oldLevel = getLevel(oldPoints).level;
+  const newLevel = getLevel(newPoints).level;
+  const leveledUp = newLevel > oldLevel;
+
+  const unlockedEquipment = leveledUp
+    ? EQUIPMENT.filter((eq) => eq.condition(stats, newLevel) && !eq.condition(stats, oldLevel))
+    : [];
+
+  const lootDrop = rollLoot(trigger);
+
+  return {
+    leveledUp,
+    oldLevel,
+    newLevel,
+    newTitle: getTitle(newLevel),
+    unlockedEquipment,
+    lootDrop,
+  };
+}
+
+export async function awardXPWithRewards(owner: string, baseAmount: number, reason: string): Promise<LevelUpResult> {
+  const ref = doc(db, "gamification", owner);
+  const snap = await getDoc(ref);
+  const oldPoints = snap.exists() ? (snap.data().points || 0) : 0;
+
+  // Award base points
+  await awardPoints(owner, baseAmount, reason);
+
+  // Check for loot/level up
+  const newStats = await getStats(owner);
+  const result = checkLevelUp(oldPoints, newStats.points, newStats, reason);
+
+  // If loot dropped, award bonus XP
+  if (result.lootDrop) {
+    await awardPoints(owner, result.lootDrop.xp, `loot_${result.lootDrop.id}`);
+  }
+
+  return result;
+}
+

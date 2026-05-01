@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useCollection, type HabitItem, type HabitCheck } from "@/lib/hooks";
 import { getToday, scheduleLocalNotification, requestNotificationPermission } from "@/lib/notifications";
 import { awardPoints, updateStreak } from "@/lib/gamification";
+import { useMemberNames } from "@/lib/context";
 
 const DEFAULT_HABITS = [
   { name: "Pílula", emoji: "💊", reminderTime: "22:00" },
@@ -12,11 +13,13 @@ const DEFAULT_HABITS = [
 const HABIT_EMOJIS = ["💊", "💧", "🏃", "📖", "🧘", "🪴", "🧹", "💤", "🍎", "✍️"];
 
 export default function HabitList() {
+  const memberNames = useMemberNames();
   const { items: habits, loading, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
   const { items: checks, add: addCheck } = useCollection<HabitCheck>("habit_checks", "createdAt");
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState("💊");
   const [newTime, setNewTime] = useState("");
+  const [newAssignee, setNewAssignee] = useState("ambos");
   const [showAdd, setShowAdd] = useState(false);
   const [celebrating, setCelebrating] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -102,10 +105,12 @@ export default function HabitList() {
       name,
       emoji: newEmoji,
       reminderTime: newTime || undefined,
+      assignee: newAssignee,
       streak: 0,
     } as Omit<HabitItem, "id">);
     setNewName("");
     setNewTime("");
+    setNewAssignee("ambos");
     setShowAdd(false);
   };
 
@@ -176,6 +181,19 @@ export default function HabitList() {
                 onChange={(e) => setNewTime(e.target.value)}
                 className="rounded-2xl border border-purple-200/60 bg-white/80 px-3 py-2.5 text-sm text-purple-800 focus:outline-none focus:border-purple-300"
               />
+            </div>
+            <div className="flex gap-2">
+              {memberNames.map((m) => (
+                <button
+                  key={m.key}
+                  onClick={() => setNewAssignee(m.key)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all active:scale-95 ${
+                    newAssignee === m.key ? "bg-purple-200 text-purple-700" : "bg-purple-50 text-purple-400"
+                  }`}
+                >
+                  {m.emoji} {m.label}
+                </button>
+              ))}
             </div>
             <button
               onClick={handleAdd}
@@ -256,6 +274,11 @@ export default function HabitList() {
                     )}
                     {habit.reminderTime && (
                       <span className="text-[11px] text-purple-400">⏰ {habit.reminderTime}</span>
+                    )}
+                    {habit.assignee && habit.assignee !== "ambos" && (
+                      <span className="text-[11px] text-purple-400">
+                        {memberNames.find((m) => m.key === habit.assignee)?.emoji} {memberNames.find((m) => m.key === habit.assignee)?.label}
+                      </span>
                     )}
                   </div>
                 </div>

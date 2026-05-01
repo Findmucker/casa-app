@@ -7,17 +7,8 @@ import {
   COISINHAS_CATEGORY_ORDER,
   guessCategory,
 } from "@/lib/categories";
+import { useMemberNames } from "@/lib/context";
 import AutocompleteInput from "./AutocompleteInput";
-
-type Assignee = "eduardo" | "moniquinha" | "ambos";
-
-const ASSIGNEE_CONFIG: Record<Assignee, { label: string; emoji: string }> = {
-  eduardo: { label: "Eduardo", emoji: "👨" },
-  moniquinha: { label: "Moniquinha", emoji: "👩" },
-  ambos: { label: "Ambos", emoji: "👫" },
-};
-
-const ASSIGNEE_CYCLE: Assignee[] = ["ambos", "eduardo", "moniquinha"];
 
 const COMMON_COISINHAS = [
   "Aspirador", "Toalhas", "Cortinas", "Almofadas", "Velas", "Plantas",
@@ -27,13 +18,14 @@ const COMMON_COISINHAS = [
 ];
 
 export default function PriorityList() {
+  const memberNames = useMemberNames();
   const { items, loading, add, update, remove } = useCollection<SmallPriorityItem>(
     "priorities_small",
     "order"
   );
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
-  const [newAssignee, setNewAssignee] = useState<Assignee>("ambos");
+  const [newAssignee, setNewAssignee] = useState("ambos");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
@@ -57,9 +49,10 @@ export default function PriorityList() {
     });
   }, [items.length]);
 
-  const cycleAssignee = (current: Assignee): Assignee => {
-    const idx = ASSIGNEE_CYCLE.indexOf(current);
-    return ASSIGNEE_CYCLE[(idx + 1) % ASSIGNEE_CYCLE.length];
+  const cycleAssignee = (current: string): string => {
+    const keys = memberNames.map((m) => m.key);
+    const idx = keys.indexOf(current);
+    return keys[(idx + 1) % keys.length];
   };
 
   const handleToggleDone = useCallback(async (item: SmallPriorityItem) => {
@@ -126,9 +119,9 @@ export default function PriorityList() {
           <button
             onClick={() => setNewAssignee(cycleAssignee(newAssignee))}
             className="w-12 h-12 flex-shrink-0 rounded-2xl bg-pink-50 border border-pink-200/60 flex items-center justify-center text-xl transition-all active:scale-90 hover:bg-pink-100"
-            title={ASSIGNEE_CONFIG[newAssignee].label}
+            title={memberNames.find((m) => m.key === newAssignee)?.label || "Ambos"}
           >
-            {ASSIGNEE_CONFIG[newAssignee].emoji}
+            {memberNames.find((m) => m.key === newAssignee)?.emoji || "👫"}
           </button>
           <AutocompleteInput
             value={newName}
@@ -305,7 +298,7 @@ export default function PriorityList() {
                           onClick={() => update(item.id, { assignee: cycleAssignee(item.assignee || "ambos") })}
                           className="w-8 h-8 flex-shrink-0 rounded-full bg-pink-50 flex items-center justify-center hover:bg-pink-100 active:scale-90 transition-all text-sm"
                         >
-                          {ASSIGNEE_CONFIG[item.assignee || "ambos"].emoji}
+                          {memberNames.find((m) => m.key === (item.assignee || "ambos"))?.emoji || "👫"}
                         </button>
 
                         {/* Notes */}

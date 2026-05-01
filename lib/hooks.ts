@@ -39,7 +39,7 @@ export interface SmallPriorityItem {
   notes?: string;
   category?: string;
   completedAt?: string;
-  assignee?: "eduardo" | "moniquinha" | "ambos";
+  assignee?: string;
   createdAt: unknown;
 }
 
@@ -68,6 +68,7 @@ export interface HabitItem {
   name: string;
   emoji: string;
   reminderTime?: string; // "HH:MM"
+  assignee?: string;
   streak: number;
   lastChecked?: string; // ISO date "YYYY-MM-DD"
   createdAt: unknown;
@@ -85,7 +86,7 @@ export interface ExpenseItem {
   name: string;
   amount: number;
   category: string;
-  paidBy: "eduardo" | "moniquinha" | "ambos";
+  paidBy: string;
   date: string; // ISO date
   createdAt: unknown;
 }

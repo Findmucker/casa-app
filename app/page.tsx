@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useAuth, useHouse, createHouse, joinHouse } from "@/lib/auth";
 import { HouseIdContext } from "@/lib/hooks";
+import { HouseProvider } from "@/lib/context";
 import AuthScreen from "@/components/AuthScreen";
 import HouseSetup from "@/components/HouseSetup";
 import Greeting from "@/components/Greeting";
@@ -70,9 +71,11 @@ export default function Home() {
 
   // Authenticated + has house
   return (
-    <HouseIdContext.Provider value={houseId}>
-      {showGreeting && <Greeting onDone={handleGreetingDone} />}
-      <Dashboard />
-    </HouseIdContext.Provider>
+    <HouseProvider houseId={houseId} userName={userName || user.displayName || "User"} userId={user.uid} members={house?.members || []}>
+      <HouseIdContext.Provider value={houseId}>
+        {showGreeting && <Greeting onDone={handleGreetingDone} />}
+        <Dashboard />
+      </HouseIdContext.Provider>
+    </HouseProvider>
   );
 }

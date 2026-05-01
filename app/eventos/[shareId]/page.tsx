@@ -52,7 +52,7 @@ export default function PublicEventsPage() {
         <div className="flex flex-col items-center gap-5 p-8 max-w-sm">
           <div className="text-5xl animate-bounce-gentle">🏡</div>
           <h2 className="text-xl font-bold text-purple-500 text-center">
-            Bem-vindo aos eventos do Eduardo & Moniquinha!
+            Bem-vindo aos nossos eventos!
           </h2>
           <p className="text-sm text-pink-400 text-center leading-relaxed">
             Estamos a organizar algo especial 💕<br />

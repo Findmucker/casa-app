@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useHouseContext } from "@/lib/context";
 
 function getGreeting(): { text: string; emoji: string } {
   const hour = new Date().getHours();
@@ -9,16 +10,16 @@ function getGreeting(): { text: string; emoji: string } {
   return { text: "Boa noite", emoji: "🌙" };
 }
 
-const OWNER_DISPLAY: Record<string, string> = {
-  eduardo: "Eduardo",
-  moniquinha: "Moniquinha",
-};
-
 export default function Greeting({ onDone }: { onDone: () => void }) {
   const [phase, setPhase] = useState<"enter" | "show" | "exit">("enter");
   const greeting = getGreeting();
-  const owner = typeof window !== "undefined" ? localStorage.getItem("casa-owner") : null;
-  const displayName = owner ? OWNER_DISPLAY[owner] || owner : "amor";
+  let displayName = "amor";
+  try {
+    const ctx = useHouseContext();
+    displayName = ctx.userName || "amor";
+  } catch {
+    displayName = "amor";
+  }
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("show"), 50);

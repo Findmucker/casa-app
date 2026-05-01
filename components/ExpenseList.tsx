@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useCollection, type ExpenseItem } from "@/lib/hooks";
-
-type Payer = "eduardo" | "moniquinha" | "ambos";
+import { useMemberNames } from "@/lib/context";
 
 const EXPENSE_CATEGORIES = [
   { id: "casa", emoji: "🏠", label: "Casa" },
@@ -15,18 +14,13 @@ const EXPENSE_CATEGORIES = [
   { id: "outros", emoji: "📦", label: "Outros" },
 ];
 
-const PAYER_CONFIG: Record<Payer, { label: string; emoji: string }> = {
-  eduardo: { label: "Eduardo", emoji: "👨" },
-  moniquinha: { label: "Moniquinha", emoji: "👩" },
-  ambos: { label: "Ambos", emoji: "👫" },
-};
-
 export default function ExpenseList() {
+  const memberNames = useMemberNames();
   const { items, loading, add, remove } = useCollection<ExpenseItem>("expenses", "createdAt");
   const [newName, setNewName] = useState("");
   const [newAmount, setNewAmount] = useState("");
   const [newCategory, setNewCategory] = useState("compras");
-  const [newPayer, setNewPayer] = useState<Payer>("ambos");
+  const [newPayer, setNewPayer] = useState("ambos");
   const [showAdd, setShowAdd] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => {
     const now = new Date();
@@ -48,12 +42,13 @@ export default function ExpenseList() {
   }, [monthItems]);
 
   const byPayer = useMemo(() => {
-    const map: Record<string, number> = { eduardo: 0, moniquinha: 0, ambos: 0 };
+    const map: Record<string, number> = {};
+    memberNames.forEach((m) => { map[m.key] = 0; });
     monthItems.forEach((i) => {
       map[i.paidBy] = (map[i.paidBy] || 0) + i.amount;
     });
     return map;
-  }, [monthItems]);
+  }, [monthItems, memberNames]);
 
   const handleAdd = async () => {
     const name = newName.trim();
@@ -143,15 +138,15 @@ export default function ExpenseList() {
               ))}
             </div>
             <div className="flex gap-2">
-              {(["ambos", "eduardo", "moniquinha"] as Payer[]).map((p) => (
+              {memberNames.map((m) => (
                 <button
-                  key={p}
-                  onClick={() => setNewPayer(p)}
+                  key={m.key}
+                  onClick={() => setNewPayer(m.key)}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all active:scale-95 ${
-                    newPayer === p ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-500"
+                    newPayer === m.key ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-500"
                   }`}
                 >
-                  {PAYER_CONFIG[p].emoji} {PAYER_CONFIG[p].label}
+                  {m.emoji} {m.label}
                 </button>
               ))}
             </div>
@@ -206,11 +201,11 @@ export default function ExpenseList() {
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
             <p className="text-xs font-semibold text-emerald-600 mb-3">Quem pagou</p>
             <div className="flex gap-3">
-              {(["eduardo", "moniquinha", "ambos"] as Payer[]).map((p) => (
-                <div key={p} className="flex-1 text-center">
-                  <div className="text-lg">{PAYER_CONFIG[p].emoji}</div>
-                  <p className="text-sm font-bold text-emerald-700">{(byPayer[p] || 0).toFixed(0)}€</p>
-                  <p className="text-[10px] text-emerald-400">{PAYER_CONFIG[p].label}</p>
+              {memberNames.map((m) => (
+                <div key={m.key} className="flex-1 text-center">
+                  <div className="text-lg">{m.emoji}</div>
+                  <p className="text-sm font-bold text-emerald-700">{(byPayer[m.key] || 0).toFixed(0)}€</p>
+                  <p className="text-[10px] text-emerald-400">{m.label}</p>
                 </div>
               ))}
             </div>
@@ -229,7 +224,7 @@ export default function ExpenseList() {
                 <span className="text-lg">{cat?.emoji || "📦"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-emerald-800 truncate">{item.name}</p>
-                  <p className="text-[11px] text-emerald-400">{item.date} • {PAYER_CONFIG[item.paidBy]?.label}</p>
+                  <p className="text-[11px] text-emerald-400">{item.date} • {memberNames.find((m) => m.key === item.paidBy)?.label || item.paidBy}</p>
                 </div>
                 <span className="text-sm font-bold text-emerald-600">{item.amount.toFixed(2)}€</span>
                 <button
