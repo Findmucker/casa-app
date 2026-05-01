@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useCollection, type ExpenseItem } from "@/lib/hooks";
 import { useMemberNames } from "@/lib/context";
+import MiniAvatar from "./MiniAvatar";
 
 const EXPENSE_CATEGORIES = [
   { id: "casa", emoji: "🏠", label: "Casa" },
@@ -224,7 +225,10 @@ export default function ExpenseList() {
                 <span className="text-lg">{cat?.emoji || "📦"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-emerald-800 truncate">{item.name}</p>
-                  <p className="text-[11px] text-emerald-400">{item.date} • {memberNames.find((m) => m.key === item.paidBy)?.label || item.paidBy}</p>
+                  <div className="flex items-center gap-1.5">
+                    <MiniAvatar name={item.paidBy} size={16} />
+                    <p className="text-[11px] text-emerald-400">{item.date} • {memberNames.find((m) => m.key === item.paidBy)?.label || item.paidBy}</p>
+                  </div>
                 </div>
                 <span className="text-sm font-bold text-emerald-600">{item.amount.toFixed(2)}€</span>
                 <button

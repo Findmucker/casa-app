@@ -5,6 +5,7 @@ import { useCollection, type HabitItem, type HabitCheck } from "@/lib/hooks";
 import { getToday, scheduleLocalNotification, requestNotificationPermission } from "@/lib/notifications";
 import { awardPoints, updateStreak } from "@/lib/gamification";
 import { useMemberNames } from "@/lib/context";
+import MiniAvatar from "./MiniAvatar";
 
 const DEFAULT_HABITS = [
   { name: "Pílula", emoji: "💊", reminderTime: "22:00" },
@@ -276,8 +277,9 @@ export default function HabitList() {
                       <span className="text-[11px] text-purple-400">⏰ {habit.reminderTime}</span>
                     )}
                     {habit.assignee && habit.assignee !== "ambos" && (
-                      <span className="text-[11px] text-purple-400">
-                        {memberNames.find((m) => m.key === habit.assignee)?.emoji} {memberNames.find((m) => m.key === habit.assignee)?.label}
+                      <span className="text-[11px] text-purple-400 flex items-center gap-1">
+                        <MiniAvatar name={habit.assignee} size={14} />
+                        {memberNames.find((m) => m.key === habit.assignee)?.label}
                       </span>
                     )}
                   </div>

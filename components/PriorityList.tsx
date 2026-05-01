@@ -9,6 +9,7 @@ import {
 } from "@/lib/categories";
 import { useMemberNames } from "@/lib/context";
 import AutocompleteInput from "./AutocompleteInput";
+import MiniAvatar from "./MiniAvatar";
 
 const COMMON_COISINHAS = [
   "Aspirador", "Toalhas", "Cortinas", "Almofadas", "Velas", "Plantas",
@@ -308,9 +309,12 @@ export default function PriorityList() {
                         {/* Assignee */}
                         <button
                           onClick={() => update(item.id, { assignee: cycleAssignee(item.assignee || "ambos") })}
-                          className="w-8 h-8 flex-shrink-0 rounded-full bg-pink-50 flex items-center justify-center hover:bg-pink-100 active:scale-90 transition-all text-sm"
+                          className="w-8 h-8 flex-shrink-0 rounded-full bg-pink-50 flex items-center justify-center hover:bg-pink-100 active:scale-90 transition-all"
                         >
-                          {memberNames.find((m) => m.key === (item.assignee || "ambos"))?.emoji || "👫"}
+                          {(item.assignee && item.assignee !== "ambos")
+                            ? <MiniAvatar name={item.assignee} size={24} />
+                            : <span className="text-sm">{memberNames.find((m) => m.key === (item.assignee || "ambos"))?.emoji || "👫"}</span>
+                          }
                         </button>
 
                         {/* Notes */}
