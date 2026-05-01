@@ -11,10 +11,8 @@ import {
   getLevel,
   getTitle,
   calculateStats,
-  EQUIPMENT,
   BADGES,
   GameStats,
-  Equipment,
   getPendingBoxes,
   openLootBox,
   equipItem,
@@ -538,128 +536,6 @@ function getStatColor(key: string): string {
     lck: "linear-gradient(to right, #06b6d4, #22d3ee)",
   };
   return colors[key] || "linear-gradient(to right, #8b5cf6, #a855f7)";
-}
-
-const RARITY_COLORS: Record<string, { border: string; glow: string; text: string }> = {
-  common: { border: "border-green-400/60", glow: "shadow-green-400/20", text: "text-green-300" },
-  rare: { border: "border-blue-400/60", glow: "shadow-blue-400/20", text: "text-blue-300" },
-  epic: { border: "border-purple-400/60", glow: "shadow-purple-400/30", text: "text-purple-300" },
-  legendary: { border: "border-amber-400/60", glow: "shadow-amber-400/30", text: "text-amber-300" },
-};
-
-function EquipSlot({ eq, unlocked, rarity }: { eq: Equipment; unlocked: boolean; rarity: string }) {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const colors = RARITY_COLORS[rarity] || RARITY_COLORS.common;
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setShowTooltip(!showTooltip)}
-        className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all active:scale-90 border-2 ${
-          unlocked
-            ? `bg-gradient-to-br from-slate-800/80 to-purple-900/80 ${colors.border} shadow-md ${colors.glow}`
-            : "bg-slate-900/60 border-slate-700/40 opacity-50"
-        }`}
-      >
-        {unlocked ? eq.emoji : (
-          <span className="text-slate-600 text-sm">✦</span>
-        )}
-      </button>
-
-      {/* WoW-style tooltip */}
-      {showTooltip && (
-        <div
-          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-600/60 rounded-lg p-2.5 shadow-xl"
-          onClick={() => setShowTooltip(false)}
-        >
-          <p className={`text-[11px] font-bold ${unlocked ? colors.text : "text-slate-400"} leading-tight`}>
-            {unlocked ? eq.name : "???"}
-          </p>
-          <p className="text-[9px] text-slate-400 mt-0.5 capitalize">{eq.slot}</p>
-          <div className="border-t border-slate-700/50 my-1.5" />
-          <p className="text-[9px] text-amber-200/80 leading-tight">
-            {unlocked ? "✨ Equipado" : `🔒 ${eq.description}`}
-          </p>
-          <p className={`text-[9px] mt-1 capitalize ${colors.text}`}>
-            {rarity}
-          </p>
-          {/* Little arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-600/60" />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// WoW TBC-style equipment slot — square with golden beveled border
-function WowSlot({ eq, unlocked, rarity, label }: { eq: Equipment; unlocked: boolean; rarity: string; label: string }) {
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  // TBC slot border colors per rarity
-  const slotBorder = unlocked
-    ? { common: "border-[#1eff00]/50", rare: "border-[#0070dd]/50", epic: "border-[#a335ee]/50", legendary: "border-[#ff8000]/50" }[rarity] || ""
-    : "border-amber-900/40";
-
-  const slotGlow = unlocked
-    ? { common: "shadow-[#1eff00]/10", rare: "shadow-[#0070dd]/15", epic: "shadow-[#a335ee]/20", legendary: "shadow-[#ff8000]/25" }[rarity] || ""
-    : "";
-
-  return (
-    <div className="relative flex flex-col items-center">
-      <button
-        onClick={() => setShowTooltip(!showTooltip)}
-        className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-md ${slotBorder} ${slotGlow} ${
-          unlocked
-            ? "bg-gradient-to-b from-[#2a1f3d] to-[#1a0f2e] hover:from-[#352750] hover:to-[#231740]"
-            : "bg-gradient-to-b from-[#1a1025] to-[#0d0614] opacity-60"
-        }`}
-        style={{
-          boxShadow: unlocked
-            ? `inset 0 1px 3px rgba(0,0,0,0.6), 0 0 6px ${rarity === "legendary" ? "rgba(255,128,0,0.2)" : rarity === "epic" ? "rgba(163,53,238,0.2)" : rarity === "rare" ? "rgba(0,112,221,0.15)" : "rgba(30,255,0,0.1)"}`
-            : "inset 0 2px 4px rgba(0,0,0,0.8)",
-        }}
-      >
-        {unlocked ? (
-          <span className="drop-shadow-md">{eq.emoji}</span>
-        ) : (
-          <span className="text-amber-900/40 text-xs">✦</span>
-        )}
-      </button>
-      <span className="text-[8px] text-amber-300/60 mt-0.5 font-medium">{label}</span>
-
-      {/* TBC-style tooltip */}
-      {showTooltip && (
-        <div
-          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 rounded-md p-2.5 shadow-2xl"
-          style={{
-            background: "linear-gradient(to bottom, #1a0f2e, #0d0614)",
-            border: "1px solid rgba(168, 85, 247, 0.3)",
-            boxShadow: "0 0 12px rgba(0,0,0,0.8), inset 0 0 20px rgba(168,85,247,0.05)",
-          }}
-          onClick={() => setShowTooltip(false)}
-        >
-          <p className={`text-[11px] font-bold leading-tight ${
-            unlocked
-              ? rarity === "legendary" ? "text-[#ff8000]" : rarity === "epic" ? "text-[#a335ee]" : rarity === "rare" ? "text-[#0070dd]" : "text-[#1eff00]"
-              : "text-slate-500"
-          }`}>
-            {unlocked ? eq.name : "???"}
-          </p>
-          <p className="text-[9px] text-amber-200/50 mt-0.5">{eq.slot}</p>
-          <div className="border-t border-purple-800/30 my-1.5" />
-          <p className="text-[9px] text-amber-200/80 leading-tight">
-            {unlocked ? "✨ Equipado" : `🔒 ${eq.description}`}
-          </p>
-          <p className={`text-[9px] mt-1 capitalize font-medium ${
-            rarity === "legendary" ? "text-[#ff8000]" : rarity === "epic" ? "text-[#a335ee]" : rarity === "rare" ? "text-[#0070dd]" : "text-[#1eff00]"
-          }`}>
-            {rarity === "legendary" ? "Lendário" : rarity === "epic" ? "Épico" : rarity === "rare" ? "Raro" : "Comum"}
-          </p>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-purple-800/30" />
-        </div>
-      )}
-    </div>
-  );
 }
 
 // Loot-based equipment slot — shows the equipped loot item from inventory, accepts drag

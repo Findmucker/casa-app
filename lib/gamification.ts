@@ -71,7 +71,8 @@ export async function getStats(owner: string): Promise<GameStats> {
   const ref = doc(db, "gamification", owner);
   const snap = await getDoc(ref);
   if (!snap.exists()) return { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 };
-  return snap.data() as GameStats;
+  const data = snap.data();
+  return { points: data.points || 0, totalCompleted: data.totalCompleted || 0, maxStreak: data.maxStreak || 0, shoppingDone: data.shoppingDone || 0, coisinhasDone: data.coisinhasDone || 0, projectsDone: data.projectsDone || 0, habitsDone: data.habitsDone || 0 };
 }
 
 export function checkNewBadges(stats: GameStats, currentBadges: string[]): Badge[] {
