@@ -237,14 +237,13 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
         <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
       </div>
 
-      {/* Equipment - WoW TBC Style Character Panel */}
+      {/* Equipment - Character Panel */}
       <div className="px-3 mb-4">
-        <div className="relative rounded-xl overflow-hidden border-2 border-amber-700/40 shadow-xl shadow-black/30">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1025] via-[#14091e] to-[#0d0614]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)]" />
+        <div className="relative rounded-xl overflow-hidden border-2 border-rose-200/60 shadow-lg shadow-rose-100/30">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-pink-50/80 to-purple-50/80" />
 
-          <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/40 via-amber-800/30 to-amber-900/40 border-b border-amber-700/30">
-            <p className="text-center text-amber-200 text-[11px] font-bold tracking-wide uppercase">Equipamento</p>
+          <div className="relative px-3 py-2 bg-gradient-to-r from-rose-100/60 via-pink-100/40 to-rose-100/60 border-b border-rose-200/40">
+            <p className="text-center text-rose-600 text-[11px] font-bold tracking-wide uppercase">Equipamento</p>
           </div>
 
           <div className="relative px-2 py-4">
@@ -257,7 +256,7 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
 
               <div className="flex-1 flex flex-col items-center justify-center min-h-[200px]">
                 <div className="relative">
-                  <div className="absolute inset-0 blur-xl bg-purple-500/10 rounded-full scale-150" />
+                  <div className="absolute inset-0 blur-xl bg-rose-200/20 rounded-full scale-150" />
                   <CharacterModel equipped={equipped} size="md" />
                 </div>
               </div>
@@ -270,18 +269,18 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
             </div>
           </div>
 
-          <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/20 via-purple-900/20 to-amber-900/20 border-t border-amber-700/20">
-            <div className="flex justify-around text-[9px] text-purple-300">
+          <div className="relative px-3 py-2 bg-gradient-to-r from-rose-100/30 via-purple-100/30 to-rose-100/30 border-t border-rose-200/30">
+            <div className="flex justify-around text-[9px] text-purple-600">
               <span>Nv. {level}</span>
               <span>{stats.points} pts</span>
               <span>{stats.totalCompleted} feitos</span>
             </div>
           </div>
 
-          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-amber-500/50 rounded-tl-lg" />
-          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-amber-500/50 rounded-tr-lg" />
-          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-amber-500/50 rounded-bl-lg" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-amber-500/50 rounded-br-lg" />
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-rose-300/50 rounded-tl-lg" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-rose-300/50 rounded-tr-lg" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-rose-300/50 rounded-bl-lg" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-rose-300/50 rounded-br-lg" />
         </div>
       </div>
 
@@ -699,36 +698,36 @@ function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: Lo
       >
         <button
           onClick={() => item ? setShowTooltip(!showTooltip) : null}
-          className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-md ${
-            dragOver ? "border-amber-400/80 scale-110" : item ? rarityBorder : "border-slate-600/30"
+          className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-sm ${
+            dragOver ? "border-rose-400/80 scale-110" : item ? rarityBorder : "border-purple-200/50"
           } ${
             item
-              ? "bg-gradient-to-b from-[#2a1f3d] to-[#1a0f2e] hover:from-[#352750] hover:to-[#231740]"
-              : "bg-gradient-to-b from-[#2a2a2f] to-[#1e1e22]"
+              ? "bg-gradient-to-b from-white to-purple-50 hover:from-purple-50 hover:to-purple-100"
+              : "bg-gradient-to-b from-white/80 to-pink-50/60"
           }`}
           style={{
             boxShadow: item
-              ? `inset 0 1px 3px rgba(0,0,0,0.6), 0 0 6px ${item.rarity === "legendary" ? "rgba(255,128,0,0.2)" : item.rarity === "epic" ? "rgba(163,53,238,0.2)" : item.rarity === "rare" ? "rgba(0,112,221,0.15)" : "rgba(30,255,0,0.1)"}`
-              : "inset 0 2px 6px rgba(0,0,0,0.5)",
+              ? `0 2px 6px ${item.rarity === "legendary" ? "rgba(255,128,0,0.15)" : item.rarity === "epic" ? "rgba(163,53,238,0.15)" : item.rarity === "rare" ? "rgba(0,112,221,0.1)" : "rgba(30,200,0,0.08)"}`
+              : "0 1px 3px rgba(0,0,0,0.05)",
           }}
         >
           {item ? (
-            <span className="drop-shadow-md">{item.emoji}</span>
+            <span className="drop-shadow-sm">{item.emoji}</span>
           ) : (
-            <span className="text-slate-500/40 text-xs">✦</span>
+            <span className="text-purple-300/50 text-xs">✦</span>
           )}
         </button>
       </div>
-      <span className="text-[8px] text-amber-300/60 mt-0.5 font-medium">{label}</span>
+      <span className="text-[8px] text-rose-400/70 mt-0.5 font-medium">{label}</span>
 
       {/* Tooltip */}
       {showTooltip && item && (
         <div
-          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 rounded-md p-2.5 shadow-2xl"
+          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 rounded-md p-2.5 shadow-lg"
           style={{
-            background: "linear-gradient(to bottom, #1a0f2e, #0d0614)",
-            border: "1px solid rgba(168, 85, 247, 0.3)",
-            boxShadow: "0 0 12px rgba(0,0,0,0.8), inset 0 0 20px rgba(168,85,247,0.05)",
+            background: "linear-gradient(to bottom, #ffffff, #fdf2f8)",
+            border: "1px solid rgba(236, 72, 153, 0.2)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           }}
           onClick={() => setShowTooltip(false)}
         >
@@ -737,8 +736,8 @@ function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: Lo
           }`}>
             {item.name}
           </p>
-          <p className="text-[9px] text-amber-200/50 mt-0.5">{item.description}</p>
-          <div className="border-t border-purple-800/30 my-1.5" />
+          <p className="text-[9px] text-purple-500/70 mt-0.5">{item.description}</p>
+          <div className="border-t border-rose-200/40 my-1.5" />
           <p className={`text-[9px] capitalize font-medium ${
             item.rarity === "legendary" ? "text-[#ff8000]" : item.rarity === "epic" ? "text-[#a335ee]" : item.rarity === "rare" ? "text-[#0070dd]" : "text-[#1eff00]"
           }`}>
@@ -746,11 +745,11 @@ function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: Lo
           </p>
           <button
             onClick={(e) => { e.stopPropagation(); onUnequip(slot); setShowTooltip(false); }}
-            className="mt-1.5 w-full text-[9px] py-1 rounded bg-red-900/40 text-red-300 border border-red-800/30 hover:bg-red-800/40 transition-all"
+            className="mt-1.5 w-full text-[9px] py-1 rounded bg-red-50 text-red-500 border border-red-200/50 hover:bg-red-100 transition-all"
           >
             Desequipar
           </button>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-purple-800/30" />
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-pink-200/40" />
         </div>
       )}
     </div>
