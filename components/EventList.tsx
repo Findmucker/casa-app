@@ -138,7 +138,12 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     if (!currentUser) return;
     const participants = event.participants || [];
     if (!participants.includes(currentUser)) {
-      await update(event.id, { participants: [...participants, currentUser] });
+      const newParticipants = [...participants, currentUser];
+      const updates: Record<string, unknown> = { participants: newParticipants };
+      if (newParticipants.length > (event.guests || 0)) {
+        updates.guests = newParticipants.length;
+      }
+      await update(event.id, updates);
     }
   };
 
@@ -484,7 +489,13 @@ function EventCard({
     if (!newParticipant.trim()) return;
     const participants = event.participants || [];
     if (!participants.includes(newParticipant.trim())) {
-      onUpdateEvent({ participants: [...participants, newParticipant.trim()] });
+      const newParticipants = [...participants, newParticipant.trim()];
+      const updates: Partial<CasaEvent> = { participants: newParticipants };
+      // Auto-update guests count if participants exceed it
+      if (newParticipants.length > (event.guests || 0)) {
+        updates.guests = newParticipants.length;
+      }
+      onUpdateEvent(updates);
     }
     setNewParticipant("");
   };
@@ -581,7 +592,7 @@ function EventCard({
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs text-purple-400">Esperados:</span>
               <button
-                onClick={() => onUpdateEvent({ guests: Math.max(0, (event.guests || 0) - 1) })}
+                onClick={() => onUpdateEvent({ guests: Math.max(participants.length, (event.guests || 0) - 1) })}
                 className="w-7 h-7 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
               >
                 −
