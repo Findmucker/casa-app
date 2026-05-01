@@ -299,14 +299,6 @@ Projeto pessoal — feito com 💕
 
 ## Roadmap / TODO
 
-### Bugs
-- 🐛 Swipe left na meteorologia de um dia ([#31](https://github.com/Findmucker/casa-app/issues/31))
-- 🐛 scheduleLocalNotification recursiva acumula timers ([#54](https://github.com/Findmucker/casa-app/issues/54))
-
-### Refactor & Performance
-- 🔧 Extrair sub-componentes inline em PriorityList e EventList ([#52](https://github.com/Findmucker/casa-app/issues/52))
-- 🔧 Memoizar callbacks com useCallback em listas grandes ([#53](https://github.com/Findmucker/casa-app/issues/53))
-
 ### Acessibilidade & UX
 - ♿ Aria-labels e keyboard navigation ([#48](https://github.com/Findmucker/casa-app/issues/48))
 
