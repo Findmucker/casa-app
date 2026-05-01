@@ -1,7 +1,6 @@
-// Update ShoppingItem to support urgency
 "use client";
 
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, createContext } from "react";
 import {
   collection,
   query,
@@ -12,47 +11,12 @@ import {
   deleteDoc,
   doc,
   serverTimestamp,
-  getDoc,
   getDocs,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
-// Optional context import (won't break if not provided)
-import { createContext } from "react";
+// Context for multi-tenant house scoping
 export const HouseIdContext = createContext<string | null>(null);
-
-// ─── Auth ────────────────────────────────────────────────────
-export function usePin() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("casa-auth");
-    if (saved === "true") setAuthenticated(true);
-    setLoading(false);
-  }, []);
-
-  const verify = async (pin: string): Promise<boolean> => {
-    try {
-      const snap = await getDoc(doc(db, "config", "auth"));
-      if (snap.exists() && snap.data().pin === pin) {
-        localStorage.setItem("casa-auth", "true");
-        setAuthenticated(true);
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("casa-auth");
-    setAuthenticated(false);
-  };
-
-  return { authenticated, loading, verify, logout };
-}
 
 // ─── Firestore collection with real-time sync ────────────────
 export interface ShoppingItem {

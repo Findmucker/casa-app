@@ -131,7 +131,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
 1. Criar projeto no [Firebase Console](https://console.firebase.google.com)
 2. Ativar Firestore Database
-3. (Opcional) Ativar Cloud Messaging para push notifications
+3. Ativar Authentication → Sign-in methods: Email/Password + Google
+4. (Opcional) Ativar Cloud Messaging para push notifications
 
 ### 4. Correr localmente
 
@@ -146,12 +147,16 @@ Abrir [http://localhost:3000](http://localhost:3000)
 ```
 casa-app/
 ├── app/
-│   ├── page.tsx              # Entrada: PIN → Owner → Dashboard
+│   ├── page.tsx              # Entrada: Auth → House Setup → Dashboard
 │   ├── dashboard/page.tsx    # Dashboard principal com todas as tabs
-│   ├── eventos/[shareId]/    # Página pública de eventos (partilha)
+│   ├── convite/[code]/       # Página pública para aceitar convites
 │   ├── api/alarms/check/     # Endpoint cron para verificar alarmes
 │   └── globals.css           # Animações e estilos globais
 ├── components/
+│   ├── AuthScreen.tsx        # Login/registo (email + Google)
+│   ├── HouseSetup.tsx        # Criar casa ou aceitar convite
+│   ├── InvitePanel.tsx       # Gerar códigos de convite
+│   ├── Greeting.tsx          # Saudação personalizada
 │   ├── EventList.tsx         # Gestão de eventos + meteorologia
 │   ├── PriorityList.tsx      # Coisinhas (tarefas pequenas)
 │   ├── ProjectList.tsx       # Projetinhos (projetos grandes)
@@ -166,13 +171,13 @@ casa-app/
 │   ├── HistoryPanel.tsx      # Histórico de completados
 │   ├── MaintenancePanel.tsx  # Painel de manutenção/utilitários
 │   ├── Weather.tsx           # Previsão meteorológica
-│   ├── Greeting.tsx          # Saudação personalizada
-│   ├── OwnerPicker.tsx       # Seleção Eduardo/Moniquinha
-│   ├── PinScreen.tsx         # Ecrã de PIN
+│   ├── FloatingCuties.tsx    # Animações decorativas
 │   └── AutocompleteInput.tsx # Input com sugestões
 ├── lib/
-│   ├── firebase.ts           # Config Firebase
-│   ├── hooks.ts              # useCollection hook (real-time Firestore)
+│   ├── firebase.ts           # Config Firebase + Auth
+│   ├── auth.ts               # Hooks de auth + house operations
+│   ├── context.tsx           # HouseProvider context
+│   ├── hooks.ts              # useCollection hook (real-time, house-scoped)
 │   ├── categories.ts         # Categorias + auto-classificação
 │   ├── gamification.ts       # Sistema de pontos + badges
 │   ├── notifications.ts      # Push notifications + lembretes
@@ -185,19 +190,18 @@ casa-app/
 
 | Collection | Descrição |
 |---|---|
-| `shopping` | Items da lista de compras |
-| `priorities_small` | Coisinhas (tarefas pequenas) |
-| `priorities_big` | Projetos (tarefas grandes) |
-| `events` | Eventos |
-| `events/{id}/items` | Items de cada evento (compras + tarefas) |
-| `habits` | Hábitos/rotinas configurados |
-| `habit_checks` | Checks diários de hábitos |
-| `expenses` | Despesas/gastos |
-| `meal_plans` | Plano de refeições por dia |
-| `gamification` | Pontos, badges, stats |
-| `notification_settings` | Configuração de notificações |
-| `config/events-share` | ShareId para link público |
-| `config/pin` | PIN de acesso |
+| `users/{uid}` | Perfil do utilizador (nome, email, houseId) |
+| `houses/{houseId}` | Casa (nome, membros) |
+| `invites/{code}` | Convites pendentes |
+| `houses/{houseId}/shopping` | Items da lista de compras |
+| `houses/{houseId}/priorities_small` | Coisinhas (tarefas pequenas) |
+| `houses/{houseId}/priorities_big` | Projetos (tarefas grandes) |
+| `houses/{houseId}/events` | Eventos |
+| `houses/{houseId}/habits` | Hábitos/rotinas configurados |
+| `houses/{houseId}/habit_checks` | Checks diários de hábitos |
+| `houses/{houseId}/expenses` | Despesas/gastos |
+| `houses/{houseId}/meal_plans` | Plano de refeições por dia |
+| `houses/{houseId}/gamification` | Pontos, badges, stats |
 
 ## Deploy
 
