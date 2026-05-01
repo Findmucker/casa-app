@@ -12,7 +12,9 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { HouseIdContext } from "@/lib/hooks";
+import { useAuth } from "@/lib/auth";
 import { guessCategory, SHOPPING_CATEGORIES, COISINHAS_CATEGORIES, PROJECTS_CATEGORIES } from "@/lib/categories";
+import { seedTestAccount } from "@/lib/seed";
 
 // Manual overrides for items that guessCategory can't catch
 const SHOPPING_OVERRIDES: Record<string, string> = {};
@@ -58,6 +60,7 @@ export default function MaintenancePanel({ onClose }: MaintenancePanelProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const houseId = useContext(HouseIdContext);
+  const { user } = useAuth();
 
   const migrateToHouse = async () => {
     if (!houseId) { setStatus("❌ Sem casa configurada"); return; }
@@ -220,6 +223,31 @@ export default function MaintenancePanel({ onClose }: MaintenancePanelProps) {
             <div className="text-left flex-1">
               <p className="text-sm font-semibold text-rose-700">Migrar dados para a casa</p>
               <p className="text-[11px] text-pink-400">Copia dados antigos para a casa atual</p>
+            </div>
+          </button>
+        )}
+
+        {houseId && user && (
+          <button
+            onClick={async () => {
+              setRunning(true);
+              setStatus("A preencher dados de teste...");
+              try {
+                const owner = user.displayName || user.email || "user";
+                await seedTestAccount(owner, houseId);
+                setStatus("✅ Conta preenchida com dados de teste (max XP, tudo desbloqueado)!");
+              } catch (e) {
+                setStatus(`❌ Erro: ${e}`);
+              }
+              setRunning(false);
+            }}
+            disabled={running}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/80 border border-pink-100/40 shadow-sm hover:shadow-md active:scale-[0.98] transition-all disabled:opacity-50"
+          >
+            <span className="text-xl">🎮</span>
+            <div className="text-left flex-1">
+              <p className="text-sm font-semibold text-rose-700">Seed dados de teste</p>
+              <p className="text-[11px] text-pink-400">Preenche com max XP, badges e dados exemplo</p>
             </div>
           </button>
         )}
