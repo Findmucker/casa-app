@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase";
 
 // ─── Anime Animal Avatar System (Genshin-inspired) ────────────
 
-export type AvatarSlot = "animal" | "eyes" | "mouth" | "top" | "bottom" | "accessory";
+export type AvatarSlot = "animal" | "eyes" | "mouth" | "top" | "bottom" | "accessory" | "background" | "effect";
 
 export interface AvatarConfig {
   animal: number;
@@ -15,6 +15,8 @@ export interface AvatarConfig {
   top: number;
   bottom: number;
   accessory: number;
+  background: number;
+  effect: number;
 }
 
 // 11 cute anime animals with unique personality traits for animations
@@ -82,12 +84,34 @@ const ACCESSORY_STYLES = [
   { id: 6, name: "Cachecol", type: "scarf" },
 ];
 
-const DEFAULT_AVATAR: AvatarConfig = { animal: 0, eyes: 0, mouth: 0, top: 0, bottom: 0, accessory: 0 };
+const BACKGROUND_STYLES = [
+  { id: 0, name: "Roxo", color1: "#1a0533", color2: "#2d1b4e" },
+  { id: 1, name: "Azul", color1: "#0a1628", color2: "#1a3a5c" },
+  { id: 2, name: "Rosa", color1: "#2d0a1a", color2: "#4a1942" },
+  { id: 3, name: "Verde", color1: "#0a2618", color2: "#1a4a32" },
+  { id: 4, name: "Dourado", color1: "#2a1f0a", color2: "#4a3a1a" },
+  { id: 5, name: "Vermelho", color1: "#2a0a0a", color2: "#4a1a1a" },
+  { id: 6, name: "Cinza", color1: "#1a1a1a", color2: "#2d2d2d" },
+];
+
+const EFFECT_STYLES = [
+  { id: 0, name: "Nenhum", type: "none" },
+  { id: 1, name: "Estrelas", type: "stars" },
+  { id: 2, name: "Corações", type: "hearts" },
+  { id: 3, name: "Brilhos", type: "sparkles" },
+  { id: 4, name: "Bolhas", type: "bubbles" },
+  { id: 5, name: "Neve", type: "snow" },
+  { id: 6, name: "Pixéis", type: "pixels" },
+];
+
+const DEFAULT_AVATAR: AvatarConfig = { animal: 0, eyes: 0, mouth: 0, top: 0, bottom: 0, accessory: 0, background: 0, effect: 0 };
 
 const SLOT_INFO: { key: AvatarSlot; label: string; emoji: string }[] = [
   { key: "animal", label: "Animal", emoji: "🐾" },
   { key: "eyes", label: "Olhos", emoji: "👁️" },
   { key: "mouth", label: "Boca", emoji: "👄" },
+  { key: "background", label: "Fundo", emoji: "🎨" },
+  { key: "effect", label: "Efeitos", emoji: "✨" },
 ];
 
 // ─── Main Component ───────────────────────────────────────────
@@ -138,31 +162,36 @@ export default function AvatarBuilder({ owner, onSave }: AvatarBuilderProps) {
       case "top": return TOP_STYLES.map((t) => ({ id: t.id, name: t.name, preview: <div className="w-8 h-8 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.color}, ${t.secondary})` }} /> }));
       case "bottom": return BOTTOM_STYLES.map((b) => ({ id: b.id, name: b.name, preview: <div className="w-8 h-8 rounded-lg" style={{ background: `linear-gradient(180deg, ${b.color}, ${b.secondary})` }} /> }));
       case "accessory": return ACCESSORY_STYLES.map((a) => ({ id: a.id, name: a.name, preview: <AccessoryPreviewSmall type={a.type} /> }));
+      case "background": return BACKGROUND_STYLES.map((b) => ({ id: b.id, name: b.name, preview: <div className="w-8 h-8 rounded-lg border border-purple-700/30" style={{ background: `linear-gradient(180deg, ${b.color1}, ${b.color2})` }} /> }));
+      case "effect": return EFFECT_STYLES.map((e) => ({ id: e.id, name: e.name, preview: <EffectPreviewSmall type={e.type} /> }));
     }
   };
 
   return (
     <div className="mt-2 pb-8 px-4">
       {/* Large 3D Preview */}
-      <div className="relative mx-auto w-full max-w-[300px] aspect-square mb-5 rounded-2xl overflow-hidden border-2 border-purple-400/30 shadow-2xl">
-        {/* 3D-style background with depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1a0533] via-[#2d1b4e] to-[#1a1035]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(139,92,246,0.15),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(236,72,153,0.1),transparent_40%)]" />
-        {/* Floor reflection */}
-        <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-black/30 to-transparent" />
-        <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[60%] h-[8%] bg-purple-500/10 rounded-full blur-md" />
+      {(() => {
+        const bg = BACKGROUND_STYLES[config.background] || BACKGROUND_STYLES[0];
+        const eff = EFFECT_STYLES[config.effect] || EFFECT_STYLES[0];
+        return (
+          <div className="relative mx-auto w-full max-w-[300px] aspect-square mb-5 rounded-2xl overflow-hidden border-2 border-purple-400/30 shadow-2xl">
+            {/* Dynamic background */}
+            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${bg.color1}, ${bg.color2})` }} />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(255,255,255,0.05),transparent_60%)]" />
+            {/* Floor reflection */}
+            <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-black/30 to-transparent" />
+            <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[60%] h-[8%] bg-white/5 rounded-full blur-md" />
 
-        {/* Character */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <AnimeAnimalCharacter config={config} size={240} />
-        </div>
+            {/* Character */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <AnimeAnimalCharacter config={config} size={240} />
+            </div>
 
-        {/* Genshin-style sparkle effects */}
-        <div className="absolute top-6 right-8 animate-sparkle opacity-50">✦</div>
-        <div className="absolute top-12 left-10 animate-sparkle opacity-30 text-purple-300" style={{ animationDelay: "0.7s" }}>✧</div>
-        <div className="absolute bottom-16 right-12 animate-sparkle opacity-40 text-pink-300" style={{ animationDelay: "1.4s" }}>✦</div>
-      </div>
+            {/* Dynamic effects */}
+            <AvatarEffect type={eff.type} />
+          </div>
+        );
+      })()}
 
       {/* Slot selector */}
       <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-2 mb-3">
@@ -1154,6 +1183,68 @@ function MouthPreviewSmall({ type }: { type: string }) {
 function AccessoryPreviewSmall({ type }: { type: string }) {
   const emojis: Record<string, string> = { none: "✕", bow: "🎀", crown: "👑", wizard_hat: "🧙", flowers: "🌸", glasses: "👓", scarf: "🧣" };
   return <span className="text-xl">{emojis[type] || "✕"}</span>;
+}
+
+function EffectPreviewSmall({ type }: { type: string }) {
+  const emojis: Record<string, string> = { none: "✕", stars: "⭐", hearts: "💕", sparkles: "✨", bubbles: "🫧", snow: "❄️", pixels: "▪️" };
+  return <span className="text-xl">{emojis[type] || "✕"}</span>;
+}
+
+// ─── Avatar Background Effects ───────────────────────────────
+
+function AvatarEffect({ type }: { type: string }) {
+  switch (type) {
+    case "stars":
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="absolute animate-sparkle text-white/40" style={{ top: `${10 + (i * 11) % 70}%`, left: `${5 + (i * 17) % 85}%`, fontSize: `${8 + (i % 3) * 4}px`, animationDelay: `${i * 0.4}s` }}>✦</div>
+          ))}
+        </div>
+      );
+    case "hearts":
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="absolute avatar-float text-pink-300/40" style={{ top: `${15 + (i * 13) % 60}%`, left: `${8 + (i * 19) % 80}%`, fontSize: `${10 + (i % 3) * 3}px`, animationDelay: `${i * 0.6}s` }}>♥</div>
+          ))}
+        </div>
+      );
+    case "sparkles":
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="absolute animate-sparkle" style={{ top: `${5 + (i * 9) % 80}%`, left: `${3 + (i * 13) % 90}%`, fontSize: `${6 + (i % 4) * 3}px`, color: ["#ffd700", "#ffffff", "#ff69b4", "#87ceeb"][i % 4], opacity: 0.4, animationDelay: `${i * 0.3}s` }}>✧</div>
+          ))}
+        </div>
+      );
+    case "bubbles":
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="absolute avatar-float rounded-full border border-white/20" style={{ bottom: `${-10 + (i * 5)}%`, left: `${10 + (i * 14) % 75}%`, width: `${8 + (i % 3) * 6}px`, height: `${8 + (i % 3) * 6}px`, background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent)", animationDelay: `${i * 0.5}s`, animationDuration: `${3 + i * 0.5}s` }} />
+          ))}
+        </div>
+      );
+    case "snow":
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className="absolute avatar-snow text-white/30" style={{ top: `${-5 + (i * 3)}%`, left: `${5 + (i * 8) % 88}%`, fontSize: `${5 + (i % 3) * 3}px`, animationDelay: `${i * 0.4}s`, animationDuration: `${4 + (i % 3)}s` }}>•</div>
+          ))}
+        </div>
+      );
+    case "pixels":
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(15)].map((_, i) => (
+            <div key={i} className="absolute animate-sparkle" style={{ top: `${(i * 7) % 90}%`, left: `${(i * 11) % 90}%`, width: `${3 + (i % 2) * 2}px`, height: `${3 + (i % 2) * 2}px`, backgroundColor: ["#ff69b4", "#87ceeb", "#98fb98", "#ffd700", "#dda0dd"][i % 5], opacity: 0.3, animationDelay: `${i * 0.25}s` }} />
+          ))}
+        </div>
+      );
+    default:
+      return null;
+  }
 }
 
 // ─── Utility ──────────────────────────────────────────────────
