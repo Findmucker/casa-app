@@ -17,6 +17,7 @@ import Tutorial from "@/components/Tutorial";
 import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
+import HouseMembers from "@/components/HouseMembers";
 import { HouseIdContext } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [showSearch, setShowSearch] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showHouseMembers, setShowHouseMembers] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const { user, logout } = useAuth();
@@ -240,6 +242,12 @@ export default function Dashboard() {
                 🔗 Convidar
               </button>
               <button
+                onClick={() => { setShowPanel(false); setShowHouseMembers(true); }}
+                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
+              >
+                👥 Membros
+              </button>
+              <button
                 onClick={() => { toggleDarkMode(); }}
                 className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
               >
@@ -279,6 +287,7 @@ export default function Dashboard() {
         {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} onNavigate={(tab) => switchTab(tab as TabId)} />}
         {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
+        {showHouseMembers && <HouseMembers onClose={() => setShowHouseMembers(false)} />}
         {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
       </main>
 
