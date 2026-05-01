@@ -87,6 +87,7 @@ export interface BigPriorityItem {
   notes?: string;
   budget?: number;
   spent?: number;
+  category?: string;
   subtasks?: Subtask[];
   createdAt: unknown;
 }

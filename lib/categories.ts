@@ -53,6 +53,30 @@ export const COISINHAS_CATEGORY_ORDER = [
   "📦 Outros",
 ];
 
+export const PROJECTS_CATEGORIES: Record<string, string[]> = {
+  "🎨 Pintura": ["pintar", "pintura", "tinta"],
+  "🏗️ Obras & Estrutura": ["telhado", "telhas", "teto falso", "chão", "parede", "cimento", "reboco", "isolante", "terraço", "sótão", "garagem"],
+  "🚪 Portas & Janelas": ["porta", "janela", "portão", "portadas", "vidro", "caixilharia"],
+  "⚡ Eletricidade & Automação": ["eléctrico", "elétrico", "eléctricas", "elétricas", "automação", "automatizar", "interruptor", "tomada", "luz"],
+  "🔧 Reparações": ["arranjar", "reparar", "consertar", "substituir", "trocar", "calhas", "escoamento"],
+  "🍳 Cozinha": ["cozinha", "exaustor", "armário", "móveis", "bancada"],
+  "🏡 Exterior": ["exterior", "jardim", "galinheira", "churrasqueira", "varanda", "terraço"],
+  "🔥 Aquecimento": ["lareira", "recuperador", "aquecimento", "calor"],
+  "📦 Outros": [],
+};
+
+export const PROJECTS_CATEGORY_ORDER = [
+  "🎨 Pintura",
+  "🏗️ Obras & Estrutura",
+  "🚪 Portas & Janelas",
+  "⚡ Eletricidade & Automação",
+  "🔧 Reparações",
+  "🍳 Cozinha",
+  "🏡 Exterior",
+  "🔥 Aquecimento",
+  "📦 Outros",
+];
+
 export function guessCategory(
   name: string,
   categories: Record<string, string[]>
