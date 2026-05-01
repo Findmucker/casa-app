@@ -5,6 +5,99 @@
   --foreground: #831843;
 }
 
+.dark-mode {
+  --background: #0f172a;
+  --foreground: #e9d5ff;
+}
+
+/* Dark mode overrides */
+.dark-mode .bg-white\/60,
+.dark-mode .bg-white\/70,
+.dark-mode .bg-white\/80 {
+  background-color: rgba(30, 20, 50, 0.6) !important;
+}
+
+.dark-mode .bg-white {
+  background-color: rgb(30, 20, 50) !important;
+}
+
+.dark-mode .border-pink-100\/40,
+.dark-mode .border-pink-100\/30,
+.dark-mode .border-pink-100\/50,
+.dark-mode .border-pink-200\/60 {
+  border-color: rgba(126, 34, 206, 0.2) !important;
+}
+
+.dark-mode .text-rose-800,
+.dark-mode .text-rose-700,
+.dark-mode .text-rose-600 {
+  color: #e9d5ff !important;
+}
+
+.dark-mode .text-pink-300,
+.dark-mode .text-pink-400,
+.dark-mode .text-pink-500 {
+  color: #c084fc !important;
+}
+
+.dark-mode .bg-pink-50,
+.dark-mode .bg-pink-100 {
+  background-color: rgba(126, 34, 206, 0.15) !important;
+}
+
+.dark-mode .bg-gradient-to-r.from-pink-400,
+.dark-mode .bg-gradient-to-r.from-pink-300 {
+  --tw-gradient-from: #7c3aed !important;
+  --tw-gradient-to: #a855f7 !important;
+}
+
+.dark-mode .placeholder-pink-300::placeholder {
+  color: #7c3aed !important;
+}
+
+.dark-mode .bg-green-50\/80,
+.dark-mode .bg-green-100 {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+
+.dark-mode .text-green-600 {
+  color: #4ade80 !important;
+}
+
+.dark-mode .shadow-pink-100\/30,
+.dark-mode .shadow-pink-100\/20,
+.dark-mode .shadow-pink-100\/50,
+.dark-mode .shadow-pink-200\/50 {
+  --tw-shadow-color: rgba(126, 34, 206, 0.1) !important;
+}
+
+.dark-mode .text-gray-400,
+.dark-mode .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* Dark mode for specific component backgrounds */
+.dark-mode .bg-gradient-to-br.from-pink-50,
+.dark-mode .bg-gradient-to-br.from-pink-100 {
+  background: linear-gradient(to bottom right, rgba(30, 20, 50, 0.6), rgba(40, 20, 60, 0.6)) !important;
+}
+
+.dark-mode input,
+.dark-mode textarea {
+  background-color: rgba(30, 20, 50, 0.8) !important;
+  color: #e9d5ff !important;
+  border-color: rgba(126, 34, 206, 0.3) !important;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: rgba(168, 85, 247, 0.5) !important;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

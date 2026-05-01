@@ -39,6 +39,46 @@ export default function Dashboard() {
   const [showGamification, setShowGamification] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Load dark mode preference + auto sunrise/sunset
+  useEffect(() => {
+    const saved = localStorage.getItem("casa-dark-mode");
+    if (saved === "true") setDarkMode(true);
+    else if (saved !== "false") {
+      // Auto mode: fetch sunrise/sunset
+      fetchSunTimes();
+    }
+  }, []);
+
+  const fetchSunTimes = async () => {
+    try {
+      const res = await fetch(
+        "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&daily=sunrise,sunset&timezone=Europe/Lisbon&forecast_days=1"
+      );
+      const data = await res.json();
+      const sunrise = data.daily?.sunrise?.[0];
+      const sunset = data.daily?.sunset?.[0];
+      if (sunrise && sunset) {
+        const now = new Date();
+        const sunriseTime = new Date(sunrise);
+        const sunsetTime = new Date(sunset);
+        setDarkMode(now < sunriseTime || now > sunsetTime);
+      }
+    } catch {
+      // Fallback: dark between 20:00-07:00
+      const hour = new Date().getHours();
+      setDarkMode(hour >= 20 || hour < 7);
+    }
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("casa-dark-mode", String(next));
+      return next;
+    });
+  };
 
   // Swipe detection
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -90,24 +130,38 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50">
+    <div className={`flex flex-col h-screen transition-colors duration-500 ${
+      darkMode
+        ? "dark-mode bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900"
+        : "bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50"
+    }`}>
       {/* Header */}
-      <header className="bg-white/60 backdrop-blur-md border-b border-pink-100/50 px-4 py-3 flex items-center justify-between">
+      <header className={`backdrop-blur-md border-b px-4 py-3 flex items-center justify-between transition-colors duration-500 ${
+        darkMode
+          ? "bg-slate-900/60 border-purple-800/30"
+          : "bg-white/60 border-pink-100/50"
+      }`}>
         <button
           onClick={() => setShowSearch(true)}
-          className="w-9 h-9 rounded-full bg-pink-50 flex items-center justify-center text-pink-400 hover:bg-pink-100 active:scale-90 transition-all"
+          className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
+            darkMode ? "bg-purple-900/50 text-purple-300 hover:bg-purple-800/50" : "bg-pink-50 text-pink-400 hover:bg-pink-100"
+          }`}
         >
           🔍
         </button>
         <button
           onClick={() => setShowPanel(!showPanel)}
-          className="text-lg font-bold text-rose-400 tracking-wide hover:text-rose-500 active:scale-95 transition-all"
+          className={`text-lg font-bold tracking-wide active:scale-95 transition-all ${
+            darkMode ? "text-purple-300 hover:text-purple-200" : "text-rose-400 hover:text-rose-500"
+          }`}
         >
           🏡 A Nossa Casinha
         </button>
         <button
           onClick={() => setShowGamification(true)}
-          className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 hover:bg-amber-100 active:scale-90 transition-all"
+          className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
+            darkMode ? "bg-amber-900/30 text-amber-400 hover:bg-amber-800/30" : "bg-amber-50 text-amber-500 hover:bg-amber-100"
+          }`}
         >
           🏆
         </button>
@@ -134,8 +188,12 @@ export default function Dashboard() {
 
         {/* Grid panel overlay */}
         {showPanel && (
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up">
-            <p className="text-sm font-semibold text-rose-400 mb-4">Ir para...</p>
+          <div className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up ${
+            darkMode
+              ? "bg-gradient-to-br from-slate-900/98 via-purple-950/98 to-slate-900/98"
+              : "bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98"
+          }`}>
+            <p className={`text-sm font-semibold mb-4 ${darkMode ? "text-purple-300" : "text-rose-400"}`}>Ir para...</p>
             <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
               {ALL_TABS.map((section) => (
                 <button
@@ -143,32 +201,42 @@ export default function Dashboard() {
                   onClick={() => switchTab(section.id)}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
                     activeTab === section.id
-                      ? "bg-white shadow-md shadow-pink-100/50 border border-pink-200/60 scale-105"
-                      : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                      ? darkMode
+                        ? "bg-purple-800/60 shadow-md shadow-purple-900/50 border border-purple-600/60 scale-105"
+                        : "bg-white shadow-md shadow-pink-100/50 border border-pink-200/60 scale-105"
+                      : darkMode
+                        ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                        : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
                   }`}
                 >
                   <span className="text-xl">{section.emoji}</span>
-                  <span className="text-[10px] font-medium text-rose-600">{section.label}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{section.label}</span>
                 </button>
               ))}
             </div>
             <div className="flex gap-4 mt-6">
               <button
                 onClick={() => { setShowPanel(false); setShowHistory(true); }}
-                className="text-xs text-pink-400 hover:text-pink-600 transition-colors"
+                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
               >
                 📜 Histórico
               </button>
               <button
+                onClick={() => { toggleDarkMode(); }}
+                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
+              >
+                {darkMode ? "☀️ Modo claro" : "🌙 Modo escuro"}
+              </button>
+              <button
                 onClick={() => { setShowPanel(false); setShowMaintenance(true); }}
-                className="text-xs text-pink-400 hover:text-pink-600 transition-colors"
+                className={`text-xs transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
               >
                 ⚙️ Manutenção
               </button>
             </div>
             <button
               onClick={() => setShowPanel(false)}
-              className="mt-4 text-sm text-pink-400 hover:text-pink-600 transition-colors"
+              className={`mt-4 text-sm transition-colors ${darkMode ? "text-purple-400 hover:text-purple-200" : "text-pink-400 hover:text-pink-600"}`}
             >
               Cancelar
             </button>
@@ -183,7 +251,9 @@ export default function Dashboard() {
       </main>
 
       {/* Bottom tabs - scrollable */}
-      <nav className="bg-white/70 backdrop-blur-md border-t border-pink-100/50 safe-area-bottom">
+      <nav className={`backdrop-blur-md border-t safe-area-bottom transition-colors duration-500 ${
+        darkMode ? "bg-slate-900/70 border-purple-800/30" : "bg-white/70 border-pink-100/50"
+      }`}>
         <div ref={navRef} className="flex overflow-x-auto scrollbar-hide">
           {ALL_TABS.map((tab) => (
             <button
@@ -192,8 +262,8 @@ export default function Dashboard() {
               onClick={() => switchTab(tab.id)}
               className={`flex-shrink-0 min-w-[56px] flex flex-col items-center gap-0.5 py-2.5 px-1.5 transition-all duration-300 relative ${
                 activeTab === tab.id && !showPanel
-                  ? "text-rose-500 scale-105"
-                  : "text-gray-400 hover:text-rose-300"
+                  ? darkMode ? "text-purple-300 scale-105" : "text-rose-500 scale-105"
+                  : darkMode ? "text-gray-500 hover:text-purple-400" : "text-gray-400 hover:text-rose-300"
               }`}
             >
               <span className={`text-lg transition-all duration-300 ${
@@ -203,7 +273,9 @@ export default function Dashboard() {
               </span>
               <span className="text-[9px] font-medium leading-tight">{tab.label}</span>
               {activeTab === tab.id && !showPanel && (
-                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-6 bg-gradient-to-r from-pink-300 to-rose-300 rounded-full" />
+                <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full ${
+                  darkMode ? "bg-gradient-to-r from-purple-400 to-pink-400" : "bg-gradient-to-r from-pink-300 to-rose-300"
+                }`} />
               )}
             </button>
           ))}

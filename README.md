@@ -216,8 +216,3 @@ Projeto pessoal — feito com 💕
 - 📍 **Location-based notifications** — lembrar comprinhas quando perto do supermercado
 - 🤖 **Assistant Moniquinha** — assistente personalizada para a app
 - 👤 **Utilizadores/Autenticação** — sistema de auth real (Firebase Auth, contas, permissões)
-- 🌙 **Dark mode** — tema escuro (deep purple/rose)
-- 📷 **Fotos nos projetinhos** — antes/depois
-- 🔄 **Comprinhas recorrentes** — items semanais automáticos
-- 🏷️ **Prioridades** — alta/média/baixa com cores
-- 📍 **Multi-supermercado** — ordem de categorias por loja
