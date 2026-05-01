@@ -309,35 +309,11 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
             Eventos disponíveis
           </p>
           {availableEvents.map((event) => (
-            <div
+            <AvailableEventCard
               key={event.id}
-              className="bg-white/60 rounded-2xl border border-purple-100/30 p-3.5 flex items-center gap-3"
-            >
-              <span className="text-lg">🎉</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-rose-700 truncate">
-                  {event.title}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  {event.date && (
-                    <span className="text-[11px] text-purple-400">
-                      📅 {event.date}
-                    </span>
-                  )}
-                  {(event.participants || []).length > 0 && (
-                    <span className="text-[11px] text-purple-400">
-                      👥 {(event.participants || []).length}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => handleJoin(event)}
-                className="text-[11px] bg-gradient-to-r from-purple-400 to-pink-400 text-white px-3 py-1.5 rounded-xl font-medium hover:from-purple-500 hover:to-pink-500 active:scale-95 transition-all"
-              >
-                Participar
-              </button>
-            </div>
+              event={event}
+              onJoin={() => handleJoin(event)}
+            />
           ))}
         </div>
       )}
@@ -367,6 +343,110 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
           Sem eventos — toca no + para criar
         </p>
       )}
+    </div>
+  );
+}
+
+// ─── Available Event Card (public join confirmation) ────────
+
+function AvailableEventCard({
+  event,
+  onJoin,
+}: {
+  event: CasaEvent;
+  onJoin: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const weather = useEventWeather(event.date);
+  const participants = event.participants || [];
+
+  const formatDate = (d: string) => {
+    if (!d) return "";
+    try {
+      return new Date(d).toLocaleDateString("pt-PT", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+      });
+    } catch { return d; }
+  };
+
+  if (!expanded) {
+    return (
+      <button
+        onClick={() => setExpanded(true)}
+        className="w-full bg-white/60 rounded-2xl border border-purple-100/30 p-3.5 flex items-center gap-3 text-left hover:bg-purple-50/30 active:scale-[0.98] transition-all"
+      >
+        <span className="text-lg">🎉</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-rose-700 truncate">
+            {event.title}
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            {event.date && (
+              <span className="text-[11px] text-purple-400">📅 {formatDate(event.date)}</span>
+            )}
+            {participants.length > 0 && (
+              <span className="text-[11px] text-purple-400">👥 {participants.length}</span>
+            )}
+          </div>
+        </div>
+        <span className="text-purple-300 text-xs">▶</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-purple-200/50 p-4 space-y-3 animate-fade-in-up">
+      {/* Event info */}
+      <div className="text-center space-y-1">
+        <div className="text-3xl">🎉</div>
+        <h3 className="text-base font-bold text-rose-700">{event.title}</h3>
+        {event.date && (
+          <p className="text-sm text-purple-500">📅 {formatDate(event.date)}</p>
+        )}
+        {weather && (
+          <p className="text-sm text-purple-400">
+            {getWeatherInfo(weather.weathercode).emoji} {getWeatherInfo(weather.weathercode).label} — {weather.tempMin}°/{weather.tempMax}°
+            {weather.precipProb > 30 && <span className="text-blue-400"> 💧{weather.precipProb}%</span>}
+          </p>
+        )}
+      </div>
+
+      {/* Who's already in */}
+      {participants.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider mb-1.5">
+            Já confirmados ({participants.length})
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {participants.map((p) => (
+              <span
+                key={p}
+                className="inline-flex items-center bg-purple-100 text-purple-600 text-[11px] px-2.5 py-1 rounded-full"
+              >
+                {p}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
+        <button
+          onClick={() => { onJoin(); setExpanded(false); }}
+          className="flex-1 rounded-xl bg-gradient-to-r from-purple-400 to-pink-400 text-white py-2.5 text-sm font-semibold hover:from-purple-500 hover:to-pink-500 active:scale-[0.98] transition-all"
+        >
+          Quero participar! 🙋
+        </button>
+        <button
+          onClick={() => setExpanded(false)}
+          className="px-4 py-2.5 rounded-xl text-sm text-pink-400 hover:text-pink-600 transition-colors"
+        >
+          Voltar
+        </button>
+      </div>
     </div>
   );
 }
