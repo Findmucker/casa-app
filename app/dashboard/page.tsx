@@ -173,10 +173,10 @@ export default function Dashboard() {
         <button
           onClick={() => setShowGamification(true)}
           className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
-            darkMode ? "bg-amber-900/30 text-amber-400 hover:bg-amber-800/30" : "bg-amber-50 text-amber-500 hover:bg-amber-100"
+            darkMode ? "bg-purple-900/40 text-purple-300 hover:bg-purple-800/40" : "bg-purple-50 text-purple-500 hover:bg-purple-100"
           }`}
         >
-          🏆
+          ⚔️
         </button>
       </header>
 
