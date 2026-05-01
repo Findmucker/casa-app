@@ -23,6 +23,7 @@ export const COISINHAS_CATEGORIES: Record<string, string[]> = {
   "💻 Tech & Eletrónica": ["carregador", "cabo", "pilhas", "lâmpada smart", "adaptador", "power bank", "auriculares", "coluna", "hub usb", "router", "extensão", "temporizador"],
   "🌿 Jardim & Varanda": ["vasos", "terra", "sementes", "fertilizante", "regador", "mangueira", "tesoura jardim", "luvas jardim", "mesa exterior", "cadeira exterior", "guarda-sol", "barbecue", "churrasqueira"],
   "👗 Roupa & Pessoal": ["cabides", "saco roupa", "detergente roupa", "tira-nódoas", "costura", "agulha", "linha", "botões", "tesoura"],
+  "📋 Tarefazinhas": ["morada", "fiscal", "finanças", "contrato", "seguro", "carta", "documento", "certidão", "registo", "nif", "irs", "iuc", "inspeção", "matrícula", "renovar", "cancelar", "subscrição", "marcar", "consulta", "médico", "dentista", "veterinário", "banco", "transferência", "pagamento", "conta", "fatura", "recibo", "declaração", "atestado", "procuração", "notário", "junta", "câmara", "licença", "água", "luz", "gás", "internet", "operadora", "mudar", "alterar", "tratar", "entregar", "levantar", "enviar", "telefonar", "ligar", "email", "responder", "agendar", "desmarcar"],
   "📦 Outros": [],
 };
 
@@ -41,6 +42,7 @@ export const SHOPPING_CATEGORY_ORDER = [
 ];
 
 export const COISINHAS_CATEGORY_ORDER = [
+  "📋 Tarefazinhas",
   "🏠 Casa & Conforto",
   "🍳 Cozinha",
   "🛁 Casa de Banho",
