@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useCollection, type ShoppingItem } from "@/lib/hooks";
 import {
   SHOPPING_CATEGORIES,
@@ -36,6 +36,16 @@ export default function ShoppingList() {
   }, [items]);
 
   const categoryNames = getAllCategoryNames(SHOPPING_CATEGORIES);
+
+  // Migrate existing items without category to Firestore
+  useEffect(() => {
+    items.forEach((item) => {
+      if (!item.category) {
+        const cat = guessCategory(item.name, SHOPPING_CATEGORIES);
+        update(item.id, { category: cat });
+      }
+    });
+  }, [items.length]); // only re-run when items count changes
 
   // Assign categories to items that don't have one
   const categorizedItems = useMemo(() => {

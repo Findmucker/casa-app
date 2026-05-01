@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   useCollection,
   type SmallPriorityItem,
@@ -72,6 +72,17 @@ export default function PriorityList({ collectionName, type }: PriorityListProps
     const fromHistory = items.map((i) => i.name);
     return [...new Set([...fromHistory, ...COMMON_COISINHAS])];
   }, [items]);
+
+  // Migrate existing coisinhas without category to Firestore
+  useEffect(() => {
+    if (type !== "small") return;
+    items.forEach((item) => {
+      if (!(item as SmallPriorityItem).category) {
+        const cat = guessCategory(item.name, COISINHAS_CATEGORIES);
+        update(item.id, { category: cat });
+      }
+    });
+  }, [items.length, type]);
 
   const filteredItems = useMemo(() => {
     if (type !== "small" || filterTab === "todos") return items;
