@@ -6,6 +6,7 @@ import PriorityList from "@/components/PriorityList";
 import ProjectList from "@/components/ProjectList";
 import EventList from "@/components/EventList";
 import Weather from "@/components/Weather";
+import MaintenancePanel from "@/components/MaintenancePanel";
 
 const ALL_TABS = [
   { id: "shopping", label: "Comprinhas", emoji: "🛒" },
@@ -21,6 +22,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("shopping");
   const [animating, setAnimating] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+  const [showMaintenance, setShowMaintenance] = useState(false);
   const prevTab = useRef<TabId>(activeTab);
 
   const switchTab = (id: TabId) => {
@@ -34,14 +36,21 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50">
-      {/* Header - tap to open dashboard grid */}
-      <header className="bg-white/60 backdrop-blur-md border-b border-pink-100/50 px-4 py-3.5 flex items-center justify-center animate-fade-in-up">
+      {/* Header */}
+      <header className="bg-white/60 backdrop-blur-md border-b border-pink-100/50 px-4 py-3.5 flex items-center justify-between animate-fade-in-up">
+        <button
+          onClick={() => setShowMaintenance(true)}
+          className="w-8 h-8 flex items-center justify-center rounded-full text-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-all active:scale-90"
+        >
+          ⚙️
+        </button>
         <button
           onClick={() => setShowPanel(!showPanel)}
           className="text-lg font-bold text-rose-400 tracking-wide hover:text-rose-500 active:scale-95 transition-all"
         >
           🏡 A Nossa Casinha
         </button>
+        <div className="w-8" />
       </header>
 
       {/* Content */}
@@ -87,6 +96,11 @@ export default function Dashboard() {
               Cancelar
             </button>
           </div>
+        )}
+
+        {/* Maintenance panel */}
+        {showMaintenance && (
+          <MaintenancePanel onClose={() => setShowMaintenance(false)} />
         )}
       </main>
 
