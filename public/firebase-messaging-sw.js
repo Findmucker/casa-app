@@ -19,8 +19,8 @@ messaging.onBackgroundMessage((payload) => {
 
   self.registration.showNotification(title, {
     body: body || "",
-    icon: "/icon.svg",
-    badge: "/icon.svg",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
     vibrate: [300, 100, 300, 100, 300],
     tag: "alarm-" + Date.now(),
     requireInteraction: true,

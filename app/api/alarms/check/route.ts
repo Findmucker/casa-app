@@ -74,8 +74,8 @@ export async function GET() {
             webpush: {
               headers: { Urgency: "high" },
               notification: {
-                icon: "/icon.svg",
-                badge: "/icon.svg",
+                icon: "/icon-192.png",
+                badge: "/icon-192.png",
                 vibrate: [300, 100, 300, 100, 300],
                 requireInteraction: true,
               },
