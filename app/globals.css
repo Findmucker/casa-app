@@ -98,6 +98,122 @@
   background: #7c3aed;
 }
 
+/* Dark mode animation adaptations */
+.dark-mode .animate-category-complete {
+  animation: category-complete-dark 0.8s ease-out;
+}
+
+@keyframes category-complete-dark {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.05); background-color: rgba(126, 34, 206, 0.3); box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.dark-mode .animate-celebrate {
+  animation: celebrate-dark 0.5s ease-out;
+}
+
+@keyframes celebrate-dark {
+  0% { transform: scale(1); box-shadow: 0 0 0 rgba(168, 85, 247, 0); }
+  30% { transform: scale(1.3) rotate(-5deg); box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
+  60% { transform: scale(0.95) rotate(3deg); box-shadow: 0 0 8px rgba(168, 85, 247, 0.3); }
+  100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 rgba(168, 85, 247, 0); }
+}
+
+.dark-mode .animate-float-heart {
+  animation: float-heart-dark 3s ease-out forwards;
+}
+
+@keyframes float-heart-dark {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(-20vh) rotate(20deg); opacity: 0; }
+}
+
+.dark-mode .animate-pulse-soft {
+  animation: pulse-soft-dark 2s ease-in-out infinite;
+}
+
+@keyframes pulse-soft-dark {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+}
+
+.dark-mode .animate-fade-in-up {
+  animation: fade-in-up-dark 0.35s ease-out both;
+}
+
+@keyframes fade-in-up-dark {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); filter: brightness(0.7); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: brightness(1); }
+}
+
+.dark-mode .animate-pop-in {
+  animation: pop-in-dark 0.3s ease-out both;
+}
+
+@keyframes pop-in-dark {
+  0% { transform: scale(0); opacity: 0; filter: brightness(1.5); }
+  70% { transform: scale(1.1); filter: brightness(1.2); }
+  100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+}
+
+.dark-mode .confetti-burst span {
+  filter: brightness(1.3) saturate(1.5);
+}
+
+.dark-mode .animate-bounce-gentle {
+  animation: bounce-gentle-dark 1s ease-in-out infinite;
+}
+
+@keyframes bounce-gentle-dark {
+  0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.3)); }
+  50% { transform: translateY(-8px) scale(1.05); filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5)); }
+}
+
+.dark-mode .animate-streak-fire {
+  animation: streak-fire-dark 1.5s ease-in-out infinite;
+}
+
+@keyframes streak-fire-dark {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 4px rgba(251, 146, 60, 0.4)); }
+  25% { transform: scale(1.2) rotate(-3deg); filter: drop-shadow(0 0 10px rgba(251, 146, 60, 0.7)); }
+  50% { transform: scale(1.1) rotate(3deg); filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.6)); }
+  75% { transform: scale(1.15) rotate(-2deg); filter: drop-shadow(0 0 12px rgba(251, 146, 60, 0.8)); }
+}
+
+.dark-mode .animate-spring-in {
+  animation: spring-in-dark 0.4s ease-out both;
+}
+
+@keyframes spring-in-dark {
+  0% { transform: scale(0.3) translateY(20px); opacity: 0; filter: brightness(0.5); }
+  50% { transform: scale(1.05) translateY(-3px); filter: brightness(1.2); }
+  70% { transform: scale(0.97); filter: brightness(1.1); }
+  100% { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1); }
+}
+
+.dark-mode .animate-points-pop {
+  animation: points-pop-dark 0.8s ease-out forwards;
+}
+
+@keyframes points-pop-dark {
+  0% { transform: translateY(0) scale(1); opacity: 1; text-shadow: 0 0 8px rgba(168, 85, 247, 0.8); }
+  100% { transform: translateY(-30px) scale(1.5); opacity: 0; text-shadow: 0 0 16px rgba(168, 85, 247, 0); }
+}
+
+/* Dark mode glow effect on active items */
+.dark-mode .animate-pulse-heart {
+  animation: pulse-heart-dark 0.6s ease-in-out infinite;
+}
+
+@keyframes pulse-heart-dark {
+  0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 3px rgba(251, 146, 60, 0.5)); }
+  50% { transform: scale(1.3); opacity: 0.8; filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.8)); }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
