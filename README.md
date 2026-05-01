@@ -34,6 +34,49 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - Limpar comprinhas/coisinhas já concluídas
 - Acessível via menu do dashboard (tap no título)
 
+### 💊 Rotinazinhas (Hábitos diários)
+- Check diário que reseta à meia-noite
+- Streak counter com 🔥 e animações
+- Hora configurável por hábito
+- Push notifications (com permissão)
+- Pílula como hábito default
+
+### 💰 Gastinhos (Despesas)
+- Tracking simples: nome, valor, categoria, quem pagou
+- Resumo mensal por categoria (com barras visuais)
+- Total por pessoa (Eduardo/Moniquinha/Ambos)
+- Navegação por meses
+
+### 🍽️ Receitinhas (Plano de refeições)
+- Vista semanal (7 dias)
+- Slots: Pequeno-almoço, Almoço, Jantar, Snack
+- Enviar ingredientes direto para as Comprinhas
+- Autocomplete com refeições passadas
+
+### 📅 Calendarzinho
+- Vista mensal com grid
+- Dots coloridos por tipo (hábitos, coisinhas, projetos)
+- Tap num dia para ver detalhes
+
+### ✨ Dashboard Resumo
+- Cards com status de todas as áreas
+- Barra de progresso semanal
+- Acesso rápido a cada secção
+
+### 🏆 Gamificação
+- Sistema de pontos (+1 compra, +2 coisinha, +5 projeto, +2 hábito)
+- Níveis (cada 50 pontos)
+- 9 badges desbloqueáveis
+- Streak tracking
+
+### 🔍 Pesquisa Global
+- Buscar em todas as tabs de uma vez
+- Resultados agrupados por tipo
+
+### 📜 Histórico
+- Items completados com data
+- Stats por categoria
+
 ### 🎉 Eventos
 - Criar eventos com data e participantes
 - Lista de compras e tarefas por evento
@@ -112,6 +155,14 @@ casa-app/
 │   ├── PriorityList.tsx      # Coisinhas (tarefas pequenas)
 │   ├── ProjectList.tsx       # Projetinhos (projetos grandes)
 │   ├── ShoppingList.tsx      # Comprinhas (lista de compras)
+│   ├── HabitList.tsx         # Rotinazinhas (hábitos diários)
+│   ├── ExpenseList.tsx       # Gastinhos (despesas)
+│   ├── MealPlanner.tsx       # Receitinhas (plano refeições)
+│   ├── Calendar.tsx          # Calendarzinho (vista mensal)
+│   ├── DashboardSummary.tsx  # Resumo com cards e progresso
+│   ├── Gamification.tsx      # Pontos, níveis, badges
+│   ├── SearchOverlay.tsx     # Pesquisa global
+│   ├── HistoryPanel.tsx      # Histórico de completados
 │   ├── MaintenancePanel.tsx  # Painel de manutenção/utilitários
 │   ├── Weather.tsx           # Previsão meteorológica
 │   ├── Greeting.tsx          # Saudação personalizada
@@ -122,6 +173,8 @@ casa-app/
 │   ├── firebase.ts           # Config Firebase
 │   ├── hooks.ts              # useCollection hook (real-time Firestore)
 │   ├── categories.ts         # Categorias + auto-classificação
+│   ├── gamification.ts       # Sistema de pontos + badges
+│   ├── notifications.ts      # Push notifications + lembretes
 │   └── share.ts              # Gerar/validar shareId para eventos
 └── public/
     └── manifest.json         # PWA manifest
@@ -136,8 +189,12 @@ casa-app/
 | `priorities_big` | Projetos (tarefas grandes) |
 | `events` | Eventos |
 | `events/{id}/items` | Items de cada evento (compras + tarefas) |
-| `alarms` | Alarmes (descontinuado) |
-| `fcm_tokens` | Tokens FCM (descontinuado) |
+| `habits` | Hábitos/rotinas configurados |
+| `habit_checks` | Checks diários de hábitos |
+| `expenses` | Despesas/gastos |
+| `meal_plans` | Plano de refeições por dia |
+| `gamification` | Pontos, badges, stats |
+| `notification_settings` | Configuração de notificações |
 | `config/events-share` | ShareId para link público |
 | `config/pin` | PIN de acesso |
 
@@ -156,7 +213,11 @@ Projeto pessoal — feito com 💕
 
 ## Roadmap / TODO
 
-- 🔔 **Notificações push** — alertar quando items são adicionados ou eventos criados
 - 📍 **Location-based notifications** — lembrar comprinhas quando perto do supermercado
 - 🤖 **Assistant Moniquinha** — assistente personalizada para a app
 - 👤 **Utilizadores/Autenticação** — sistema de auth real (Firebase Auth, contas, permissões)
+- 🌙 **Dark mode** — tema escuro (deep purple/rose)
+- 📷 **Fotos nos projetinhos** — antes/depois
+- 🔄 **Comprinhas recorrentes** — items semanais automáticos
+- 🏷️ **Prioridades** — alta/média/baixa com cores
+- 📍 **Multi-supermercado** — ordem de categorias por loja

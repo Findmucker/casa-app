@@ -239,3 +239,77 @@ body {
 .animate-category-complete {
   animation: category-complete 0.8s ease-out;
 }
+
+/* Spring in — bouncy entrance */
+@keyframes spring-in {
+  0% { transform: scale(0.3) translateY(20px); opacity: 0; }
+  50% { transform: scale(1.05) translateY(-3px); }
+  70% { transform: scale(0.97); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.animate-spring-in {
+  animation: spring-in 0.4s ease-out both;
+}
+
+/* Fade out scale — item removal */
+@keyframes fade-out-scale {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0.8); opacity: 0; }
+}
+
+.animate-fade-out {
+  animation: fade-out-scale 0.25s ease-in forwards;
+}
+
+/* Slide left — tab going left */
+@keyframes slide-left {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-left {
+  animation: slide-left 0.3s ease-out both;
+}
+
+/* Slide right — tab going right */
+@keyframes slide-right {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-right {
+  animation: slide-right 0.3s ease-out both;
+}
+
+/* Streak fire — pulsing flame */
+@keyframes streak-fire {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.2) rotate(-3deg); }
+  50% { transform: scale(1.1) rotate(3deg); }
+  75% { transform: scale(1.15) rotate(-2deg); }
+}
+
+.animate-streak-fire {
+  animation: streak-fire 1.5s ease-in-out infinite;
+}
+
+/* Points pop — "+1" floating up */
+@keyframes points-pop {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-30px) scale(1.5); opacity: 0; }
+}
+
+.animate-points-pop {
+  animation: points-pop 0.8s ease-out forwards;
+}
+
+/* Swipe hint */
+@keyframes swipe-hint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-5px); }
+}
+
+.animate-swipe-hint {
+  animation: swipe-hint 2s ease-in-out infinite;
+}

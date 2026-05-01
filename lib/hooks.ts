@@ -58,6 +58,7 @@ export interface ShoppingItem {
   done: boolean;
   urgent: boolean;
   category?: string;
+  completedAt?: string;
   createdAt: unknown;
 }
 
@@ -69,6 +70,7 @@ export interface SmallPriorityItem {
   price?: number;
   notes?: string;
   category?: string;
+  completedAt?: string;
   assignee?: "eduardo" | "moniquinha" | "ambos";
   createdAt: unknown;
 }
@@ -89,7 +91,53 @@ export interface BigPriorityItem {
   spent?: number;
   category?: string;
   subtasks?: Subtask[];
+  completedAt?: string;
   createdAt: unknown;
+}
+
+export interface HabitItem {
+  id: string;
+  name: string;
+  emoji: string;
+  reminderTime?: string; // "HH:MM"
+  streak: number;
+  lastChecked?: string; // ISO date "YYYY-MM-DD"
+  createdAt: unknown;
+}
+
+export interface HabitCheck {
+  id: string;
+  habitId: string;
+  date: string; // "YYYY-MM-DD"
+  createdAt: unknown;
+}
+
+export interface ExpenseItem {
+  id: string;
+  name: string;
+  amount: number;
+  category: string;
+  paidBy: "eduardo" | "moniquinha" | "ambos";
+  date: string; // ISO date
+  createdAt: unknown;
+}
+
+export interface MealPlan {
+  id: string;
+  date: string; // "YYYY-MM-DD"
+  breakfast?: string;
+  lunch?: string;
+  dinner?: string;
+  snack?: string;
+  createdAt: unknown;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  avatar: string;
+  points: number;
+  badges: string[];
 }
 
 export function useCollection<T extends { id: string }>(
