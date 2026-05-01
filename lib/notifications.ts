@@ -14,7 +14,7 @@ export async function requestNotificationPermission(owner: string): Promise<bool
   if ("serviceWorker" in navigator) {
     try {
       const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-      console.log("SW registered:", registration.scope);
+      console.info("SW registered:", registration.scope);
     } catch (e) {
       console.warn("SW registration failed:", e);
     }

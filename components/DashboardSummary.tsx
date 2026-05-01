@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useCollection, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
+import { useSharedCollections } from "@/lib/hooks";
 import { getToday } from "@/lib/notifications";
 
 interface DashboardSummaryProps {
@@ -23,12 +23,7 @@ function getTimeGreeting(): string {
 }
 
 export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
-  const { items: shopping } = useCollection<ShoppingItem>("shopping", "createdAt");
-  const { items: coisinhas } = useCollection<SmallPriorityItem>("priorities_small", "order");
-  const { items: projects } = useCollection<BigPriorityItem>("priorities_big", "order");
-  const { items: habits } = useCollection<HabitItem>("habits", "createdAt");
-  const { items: checks } = useCollection<HabitCheck>("habit_checks", "createdAt");
-  const { items: expenses } = useCollection<ExpenseItem>("expenses", "createdAt");
+  const { shopping, coisinhas, projects, habits, checks, expenses } = useSharedCollections();
 
   const today = getToday();
   const currentMonth = today.substring(0, 7);

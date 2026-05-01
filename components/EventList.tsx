@@ -129,7 +129,7 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
       guests: Math.max(parseInt(guests) || 0, participants.length),
       participants,
       done: false,
-    } as unknown as Omit<CasaEvent, "id">);
+    });
     setTitle("");
     setDate("");
     setGuests("");
@@ -168,7 +168,8 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
       date: "",
       guests: event.guests,
       done: false,
-    } as unknown as Omit<CasaEvent, "id">);
+      participants: [],
+    });
 
     // Copy items from old event (reset done to false)
     // We need to get the items from the original event subcollection
@@ -179,7 +180,7 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
       const eventsSnap = await getDocs(collection(db, "events"));
       const allEvents = eventsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const newest = allEvents
-        .filter((e) => (e as unknown as CasaEvent).title === `${event.title} (cópia)`)
+        .filter((e) => (e as CasaEvent).title === `${event.title} (cópia)`)
         .pop();
 
       if (newest) {
@@ -562,7 +563,7 @@ function EventCard({
       done: false,
       type: newType,
       ...(newAssignee ? { assignee: newAssignee } : {}),
-    } as unknown as Omit<EventItem, "id">);
+    });
     setNewItem("");
     setNewAssignee("");
   };

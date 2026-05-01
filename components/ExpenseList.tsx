@@ -61,7 +61,7 @@ export default function ExpenseList() {
       category: newCategory,
       paidBy: newPayer,
       date: new Date().toISOString().split("T")[0],
-    } as Omit<ExpenseItem, "id">);
+    });
     setNewName("");
     setNewAmount("");
     setShowAdd(false);

@@ -36,16 +36,19 @@ export default function ShoppingList() {
   }, [items]);
 
   const categoryNames = getAllCategoryNames(SHOPPING_CATEGORIES);
+  const hasMigrated = useRef(false);
 
-  // Migrate existing items without category to Firestore
+  // Migrate existing items without category (once per session)
   useEffect(() => {
-    items.forEach((item) => {
-      if (!item.category) {
-        const cat = guessCategory(item.name, SHOPPING_CATEGORIES);
-        update(item.id, { category: cat });
-      }
+    if (hasMigrated.current || items.length === 0) return;
+    const uncategorized = items.filter((item) => !item.category);
+    if (uncategorized.length === 0) return;
+    hasMigrated.current = true;
+    uncategorized.forEach((item) => {
+      const cat = guessCategory(item.name, SHOPPING_CATEGORIES);
+      update(item.id, { category: cat });
     });
-  }, [items.length]); // only re-run when items count changes
+  }, [items.length]);
 
   // Assign categories to items that don't have one
   const categorizedItems = useMemo(() => {
@@ -97,7 +100,7 @@ export default function ShoppingList() {
     const name = newItem.trim();
     if (!name) return;
     const category = guessCategory(name, SHOPPING_CATEGORIES);
-    await add({ name, addedBy: "", done: false, urgent: newUrgent, category } as Omit<ShoppingItem, "id">);
+    await add({ name, addedBy: "", done: false, urgent: newUrgent, category });
     setNewItem("");
     setNewUrgent(false);
     inputRef.current?.focus();

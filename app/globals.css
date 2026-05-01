@@ -73,7 +73,44 @@
 
 .dark-mode .text-gray-400,
 .dark-mode .text-gray-500 {
-  color: #a1a1aa !important;
+  color: #d4d4d8 !important;
+}
+
+/* Dark mode — orange text (MealPlanner, etc.) */
+.dark-mode .text-orange-600,
+.dark-mode .text-orange-700,
+.dark-mode .text-orange-800 {
+  color: #fdba74 !important;
+}
+
+.dark-mode .text-orange-300,
+.dark-mode .text-orange-400,
+.dark-mode .text-orange-500 {
+  color: #fed7aa !important;
+}
+
+.dark-mode .border-orange-100\/40,
+.dark-mode .border-orange-100\/30,
+.dark-mode .border-orange-200,
+.dark-mode .border-orange-200\/30,
+.dark-mode .border-orange-300\/60 {
+  border-color: rgba(251, 146, 60, 0.25) !important;
+}
+
+.dark-mode .bg-orange-50,
+.dark-mode .bg-orange-200 {
+  background-color: rgba(251, 146, 60, 0.12) !important;
+}
+
+/* Dark mode — red/urgent text */
+.dark-mode .text-red-400,
+.dark-mode .text-red-500 {
+  color: #fca5a5 !important;
+}
+
+.dark-mode .bg-red-100,
+.dark-mode .bg-red-50\/80 {
+  background-color: rgba(239, 68, 68, 0.12) !important;
 }
 
 /* Dark mode for specific component backgrounds */
@@ -241,7 +278,7 @@
 .theme-morning .text-pink-300,
 .theme-morning .text-pink-400,
 .theme-morning .text-pink-500 {
-  color: #d97706 !important;
+  color: #92400e !important;
 }
 
 .theme-morning .text-purple-500,
@@ -297,7 +334,7 @@
 .theme-dusk .text-pink-300,
 .theme-dusk .text-pink-400,
 .theme-dusk .text-pink-500 {
-  color: #c2410c !important;
+  color: #9a3412 !important;
 }
 
 .theme-dusk .text-purple-500,

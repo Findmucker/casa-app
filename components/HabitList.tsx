@@ -85,7 +85,7 @@ export default function HabitList() {
     setCelebrating(habit.id);
     setTimeout(() => setCelebrating(null), 800);
 
-    await addCheck({ habitId: habit.id, date: today } as Omit<HabitCheck, "id">);
+    await addCheck({ habitId: habit.id, date: today });
 
     const newStreak = getStreak(habit.id) + 1;
     await update(habit.id, { streak: newStreak, lastChecked: today });
@@ -108,7 +108,7 @@ export default function HabitList() {
       reminderTime: newTime || undefined,
       assignee: newAssignee,
       streak: 0,
-    } as Omit<HabitItem, "id">);
+    });
     setNewName("");
     setNewTime("");
     setNewAssignee("ambos");
@@ -224,7 +224,7 @@ export default function HabitList() {
             <button
               onClick={async () => {
                 for (const h of DEFAULT_HABITS) {
-                  await add({ ...h, streak: 0 } as Omit<HabitItem, "id">);
+                  await add({ ...h, streak: 0 });
                 }
               }}
               className="mt-4 text-xs bg-purple-100 text-purple-500 px-4 py-2 rounded-full hover:bg-purple-200 transition-all"

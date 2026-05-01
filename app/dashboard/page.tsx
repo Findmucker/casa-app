@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect, useContext } from "react";
+import { useState, useRef, useCallback, useEffect, useContext, useMemo } from "react";
 import ShoppingList from "@/components/ShoppingList";
 import PriorityList from "@/components/PriorityList";
 import ProjectList from "@/components/ProjectList";
@@ -18,7 +18,7 @@ import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
 import HouseMembers from "@/components/HouseMembers";
-import { HouseIdContext } from "@/lib/hooks";
+import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 import { useTimeTheme } from "@/lib/themes";
 
@@ -52,6 +52,18 @@ export default function Dashboard() {
   const darkMode = theme.isDark;
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
+
+  // Shared collection data — single set of listeners for Dashboard + DashboardSummary
+  const { items: shopping } = useCollection<ShoppingItem>("shopping", "createdAt");
+  const { items: coisinhas } = useCollection<SmallPriorityItem>("priorities_small", "order");
+  const { items: projects } = useCollection<BigPriorityItem>("priorities_big", "order");
+  const { items: habits } = useCollection<HabitItem>("habits", "createdAt");
+  const { items: checks } = useCollection<HabitCheck>("habit_checks", "createdAt");
+  const { items: expenses } = useCollection<ExpenseItem>("expenses", "createdAt");
+
+  const sharedData = useMemo(() => ({
+    shopping, coisinhas, projects, habits, checks, expenses,
+  }), [shopping, coisinhas, projects, habits, checks, expenses]);
 
   // Tutorial on first visit
   useEffect(() => {
@@ -145,6 +157,7 @@ export default function Dashboard() {
       </header>
 
       {/* Content */}
+      <CollectionDataContext.Provider value={sharedData}>
       <main
         className="flex-1 overflow-hidden relative"
         onTouchStart={handleTouchStart}
@@ -176,7 +189,8 @@ export default function Dashboard() {
                   ? "from-orange-100/98 via-rose-200/98 to-purple-200/98"
                   : "from-pink-50/98 via-rose-50/98 to-purple-50/98"
           }`}>
-            <p className={`text-sm font-semibold mb-4 ${darkMode ? "text-purple-300" : "text-rose-400"}`}>Ir para...</p>
+            {/* Navigation section */}
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>Navegar</p>
             <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
               {ALL_TABS.map((section) => (
                 <button
@@ -197,36 +211,48 @@ export default function Dashboard() {
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-3 gap-3 px-6 max-w-sm mt-5">
+
+            {/* Divider */}
+            <div className={`w-32 h-px my-6 ${darkMode ? "bg-purple-700/50" : "bg-pink-200/60"}`} />
+
+            {/* Options section */}
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>Gestão</p>
+            <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
               {[
                 { emoji: "📜", label: "Histórico", action: () => { setShowPanel(false); setShowHistory(true); } },
                 { emoji: "🔗", label: "Convidar", action: () => { setShowPanel(false); setShowInvite(true); } },
                 { emoji: "👥", label: "Membros", action: () => { setShowPanel(false); setShowHouseMembers(true); } },
                 { emoji: "⚙️", label: "Manutenção", action: () => { setShowPanel(false); setShowMaintenance(true); } },
                 { emoji: "❓", label: "Tutorial", action: () => { setShowPanel(false); setShowTutorial(true); } },
-                { emoji: "🚪", label: "Sair", action: () => { logout(); } },
               ].map((item) => (
                 <button
                   key={item.label}
                   onClick={item.action}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
-                    item.label === "Sair"
-                      ? darkMode
-                        ? "bg-red-950/40 border border-red-800/40 hover:bg-red-900/50"
-                        : "bg-red-50/60 border border-red-200/50 hover:bg-red-100/80"
-                      : darkMode
-                        ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
-                        : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                    darkMode
+                      ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                      : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
                   }`}
                 >
                   <span className="text-xl">{item.emoji}</span>
-                  <span className={`text-[10px] font-medium ${
-                    item.label === "Sair"
-                      ? darkMode ? "text-red-400" : "text-red-500"
-                      : darkMode ? "text-purple-200" : "text-rose-600"
-                  }`}>{item.label}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{item.label}</span>
                 </button>
               ))}
+            </div>
+
+            {/* Sair — isolated */}
+            <div className="mt-5">
+              <button
+                onClick={() => { logout(); }}
+                className={`flex flex-col items-center gap-1.5 px-6 py-3 rounded-2xl transition-all active:scale-90 ${
+                  darkMode
+                    ? "bg-red-950/40 border border-red-800/40 hover:bg-red-900/50"
+                    : "bg-red-50/60 border border-red-200/50 hover:bg-red-100/80"
+                }`}
+              >
+                <span className="text-xl">🚪</span>
+                <span className={`text-[10px] font-medium ${darkMode ? "text-red-400" : "text-red-500"}`}>Sair</span>
+              </button>
             </div>
           </div>
         )}
@@ -240,6 +266,7 @@ export default function Dashboard() {
         {showHouseMembers && <HouseMembers onClose={() => setShowHouseMembers(false)} />}
         {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
       </main>
+      </CollectionDataContext.Provider>
 
       {/* Bottom tabs - scrollable */}
       <nav className={`backdrop-blur-md border-t safe-area-bottom transition-colors duration-500 ${

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   useCollection,
   type BigPriorityItem,
@@ -30,13 +30,16 @@ export default function ProjectList() {
   const [fieldValue, setFieldValue] = useState("");
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
-  // Migrate existing items without category
+  // Migrate existing items without category (once per session)
+  const hasMigrated = useRef(false);
   useEffect(() => {
-    items.forEach((item) => {
-      if (!item.category) {
-        const cat = guessCategory(item.name, PROJECTS_CATEGORIES);
-        update(item.id, { category: cat });
-      }
+    if (hasMigrated.current || items.length === 0) return;
+    const uncategorized = items.filter((item) => !item.category);
+    if (uncategorized.length === 0) return;
+    hasMigrated.current = true;
+    uncategorized.forEach((item) => {
+      const cat = guessCategory(item.name, PROJECTS_CATEGORIES);
+      update(item.id, { category: cat });
     });
   }, [items.length]);
 
@@ -54,7 +57,7 @@ export default function ProjectList() {
       spent: 0,
       subtasks: [],
       category,
-    } as unknown as Omit<BigPriorityItem, "id">);
+    });
     setNewName("");
   };
 

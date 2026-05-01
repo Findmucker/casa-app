@@ -578,8 +578,8 @@ function PixelAnimal({ size, animalId, idle, eyes, mouth, top, bottom, accessory
     if (color === E_COLOR) {
       // Pupil — use eye color (iris around pupil)
       const isRight = x >= 8;
-      if (isRight && (eyes as any).rightEyeColor) {
-        return (eyes as any).rightEyeColor;
+      if (isRight && "rightEyeColor" in eyes && eyes.rightEyeColor) {
+        return eyes.rightEyeColor;
       }
       return eyes.eyeColor;
     }
@@ -895,7 +895,7 @@ export function AnimeAnimalCharacter({ config, size }: { config: AvatarConfig; s
 // ─── 3D Eye (legacy — unused, kept for compat) ──────────────────────────
 
 function AnimeEye3D({ style, scale: s, isRight }: { style: typeof EYE_STYLES[0]; scale: number; isRight?: boolean }) {
-  const eyeColor = isRight && (style as any).rightEyeColor ? (style as any).rightEyeColor : style.eyeColor;
+  const eyeColor = isRight && "rightEyeColor" in style && style.rightEyeColor ? style.rightEyeColor : style.eyeColor;
   return (
     <div className="relative" style={{ width: `${16*s}px`, height: `${18*s}px` }}>
       <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "45%", background: "linear-gradient(180deg, #ffffff, #f0f0f5)", border: `${1.5*s}px solid #37474f` }}>

@@ -171,7 +171,7 @@ export function useCollection<T extends { id: string }>(
     return () => unsub();
   }, [collectionName, orderField, houseId]);
 
-  const add = async (data: Omit<T, "id">) => {
+  const add = async (data: Omit<T, "id" | "createdAt">) => {
     try {
       await addDoc(getCollectionRef(), {
         ...data,
@@ -205,4 +205,70 @@ export function useCollection<T extends { id: string }>(
   };
 
   return { items, loading, add, update, remove };
+}
+
+// ─── Lazy query hook — only fetches when enabled ────────────────
+export function useLazyCollection<T extends { id: string }>(
+  collectionName: string,
+  orderField: string = "createdAt",
+  enabled: boolean = false
+) {
+  const [items, setItems] = useState<T[]>([]);
+  const [loading, setLoading] = useState(false);
+  const houseId = useContext(HouseIdContext);
+
+  useEffect(() => {
+    if (!enabled) {
+      setItems([]);
+      return;
+    }
+
+    setLoading(true);
+    const colRef = houseId
+      ? collection(db, "houses", houseId, collectionName)
+      : collection(db, collectionName);
+
+    const q = query(
+      colRef,
+      orderBy(orderField, orderField === "order" ? "asc" : "desc")
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as T[];
+      setItems(data);
+      setLoading(false);
+    }, (error) => {
+      console.error("Lazy snapshot error:", error);
+      setLoading(false);
+    });
+
+    return () => unsub();
+  }, [collectionName, orderField, houseId, enabled]);
+
+  return { items, loading };
+}
+
+// ─── Shared collection data context (avoids duplicate listeners) ─
+export interface CollectionData {
+  shopping: ShoppingItem[];
+  coisinhas: SmallPriorityItem[];
+  projects: BigPriorityItem[];
+  habits: HabitItem[];
+  checks: HabitCheck[];
+  expenses: ExpenseItem[];
+}
+
+export const CollectionDataContext = createContext<CollectionData | null>(null);
+
+export function useSharedCollections(): CollectionData {
+  const ctx = useContext(CollectionDataContext);
+  if (ctx) return ctx;
+  // Fallback: if no context, open own listeners (shouldn't happen)
+  const { items: shopping } = useCollection<ShoppingItem>("shopping", "createdAt");
+  const { items: coisinhas } = useCollection<SmallPriorityItem>("priorities_small", "order");
+  const { items: projects } = useCollection<BigPriorityItem>("priorities_big", "order");
+  const { items: habits } = useCollection<HabitItem>("habits", "createdAt");
+  const { items: checks } = useCollection<HabitCheck>("habit_checks", "createdAt");
+  const { items: expenses } = useCollection<ExpenseItem>("expenses", "createdAt");
+  return { shopping, coisinhas, projects, habits, checks, expenses };
 }

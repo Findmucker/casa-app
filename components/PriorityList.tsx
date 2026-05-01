@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useCollection, type SmallPriorityItem } from "@/lib/hooks";
 import {
   COISINHAS_CATEGORIES,
@@ -41,12 +41,15 @@ export default function PriorityList() {
     return [...new Set([...fromHistory, ...COMMON_COISINHAS])];
   }, [items]);
 
-  // Auto-migrate items without category
+  // Auto-migrate items without category (once per session)
+  const hasMigrated = useRef(false);
   useEffect(() => {
-    items.forEach((item) => {
-      if (!item.category) {
-        update(item.id, { category: guessCategory(item.name, COISINHAS_CATEGORIES) });
-      }
+    if (hasMigrated.current || items.length === 0) return;
+    const uncategorized = items.filter((item) => !item.category);
+    if (uncategorized.length === 0) return;
+    hasMigrated.current = true;
+    uncategorized.forEach((item) => {
+      update(item.id, { category: guessCategory(item.name, COISINHAS_CATEGORIES) });
     });
   }, [items.length]);
 
@@ -85,7 +88,7 @@ export default function PriorityList() {
       assignee: newAssignee,
       category,
       ...(newPrice ? { price: parseFloat(newPrice) } : {}),
-    } as Omit<SmallPriorityItem, "id">);
+    });
     setNewName("");
     setNewPrice("");
   };

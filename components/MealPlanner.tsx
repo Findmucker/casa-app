@@ -58,19 +58,23 @@ export default function MealPlanner() {
   }, [items]);
 
   const saveSlot = async () => {
-    if (!editingSlot || !slotText.trim()) {
-      setEditingSlot(null);
+    if (!editingSlot) return;
+    const slot = editingSlot;
+    setEditingSlot(null); // unmount input first to prevent blur double-fire
+
+    if (!slotText.trim()) {
+      setSlotText("");
       return;
     }
 
-    const existing = plansByDate[editingSlot.date];
+    const existing = plansByDate[slot.date];
     if (existing) {
-      await update(existing.id, { [editingSlot.slot]: slotText.trim() });
+      await update(existing.id, { [slot.slot]: slotText.trim() });
     } else {
       await add({
-        date: editingSlot.date,
-        [editingSlot.slot]: slotText.trim(),
-      } as Omit<MealPlan, "id">);
+        date: slot.date,
+        [slot.slot]: slotText.trim(),
+      });
     }
     setEditingSlot(null);
     setSlotText("");
@@ -85,8 +89,7 @@ export default function MealPlanner() {
         addedBy: "meal-planner",
         done: false,
         urgent: false,
-        createdAt: null,
-      } as Omit<ShoppingItem, "id">);
+      });
     }
     setIngredients("");
     setIngredientsModal(null);
