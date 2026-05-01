@@ -240,36 +240,62 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
 
       {subTab === "equip" ? (
         <>
-          {/* Equipment - WoW Style Paper Doll */}
-          <div className="px-5">
-            <div className="relative bg-gradient-to-b from-indigo-950/60 to-purple-950/60 rounded-2xl border border-pink-300/20 p-4 shadow-inner shadow-purple-900/30">
-              <div className="grid grid-cols-5 grid-rows-4 gap-1.5 items-center justify-items-center min-h-[220px]">
-                <div className="col-start-3 row-start-1">
-                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "crown")!} unlocked={EQUIPMENT.find((e) => e.slot === "crown")!.condition(stats, level)} rarity="legendary" />
-                </div>
-                <div className="col-start-1 row-start-2">
-                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "weapon")!} unlocked={EQUIPMENT.find((e) => e.slot === "weapon")!.condition(stats, level)} rarity="epic" />
-                </div>
-                <div className="col-start-2 col-span-3 row-start-2 flex items-center justify-center">
-                  <CharacterModel equipped={equipped} size="sm" />
-                </div>
-                <div className="col-start-5 row-start-2">
-                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "shield")!} unlocked={EQUIPMENT.find((e) => e.slot === "shield")!.condition(stats, level)} rarity="rare" />
-                </div>
-                <div className="col-start-1 row-start-3">
-                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "gloves")!} unlocked={EQUIPMENT.find((e) => e.slot === "gloves")!.condition(stats, level)} rarity="epic" />
-                </div>
-                <div className="col-start-5 row-start-3">
-                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "ring")!} unlocked={EQUIPMENT.find((e) => e.slot === "ring")!.condition(stats, level)} rarity="rare" />
-                </div>
-                <div className="col-start-3 row-start-4">
-                  <EquipSlot eq={EQUIPMENT.find((e) => e.slot === "boots")!} unlocked={EQUIPMENT.find((e) => e.slot === "boots")!.condition(stats, level)} rarity="common" />
+          {/* Equipment - WoW TBC Style Character Panel */}
+          <div className="px-3">
+            {/* Panel frame — dark parchment with golden trim */}
+            <div className="relative rounded-xl overflow-hidden border-2 border-amber-700/40 shadow-xl shadow-black/30">
+              {/* Background gradient mimicking WoW dark panel */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#1a1025] via-[#14091e] to-[#0d0614]" />
+              {/* Subtle ornamental texture */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)]" />
+
+              {/* Top bar — golden with character name */}
+              <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/40 via-amber-800/30 to-amber-900/40 border-b border-amber-700/30">
+                <p className="text-center text-amber-200 text-[11px] font-bold tracking-wide uppercase">Equipamento</p>
+              </div>
+
+              <div className="relative px-2 py-4">
+                {/* Main layout: left slots | character | right slots */}
+                <div className="flex items-stretch justify-between gap-1">
+                  {/* Left column — Head, Shoulder, Chest */}
+                  <div className="flex flex-col gap-2 justify-center items-center">
+                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "crown")!} unlocked={EQUIPMENT.find((e) => e.slot === "crown")!.condition(stats, level)} rarity="legendary" label="Cabeça" />
+                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "weapon")!} unlocked={EQUIPMENT.find((e) => e.slot === "weapon")!.condition(stats, level)} rarity="epic" label="Arma" />
+                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "gloves")!} unlocked={EQUIPMENT.find((e) => e.slot === "gloves")!.condition(stats, level)} rarity="epic" label="Luvas" />
+                  </div>
+
+                  {/* Center — Character model */}
+                  <div className="flex-1 flex flex-col items-center justify-center min-h-[200px]">
+                    <div className="relative">
+                      {/* Glowing aura behind character */}
+                      <div className="absolute inset-0 blur-xl bg-purple-500/10 rounded-full scale-150" />
+                      <CharacterModel equipped={equipped} size="md" />
+                    </div>
+                  </div>
+
+                  {/* Right column — Shield, Boots, Ring */}
+                  <div className="flex flex-col gap-2 justify-center items-center">
+                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "shield")!} unlocked={EQUIPMENT.find((e) => e.slot === "shield")!.condition(stats, level)} rarity="rare" label="Escudo" />
+                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "boots")!} unlocked={EQUIPMENT.find((e) => e.slot === "boots")!.condition(stats, level)} rarity="common" label="Botas" />
+                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "ring")!} unlocked={EQUIPMENT.find((e) => e.slot === "ring")!.condition(stats, level)} rarity="rare" label="Anel" />
+                  </div>
                 </div>
               </div>
-              <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-pink-400/30 rounded-tl" />
-              <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-pink-400/30 rounded-tr" />
-              <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-pink-400/30 rounded-bl" />
-              <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-pink-400/30 rounded-br" />
+
+              {/* Bottom stats bar */}
+              <div className="relative px-3 py-2 bg-gradient-to-r from-amber-900/20 via-purple-900/20 to-amber-900/20 border-t border-amber-700/20">
+                <div className="flex justify-around text-[9px] text-purple-300">
+                  <span>Nv. {level}</span>
+                  <span>{stats.points} pts</span>
+                  <span>{stats.totalCompleted} feitos</span>
+                </div>
+              </div>
+
+              {/* Corner ornaments */}
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-amber-500/50 rounded-tl-lg" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-amber-500/50 rounded-tr-lg" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-amber-500/50 rounded-bl-lg" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-amber-500/50 rounded-br-lg" />
             </div>
           </div>
         </>
@@ -580,6 +606,77 @@ function EquipSlot({ eq, unlocked, rarity }: { eq: Equipment; unlocked: boolean;
           </p>
           {/* Little arrow */}
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-600/60" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// WoW TBC-style equipment slot — square with golden beveled border
+function WowSlot({ eq, unlocked, rarity, label }: { eq: Equipment; unlocked: boolean; rarity: string; label: string }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // TBC slot border colors per rarity
+  const slotBorder = unlocked
+    ? { common: "border-[#1eff00]/50", rare: "border-[#0070dd]/50", epic: "border-[#a335ee]/50", legendary: "border-[#ff8000]/50" }[rarity] || ""
+    : "border-amber-900/40";
+
+  const slotGlow = unlocked
+    ? { common: "shadow-[#1eff00]/10", rare: "shadow-[#0070dd]/15", epic: "shadow-[#a335ee]/20", legendary: "shadow-[#ff8000]/25" }[rarity] || ""
+    : "";
+
+  return (
+    <div className="relative flex flex-col items-center">
+      <button
+        onClick={() => setShowTooltip(!showTooltip)}
+        className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-md ${slotBorder} ${slotGlow} ${
+          unlocked
+            ? "bg-gradient-to-b from-[#2a1f3d] to-[#1a0f2e] hover:from-[#352750] hover:to-[#231740]"
+            : "bg-gradient-to-b from-[#1a1025] to-[#0d0614] opacity-60"
+        }`}
+        style={{
+          boxShadow: unlocked
+            ? `inset 0 1px 3px rgba(0,0,0,0.6), 0 0 6px ${rarity === "legendary" ? "rgba(255,128,0,0.2)" : rarity === "epic" ? "rgba(163,53,238,0.2)" : rarity === "rare" ? "rgba(0,112,221,0.15)" : "rgba(30,255,0,0.1)"}`
+            : "inset 0 2px 4px rgba(0,0,0,0.8)",
+        }}
+      >
+        {unlocked ? (
+          <span className="drop-shadow-md">{eq.emoji}</span>
+        ) : (
+          <span className="text-amber-900/40 text-xs">✦</span>
+        )}
+      </button>
+      <span className="text-[8px] text-amber-300/60 mt-0.5 font-medium">{label}</span>
+
+      {/* TBC-style tooltip */}
+      {showTooltip && (
+        <div
+          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 rounded-md p-2.5 shadow-2xl"
+          style={{
+            background: "linear-gradient(to bottom, #1a0f2e, #0d0614)",
+            border: "1px solid rgba(168, 85, 247, 0.3)",
+            boxShadow: "0 0 12px rgba(0,0,0,0.8), inset 0 0 20px rgba(168,85,247,0.05)",
+          }}
+          onClick={() => setShowTooltip(false)}
+        >
+          <p className={`text-[11px] font-bold leading-tight ${
+            unlocked
+              ? rarity === "legendary" ? "text-[#ff8000]" : rarity === "epic" ? "text-[#a335ee]" : rarity === "rare" ? "text-[#0070dd]" : "text-[#1eff00]"
+              : "text-slate-500"
+          }`}>
+            {unlocked ? eq.name : "???"}
+          </p>
+          <p className="text-[9px] text-amber-200/50 mt-0.5">{eq.slot}</p>
+          <div className="border-t border-purple-800/30 my-1.5" />
+          <p className="text-[9px] text-amber-200/80 leading-tight">
+            {unlocked ? "✨ Equipado" : `🔒 ${eq.description}`}
+          </p>
+          <p className={`text-[9px] mt-1 capitalize font-medium ${
+            rarity === "legendary" ? "text-[#ff8000]" : rarity === "epic" ? "text-[#a335ee]" : rarity === "rare" ? "text-[#0070dd]" : "text-[#1eff00]"
+          }`}>
+            {rarity === "legendary" ? "Lendário" : rarity === "epic" ? "Épico" : rarity === "rare" ? "Raro" : "Comum"}
+          </p>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-purple-800/30" />
         </div>
       )}
     </div>
