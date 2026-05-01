@@ -201,8 +201,8 @@ export default function AvatarBuilder({ owner, onSave }: AvatarBuilderProps) {
             onClick={() => setActiveSlot(s.key)}
             className={`flex-shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all active:scale-95 ${
               activeSlot === s.key
-                ? "bg-gradient-to-r from-purple-500/40 to-pink-500/40 text-white border border-purple-400/50 shadow-sm shadow-purple-400/20"
-                : "bg-purple-900/40 text-purple-400 border border-purple-700/30"
+                ? "bg-gradient-to-r from-rose-400/80 to-pink-400/80 text-white border border-rose-300/50 shadow-sm shadow-rose-300/20"
+                : "bg-white/70 text-purple-600 border border-purple-200/40 hover:bg-white/90"
             }`}
           >
             {s.emoji} {s.label}
@@ -220,12 +220,12 @@ export default function AvatarBuilder({ owner, onSave }: AvatarBuilderProps) {
               onClick={() => setConfig((prev) => ({ ...prev, [activeSlot]: opt.id }))}
               className={`flex flex-col items-center p-2.5 rounded-xl border-2 transition-all active:scale-90 ${
                 isSelected
-                  ? "border-purple-400/70 bg-purple-500/20 shadow-lg shadow-purple-500/15 scale-105"
-                  : "border-purple-800/30 bg-purple-950/40 hover:border-purple-600/40"
+                  ? "border-rose-400/70 bg-rose-50/60 shadow-lg shadow-rose-300/15 scale-105"
+                  : "border-purple-200/40 bg-white/60 hover:border-rose-300/50"
               }`}
             >
               {opt.preview}
-              <span className="text-[8px] text-purple-300 mt-1 text-center leading-tight">{opt.name}</span>
+              <span className="text-[8px] text-purple-600 mt-1 text-center leading-tight">{opt.name}</span>
             </button>
           );
         })}

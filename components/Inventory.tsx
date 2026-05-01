@@ -28,10 +28,10 @@ const RARITY_BORDER: Record<string, string> = {
 };
 
 const RARITY_BG: Record<string, string> = {
-  common: "from-green-900/20 to-green-950/30",
-  rare: "from-blue-900/20 to-blue-950/30",
-  epic: "from-purple-900/20 to-purple-950/30",
-  legendary: "from-amber-900/20 to-amber-950/30",
+  common: "from-green-50/60 to-green-100/40",
+  rare: "from-blue-50/60 to-blue-100/40",
+  epic: "from-purple-50/60 to-purple-100/40",
+  legendary: "from-amber-50/60 to-amber-100/40",
 };
 
 export default function Inventory({ inventory, equipped, onEquip, onUnequip }: InventoryProps) {
@@ -58,8 +58,8 @@ export default function Inventory({ inventory, equipped, onEquip, onUnequip }: I
             onClick={() => setFilter(s.key)}
             className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all active:scale-95 ${
               filter === s.key
-                ? "bg-purple-600/60 text-white border border-purple-400/40"
-                : "bg-purple-900/40 text-purple-400 border border-purple-700/30"
+                ? "bg-rose-500/80 text-white border border-rose-400/40 shadow-sm"
+                : "bg-white/70 text-purple-600 border border-purple-200/40 hover:bg-white/90"
             }`}
           >
             {s.emoji} {s.label}
@@ -69,7 +69,7 @@ export default function Inventory({ inventory, equipped, onEquip, onUnequip }: I
 
       {/* Item grid */}
       {filtered.length === 0 ? (
-        <p className="text-center text-purple-500 text-xs py-8">Nenhum item neste slot ainda...</p>
+        <p className="text-center text-purple-400 text-xs py-8">Nenhum item neste slot ainda...</p>
       ) : (
         <div className="grid grid-cols-4 gap-2">
           {filtered.map((item) => (
@@ -92,9 +92,9 @@ export default function Inventory({ inventory, equipped, onEquip, onUnequip }: I
               }`}
             >
               <span className="text-2xl">{item.emoji}</span>
-              <span className="text-[9px] text-purple-200 mt-1 leading-tight text-center truncate w-full">{item.name}</span>
+              <span className="text-[9px] text-purple-600 mt-1 leading-tight text-center truncate w-full">{item.name}</span>
               {item.count > 1 && (
-                <span className="absolute top-0.5 right-0.5 bg-purple-600 text-white text-[8px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                <span className="absolute top-0.5 right-0.5 bg-rose-500 text-white text-[8px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   x{item.count}
                 </span>
               )}
