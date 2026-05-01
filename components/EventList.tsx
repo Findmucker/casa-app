@@ -549,7 +549,7 @@ function EventCard({
             )}
             {(participants.length > 0 || event.guests > 0) && (
               <span className="text-[11px] text-purple-400">
-                👥 {participants.length}{event.guests > 0 ? `/${event.guests}` : ""}
+                👥 {participants.length}{event.guests > 0 && event.guests !== participants.length ? `/${event.guests}` : ""}
               </span>
             )}
             {items.length > 0 && (
@@ -586,27 +586,26 @@ function EventCard({
           {/* Participants */}
           <div>
             <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider mb-1.5">
-              👥 Participantes ({participants.length}{event.guests > 0 ? `/${event.guests} esperados` : ""})
+              👥 Participantes ({participants.length})
             </p>
-            {/* Expected guests control */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs text-purple-400">Esperados:</span>
-              <button
-                onClick={() => onUpdateEvent({ guests: Math.max(participants.length, (event.guests || 0) - 1) })}
-                className="w-7 h-7 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
-              >
-                −
-              </button>
-              <span className="text-sm font-semibold text-purple-600 min-w-[20px] text-center">
-                {event.guests || 0}
-              </span>
-              <button
-                onClick={() => onUpdateEvent({ guests: (event.guests || 0) + 1 })}
-                className="w-7 h-7 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
-              >
-                +
-              </button>
-            </div>
+            {/* Expected guests control — only show if different from registered */}
+            {event.guests > 0 && event.guests !== participants.length && (
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] text-pink-300">Esperados: {event.guests}</span>
+                <button
+                  onClick={() => onUpdateEvent({ guests: Math.max(participants.length, (event.guests || 0) - 1) })}
+                  className="w-6 h-6 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-xs hover:bg-pink-100 active:scale-90 transition-all"
+                >
+                  −
+                </button>
+                <button
+                  onClick={() => onUpdateEvent({ guests: (event.guests || 0) + 1 })}
+                  className="w-6 h-6 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-xs hover:bg-pink-100 active:scale-90 transition-all"
+                >
+                  +
+                </button>
+              </div>
+            )}
             <div className="flex flex-wrap gap-1.5 mb-2">
               {participants.map((p) => (
                 <span
