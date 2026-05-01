@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import admin from "firebase-admin";
 
 // Initialize Firebase Admin (singleton) - only if env vars are configured
-function getAdmin() {
+async function getAdmin() {
+  const admin = (await import("firebase-admin")).default;
   if (!admin.apps.length) {
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -20,7 +20,7 @@ function getAdmin() {
 }
 
 export async function GET() {
-  const adm = getAdmin();
+  const adm = await getAdmin();
   if (!adm) {
     return NextResponse.json(
       { error: "Firebase Admin not configured", hasProjectId: !!process.env.FIREBASE_PROJECT_ID, hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL, hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY },
@@ -56,7 +56,7 @@ export async function GET() {
 
         // Send push notification
         try {
-          await admin.messaging().send({
+          await adm.messaging().send({
             token,
             notification: {
               title: `⏰ ${alarm.title}`,
