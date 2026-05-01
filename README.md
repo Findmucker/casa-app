@@ -90,8 +90,15 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
   - 30 items cosméticos em 6 slots (cabeça, arma, escudo, corpo, pés, acessório)
   - 4 raridades com pesos: Comum (50%), Raro (30%), Épico (15%), Lendário (5%)
   - Animação de abertura com shake → explosão → reveal
-- **Inventário** — grid com filtro por slot, equipar/desequipar com tap
-- **Personagem animado** — boneco chibi CSS com idle animation que mostra items equipados
+  - **Duplicados** convertidos em XP (Lendário: 50, Épico: 30, Raro: 15, Comum: 5)
+- **Inventário WoW TBC-style** — grid com filtro por slot, drag-and-drop para equipar
+- **Avatar 8-bit Pixel Art** — personagem pixel art fofo com customização completa
+  - 11 animais disponíveis (Panda, Gatinho, Coelhinho, Raposa, Ursinho, Cãozinho, Pinguim, Hamster, Coala, Coruja, Sapinho)
+  - Animações idle únicas por animal (munch, groom, hop, sly, sleepy, excited, waddle, nibble, blink, croak)
+  - Sombras realistas por peso do animal
+  - 6 tabs de customização: Animal, Olhos, Boca, Roupa Cima, Roupa Baixo, Acessórios (7 opções cada)
+  - Panda com representação 8-bit pixel art detalhada (16x20 grid)
+  - Avatar exibido no header do perfil
 
 #### Como funciona a Gamificação
 
@@ -233,7 +240,11 @@ casa-app/
 │   ├── Calendar.tsx          # Calendarzinho (vista mensal)
 │   ├── DashboardSummary.tsx  # Resumo com cards e progresso
 │   ├── Gamification.tsx      # Pontos, níveis, badges (legacy)
-│   ├── ProfilePage.tsx       # Perfil RPG completo
+│   ├── ProfilePage.tsx       # Perfil RPG completo + inventário + avatar
+│   ├── AvatarBuilder.tsx     # Avatar 8-bit pixel art + customização Genshin-style
+│   ├── CharacterModel.tsx    # Boneco chibi com loot equipado (fallback)
+│   ├── Inventory.tsx         # Grid de inventário com drag-and-drop
+│   ├── LootBoxOpener.tsx     # Abertura animada de loot boxes
 │   ├── Tutorial.tsx          # Tutorial interativo da app
 │   ├── SearchOverlay.tsx     # Pesquisa global
 │   ├── HistoryPanel.tsx      # Histórico de completados
@@ -247,7 +258,8 @@ casa-app/
 │   ├── context.tsx           # HouseProvider context
 │   ├── hooks.ts              # useCollection hook (real-time, house-scoped)
 │   ├── categories.ts         # Categorias + auto-classificação
-│   ├── gamification.ts       # Sistema de pontos + badges
+│   ├── gamification.ts       # Sistema de pontos + badges + loot boxes + inventário
+│   ├── seed.ts               # Dados de teste (seed/reset modo teste)
 │   ├── notifications.ts      # Push notifications + lembretes
 │   └── share.ts              # Gerar/validar shareId para eventos
 └── public/
@@ -270,6 +282,7 @@ casa-app/
 | `houses/{houseId}/expenses` | Despesas/gastos |
 | `houses/{houseId}/meal_plans` | Plano de refeições por dia |
 | `houses/{houseId}/gamification` | Pontos, badges, stats |
+| `gamification/{owner}` | Perfil RPG: pontos, inventário, equipped, avatar, lootBoxes |
 
 ## Deploy
 
@@ -286,5 +299,7 @@ Projeto pessoal — feito com 💕
 
 ## Roadmap / TODO
 
-- 📍 **Location-based notifications** — lembrar comprinhas quando perto do supermercado
-- 🤖 **Assistant Moniquinha** — assistente personalizada para a app
+- 📍 **Location-based notifications** — lembrar comprinhas quando perto do supermercado ([#18](https://github.com/Findmucker/casa-app/issues/18))
+- 🤖 **Assistant Moniquinha** — assistente personalizada para a app ([#19](https://github.com/Findmucker/casa-app/issues/19))
+- 🎮 **Avatares 8-bit por animal** — pixel art único para cada um dos 11 animais ([#1](https://github.com/Findmucker/casa-app/issues/1)–[#11](https://github.com/Findmucker/casa-app/issues/11))
+- 🎨 **Customização 8-bit completa** — adaptar todas as 6 tabs ao estilo pixel art ([#12](https://github.com/Findmucker/casa-app/issues/12)–[#17](https://github.com/Findmucker/casa-app/issues/17))
