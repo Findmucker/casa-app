@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useCollection, type HabitItem, type HabitCheck } from "@/lib/hooks";
-import { getToday, scheduleLocalNotification, requestNotificationPermission } from "@/lib/notifications";
+import { getToday, scheduleLocalNotification, cancelNotification, requestNotificationPermission } from "@/lib/notifications";
 import { awardPoints, updateStreak } from "@/lib/gamification";
 import { useMemberNames } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
@@ -35,17 +35,28 @@ export default function HabitList() {
   }, []);
 
   // Schedule notifications for habits with reminder times
+  const timerIds = useRef<number[]>([]);
   useEffect(() => {
+    // Clear previous timers
+    timerIds.current.forEach((id) => cancelNotification(id));
+    timerIds.current = [];
+
     if (!notificationsEnabled) return;
     habits.forEach((h) => {
       if (h.reminderTime) {
-        scheduleLocalNotification(
+        const id = scheduleLocalNotification(
           `${h.emoji} ${h.name}`,
           "Não te esqueças!",
           h.reminderTime
         );
+        if (id !== null) timerIds.current.push(id);
       }
     });
+
+    return () => {
+      timerIds.current.forEach((id) => cancelNotification(id));
+      timerIds.current = [];
+    };
   }, [habits, notificationsEnabled]);
 
   const todayChecks = useMemo(() => {

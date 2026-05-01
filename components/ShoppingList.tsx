@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect, memo } from "react";
 import { useCollection, type ShoppingItem } from "@/lib/hooks";
 import {
   SHOPPING_CATEGORIES,
@@ -18,6 +18,107 @@ const COMMON_SHOPPING = [
   "Papel higiénico", "Detergente", "Sabonete", "Champô", "Pasta de dentes",
   "Água", "Sumo", "Cerveja", "Vinho", "Bolachas", "Cereais", "Chocolate",
 ];
+
+interface ItemRowProps {
+  item: ShoppingItem & { category?: string };
+  isDone: boolean;
+  celebrating: string | null;
+  editingCategory: string | null;
+  categoryNames: string[];
+  onCheck: (item: ShoppingItem & { category?: string }) => void;
+  onUpdate: (id: string, data: Partial<ShoppingItem>) => void;
+  onRemove: (id: string) => void;
+  onEditCategory: (id: string | null) => void;
+}
+
+const ItemRow = memo(function ItemRow({
+  item, isDone, celebrating, editingCategory, categoryNames,
+  onCheck, onUpdate, onRemove, onEditCategory,
+}: ItemRowProps) {
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-2xl p-3.5 transition-all ${
+        isDone
+          ? "bg-pink-50/40"
+          : item.urgent
+          ? "bg-gradient-to-r from-red-50/80 to-pink-50/60 border border-red-200/40 shadow-sm shadow-red-100/30"
+          : "bg-white/70 backdrop-blur-sm border border-pink-100/30 shadow-sm shadow-pink-100/30 hover:shadow-md"
+      }`}
+    >
+      <div className="relative">
+        <button
+          onClick={() => onCheck(item)}
+          className={`h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm transition-all active:scale-90 ${
+            isDone
+              ? "bg-gradient-to-r from-pink-300 to-rose-300 text-white shadow-sm shadow-pink-200/50"
+              : item.urgent
+              ? "border-2 border-red-300 hover:bg-red-100"
+              : "border-2 border-pink-300 hover:bg-pink-100 hover:border-pink-400"
+          } ${celebrating === item.id ? "animate-celebrate" : ""}`}
+        >
+          {isDone ? "\u2713" : ""}
+        </button>
+        {celebrating === item.id && (
+          <div className="absolute inset-0 flex items-center justify-center confetti-burst pointer-events-none">
+            <span className="absolute text-xs">{"\u{1F495}"}</span>
+            <span className="absolute text-xs">{"\u2728"}</span>
+          </div>
+        )}
+      </div>
+
+      <span className={`flex-1 text-base ${isDone ? "text-pink-300 line-through" : "text-rose-800"}`}>
+        {item.urgent && !isDone && <span className="text-xs mr-1.5">{"\u{1F525}"}</span>}
+        {item.name}
+      </span>
+
+      {!isDone && editingCategory === item.id && (
+        <select
+          value={item.category || "\u{1F4E6} Outros"}
+          onChange={(e) => {
+            onUpdate(item.id, { category: e.target.value });
+            onEditCategory(null);
+          }}
+          onBlur={() => onEditCategory(null)}
+          className="text-xs rounded-xl border border-pink-200 bg-white px-2 py-1 text-rose-700 focus:outline-none"
+          autoFocus
+        >
+          {categoryNames.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      )}
+
+      {!isDone && editingCategory !== item.id && (
+        <button
+          onClick={() => onEditCategory(item.id)}
+          className="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-400 hover:bg-pink-100 transition-all"
+        >
+          {(item.category || "\u{1F4E6}").split(" ")[0]}
+        </button>
+      )}
+
+      {!isDone && (
+        <button
+          onClick={() => onUpdate(item.id, { urgent: !item.urgent })}
+          className={`text-xs px-2 py-1 rounded-full transition-all active:scale-95 ${
+            item.urgent
+              ? "bg-red-100 text-red-500"
+              : "bg-pink-50 text-pink-300 hover:text-pink-500"
+          }`}
+        >
+          {item.urgent ? "\u{1F525}" : ""}
+        </button>
+      )}
+
+      <button
+        onClick={() => onRemove(item.id)}
+        className="text-pink-200 hover:text-red-400 transition-colors text-sm"
+      >
+        &#10005;
+      </button>
+    </div>
+  );
+});
 
 export default function ShoppingList() {
   const { items, loading, add, update, remove } =
@@ -125,96 +226,6 @@ export default function ShoppingList() {
     }
   };
 
-  const ItemRow = ({ item, isDone }: { item: ShoppingItem & { category?: string }; isDone: boolean }) => (
-    <div
-      className={`flex items-center gap-3 rounded-2xl p-3.5 transition-all ${
-        isDone
-          ? "bg-pink-50/40"
-          : item.urgent
-          ? "bg-gradient-to-r from-red-50/80 to-pink-50/60 border border-red-200/40 shadow-sm shadow-red-100/30"
-          : "bg-white/70 backdrop-blur-sm border border-pink-100/30 shadow-sm shadow-pink-100/30 hover:shadow-md"
-      }`}
-    >
-      {/* Check/uncheck */}
-      <div className="relative">
-        <button
-          onClick={() => handleCheck(item)}
-          className={`h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm transition-all active:scale-90 ${
-            isDone
-              ? "bg-gradient-to-r from-pink-300 to-rose-300 text-white shadow-sm shadow-pink-200/50"
-              : item.urgent
-              ? "border-2 border-red-300 hover:bg-red-100"
-              : "border-2 border-pink-300 hover:bg-pink-100 hover:border-pink-400"
-          } ${celebrating === item.id ? "animate-celebrate" : ""}`}
-        >
-          {isDone ? "\u2713" : ""}
-        </button>
-        {celebrating === item.id && (
-          <div className="absolute inset-0 flex items-center justify-center confetti-burst pointer-events-none">
-            <span className="absolute text-xs">💕</span>
-            <span className="absolute text-xs">✨</span>
-          </div>
-        )}
-      </div>
-
-      {/* Name */}
-      <span className={`flex-1 text-base ${isDone ? "text-pink-300 line-through" : "text-rose-800"}`}>
-        {item.urgent && !isDone && <span className="text-xs mr-1.5">🔥</span>}
-        {item.name}
-      </span>
-
-      {/* Category edit */}
-      {!isDone && editingCategory === item.id && (
-        <select
-          value={item.category || "📦 Outros"}
-          onChange={(e) => {
-            update(item.id, { category: e.target.value });
-            setEditingCategory(null);
-          }}
-          onBlur={() => setEditingCategory(null)}
-          className="text-xs rounded-xl border border-pink-200 bg-white px-2 py-1 text-rose-700 focus:outline-none"
-          autoFocus
-        >
-          {categoryNames.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-      )}
-
-      {/* Category badge (tap to edit) */}
-      {!isDone && editingCategory !== item.id && (
-        <button
-          onClick={() => setEditingCategory(item.id)}
-          className="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-400 hover:bg-pink-100 transition-all"
-        >
-          {(item.category || "📦").split(" ")[0]}
-        </button>
-      )}
-
-      {/* Urgent toggle */}
-      {!isDone && (
-        <button
-          onClick={() => update(item.id, { urgent: !item.urgent })}
-          className={`text-xs px-2 py-1 rounded-full transition-all active:scale-95 ${
-            item.urgent
-              ? "bg-red-100 text-red-500"
-              : "bg-pink-50 text-pink-300 hover:text-pink-500"
-          }`}
-        >
-          {item.urgent ? "🔥" : ""}
-        </button>
-      )}
-
-      {/* Delete */}
-      <button
-        onClick={() => remove(item.id)}
-        className="text-pink-200 hover:text-red-400 transition-colors text-sm"
-      >
-        &#10005;
-      </button>
-    </div>
-  );
-
   return (
     <div className="flex flex-col h-full">
       {/* Add form */}
@@ -295,7 +306,7 @@ export default function ShoppingList() {
               </span>
             </div>
             {urgentItems.map((item) => (
-              <ItemRow key={item.id} item={item} isDone={false} />
+              <ItemRow key={item.id} item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={remove} onEditCategory={setEditingCategory} />
             ))}
           </>
         )}
@@ -349,7 +360,7 @@ export default function ShoppingList() {
               {!isCollapsed && (
                 <div className="space-y-2">
                   {catItems.map((item) => (
-                    <ItemRow key={item.id} item={item} isDone={false} />
+                    <ItemRow key={item.id} item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={remove} onEditCategory={setEditingCategory} />
                   ))}
                 </div>
               )}
@@ -367,7 +378,7 @@ export default function ShoppingList() {
               </span>
             </div>
             {done.map((item) => (
-              <ItemRow key={item.id} item={item} isDone={true} />
+              <ItemRow key={item.id} item={item} isDone={true} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={remove} onEditCategory={setEditingCategory} />
             ))}
           </>
         )}
