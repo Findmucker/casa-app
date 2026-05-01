@@ -5,11 +5,12 @@ const config = {
     "^.+\\.(ts|tsx)$": ["ts-jest", { tsconfig: "tsconfig.json" }],
   },
   moduleNameMapper: {
-    "^@/lib/firebase$": "<rootDir>/__mocks__/firebase.ts",
-    "^firebase/firestore$": "<rootDir>/__mocks__/firestore.ts",
-    "^firebase/auth$": "<rootDir>/__mocks__/auth.ts",
+    "^@/lib/firebase$": "<rootDir>/tests/__mocks__/firebase.ts",
+    "^firebase/firestore$": "<rootDir>/tests/__mocks__/firestore.ts",
+    "^firebase/auth$": "<rootDir>/tests/__mocks__/auth.ts",
     "^@/(.*)$": "<rootDir>/$1",
   },
+  roots: ["<rootDir>/tests"],
   testPathIgnorePatterns: ["/node_modules/", "/.next/"],
 };
 

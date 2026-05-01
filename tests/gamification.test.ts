@@ -64,10 +64,10 @@ describe("Gamification - Stats Calculation", () => {
     });
   });
 
-  it("should calculate STR from projectsDone * 2", () => {
+  it("should calculate STR from projectsDone * 3", () => {
     const rpgStats = calculateStats(baseStats);
     const str = rpgStats.find((s) => s.key === "str");
-    expect(str?.value).toBe(10); // 5 * 2
+    expect(str?.value).toBe(15); // 5 * 3
   });
 });
 
