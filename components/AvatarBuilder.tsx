@@ -33,13 +33,13 @@ const ANIMALS = [
 ];
 
 const EYE_STYLES = [
-  { id: 0, name: "Brilhantes", irisColor: "#42a5f5", pupilColor: "#0d47a1", sparkle: "double", shape: "round" },
-  { id: 1, name: "Estrelas", irisColor: "#ab47bc", pupilColor: "#4a148c", sparkle: "star", shape: "round" },
-  { id: 2, name: "Gentis", irisColor: "#66bb6a", pupilColor: "#1b5e20", sparkle: "single", shape: "soft" },
-  { id: 3, name: "Felizes", irisColor: "#000000", pupilColor: "#000000", sparkle: "none", shape: "closed" },
-  { id: 4, name: "Determinados", irisColor: "#ef5350", pupilColor: "#b71c1c", sparkle: "single", shape: "sharp" },
-  { id: 5, name: "Sonhadores", irisColor: "#ffb74d", pupilColor: "#e65100", sparkle: "double", shape: "droopy" },
-  { id: 6, name: "Heterocromia", irisColor: "#42a5f5|#ef5350", pupilColor: "#0d47a1|#b71c1c", sparkle: "double", shape: "round" },
+  { id: 0, name: "Azul", eyeColor: "#42a5f5", shineColor: "#ffffff", pupilColor: "#0d47a1" },
+  { id: 1, name: "Roxo", eyeColor: "#ab47bc", shineColor: "#ffffff", pupilColor: "#4a148c" },
+  { id: 2, name: "Verde", eyeColor: "#66bb6a", shineColor: "#ffffff", pupilColor: "#1b5e20" },
+  { id: 3, name: "Vermelho", eyeColor: "#ef5350", shineColor: "#ffffff", pupilColor: "#b71c1c" },
+  { id: 4, name: "Dourado", eyeColor: "#ffb74d", shineColor: "#ffffff", pupilColor: "#e65100" },
+  { id: 5, name: "Rosa", eyeColor: "#f48fb1", shineColor: "#ffffff", pupilColor: "#c2185b" },
+  { id: 6, name: "Heterocromia", eyeColor: "#42a5f5", shineColor: "#ffffff", pupilColor: "#0d47a1", rightEyeColor: "#ef5350", rightPupilColor: "#b71c1c" },
 ];
 
 const MOUTH_STYLES = [
@@ -136,7 +136,7 @@ export default function AvatarBuilder({ owner, onSave }: AvatarBuilderProps) {
   const getOptions = () => {
     switch (activeSlot) {
       case "animal": return ANIMALS.map((a) => ({ id: a.id, name: a.name, preview: <span className="text-2xl">{a.emoji}</span> }));
-      case "eyes": return EYE_STYLES.map((e) => ({ id: e.id, name: e.name, preview: <EyePreviewSmall style={e} /> }));
+      case "eyes": return EYE_STYLES.map((e) => ({ id: e.id, name: e.name, preview: <EyePreview8bit style={e} /> }));
       case "mouth": return MOUTH_STYLES.map((m) => ({ id: m.id, name: m.name, preview: <MouthPreviewSmall type={m.type} /> }));
       case "top": return TOP_STYLES.map((t) => ({ id: t.id, name: t.name, preview: <div className="w-8 h-8 rounded-lg" style={{ background: `linear-gradient(135deg, ${t.color}, ${t.secondary})` }} /> }));
       case "bottom": return BOTTOM_STYLES.map((b) => ({ id: b.id, name: b.name, preview: <div className="w-8 h-8 rounded-lg" style={{ background: `linear-gradient(180deg, ${b.color}, ${b.secondary})` }} /> }));
@@ -537,10 +537,32 @@ function getPixelGrid(animalId: number): { pixels: (string | null)[][]; palette:
   }
 }
 
-function PixelAnimal({ size, animalId, idle, top, bottom, accessory }: { size: number; animalId: number; idle: string; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) {
+function PixelAnimal({ size, animalId, idle, eyes, top, bottom, accessory }: { size: number; animalId: number; idle: string; eyes: typeof EYE_STYLES[0]; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) {
   const p = size / 16;
   const { pixels } = getPixelGrid(animalId);
   const idleClass = `avatar-idle-${idle}`;
+
+  // Eye pixel positions: In all grids, eyes use "#111118" (pupil/E) and "#ffffff" (shine/S)
+  // We replace those with the selected eye colors
+  const E_COLOR = "#111118";
+  const S_COLOR = "#ffffff";
+
+  // Determine which pixels are left eye vs right eye (left = x < 8, right = x >= 8)
+  const getPixelColor = (color: string, x: number, y: number): string => {
+    if (color === E_COLOR) {
+      // Pupil — use eye color (iris around pupil)
+      const isRight = x >= 8;
+      if (isRight && (eyes as any).rightEyeColor) {
+        return (eyes as any).rightEyeColor;
+      }
+      return eyes.eyeColor;
+    }
+    if (color === S_COLOR && y >= 5 && y <= 7) {
+      // Shine pixel in eye area — keep white for sparkle
+      return eyes.shineColor;
+    }
+    return color;
+  };
 
   return (
     <div className={`relative ${idleClass}`} style={{ width: `${size}px`, height: `${size}px` }}>
@@ -552,6 +574,7 @@ function PixelAnimal({ size, animalId, idle, top, bottom, accessory }: { size: n
         {pixels.map((row, y) => (
           row.map((color, x) => {
             if (!color) return null;
+            const finalColor = getPixelColor(color, x, y);
             return (
               <div
                 key={`${x}-${y}`}
@@ -561,7 +584,7 @@ function PixelAnimal({ size, animalId, idle, top, bottom, accessory }: { size: n
                   top: `${y * p}px`,
                   width: `${p + 0.5}px`,
                   height: `${p + 0.5}px`,
-                  backgroundColor: color,
+                  backgroundColor: finalColor,
                 }}
               />
             );
@@ -642,7 +665,7 @@ export function AnimeAnimalCharacter({ config, size }: { config: AvatarConfig; s
   const s = size / 240; // scale factor
 
   // All animals use 8-bit pixel art renderer
-  return <PixelAnimal size={size} animalId={animal.id} idle={animal.idle} top={top} bottom={bottom} accessory={accessory} />;
+  return <PixelAnimal size={size} animalId={animal.id} idle={animal.idle} eyes={eyes} top={top} bottom={bottom} accessory={accessory} />;
 
   // Fur texture overlay as a semi-transparent noise pattern
   const furTexture = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23ffffff' opacity='0.07'/%3E%3Ccircle cx='4' cy='3' r='0.4' fill='%23000000' opacity='0.05'/%3E%3Ccircle cx='2' cy='5' r='0.5' fill='%23ffffff' opacity='0.04'/%3E%3C/svg%3E")`;
@@ -838,57 +861,17 @@ export function AnimeAnimalCharacter({ config, size }: { config: AvatarConfig; s
   );
 }
 
-// ─── 3D Eye with Genshin-style depth ──────────────────────────
+// ─── 3D Eye (legacy — unused, kept for compat) ──────────────────────────
 
 function AnimeEye3D({ style, scale: s, isRight }: { style: typeof EYE_STYLES[0]; scale: number; isRight?: boolean }) {
-  if (style.shape === "closed") {
-    return <div style={{ width: `${16*s}px`, height: `${8*s}px`, borderBottom: `${2.5*s}px solid #37474f`, borderRadius: "0 0 50% 50%" }} />;
-  }
-
-  const irisColors = style.irisColor.split("|");
-  const pupilColors = style.pupilColor.split("|");
-  const irisColor = isRight && irisColors[1] ? irisColors[1] : irisColors[0];
-  const pupilColor = isRight && pupilColors[1] ? pupilColors[1] : pupilColors[0];
-
-  const isSharp = style.shape === "sharp";
-  const isDroopy = style.shape === "droopy";
-
+  const eyeColor = isRight && (style as any).rightEyeColor ? (style as any).rightEyeColor : style.eyeColor;
   return (
     <div className="relative" style={{ width: `${16*s}px`, height: `${18*s}px` }}>
-      {/* Eye white with 3D shading */}
-      <div
-        className="absolute inset-0 overflow-hidden"
-        style={{
-          borderRadius: isSharp ? "30% 30% 40% 40%" : isDroopy ? "50% 40% 40% 50%" : "45%",
-          background: "linear-gradient(180deg, #ffffff, #f0f0f5)",
-          boxShadow: `inset 0 ${2*s}px ${4*s}px rgba(0,0,0,0.1)`,
-          border: `${1.5*s}px solid #37474f`,
-        }}
-      >
-        {/* Iris with gradient for 3D depth */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 rounded-full"
-          style={{
-            top: `${3*s}px`,
-            width: `${11*s}px`,
-            height: `${12*s}px`,
-            background: `radial-gradient(circle at 35% 30%, ${lighten(irisColor, 30)}, ${irisColor} 60%, ${pupilColor})`,
-            boxShadow: `inset 0 ${-2*s}px ${3*s}px ${pupilColor}66`,
-          }}
-        />
-        {/* Pupil */}
-        <div className="absolute left-1/2 -translate-x-1/2 rounded-full" style={{ top: `${5.5*s}px`, width: `${5.5*s}px`, height: `${6*s}px`, background: `radial-gradient(circle, #000 60%, ${pupilColor})` }} />
-        {/* Sparkle highlights */}
-        {style.sparkle !== "none" && (
-          <>
-            <div className="absolute rounded-full bg-white" style={{ top: `${3*s}px`, left: `${3.5*s}px`, width: `${4*s}px`, height: `${4*s}px` }} />
-            {style.sparkle === "double" && <div className="absolute rounded-full bg-white/80" style={{ bottom: `${4*s}px`, right: `${3*s}px`, width: `${2.5*s}px`, height: `${2.5*s}px` }} />}
-            {style.sparkle === "star" && <div className="absolute text-white/90" style={{ top: `${2*s}px`, left: `${3*s}px`, fontSize: `${6*s}px` }}>✦</div>}
-          </>
-        )}
+      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "45%", background: "linear-gradient(180deg, #ffffff, #f0f0f5)", border: `${1.5*s}px solid #37474f` }}>
+        <div className="absolute left-1/2 -translate-x-1/2 rounded-full" style={{ top: `${3*s}px`, width: `${11*s}px`, height: `${12*s}px`, background: eyeColor }} />
+        <div className="absolute left-1/2 -translate-x-1/2 rounded-full" style={{ top: `${5.5*s}px`, width: `${5.5*s}px`, height: `${6*s}px`, background: style.pupilColor }} />
+        <div className="absolute rounded-full bg-white" style={{ top: `${3*s}px`, left: `${3.5*s}px`, width: `${4*s}px`, height: `${4*s}px` }} />
       </div>
-      {/* Upper eyelid shadow */}
-      <div className="absolute top-0 left-0 right-0 rounded-t-full" style={{ height: `${3*s}px`, background: "rgba(0,0,0,0.1)" }} />
     </div>
   );
 }
@@ -1059,10 +1042,26 @@ function Accessory3D({ type, scale: s, animalColor }: { type: string; scale: num
 // ─── Small previews for selector ──────────────────────────────
 
 function EyePreviewSmall({ style }: { style: typeof EYE_STYLES[0] }) {
-  const colors = style.irisColor.split("|");
+  return <EyePreview8bit style={style} />;
+}
+
+function EyePreview8bit({ style }: { style: typeof EYE_STYLES[0] }) {
+  // 8-bit pixel eye preview: 4x4 grid showing eye color
+  const p = 5; // pixel size for preview
   return (
-    <div className="w-6 h-7 rounded-[40%] bg-white flex items-center justify-center shadow-inner border border-slate-200/50">
-      <div className="w-4 h-4 rounded-full" style={{ background: `radial-gradient(circle, ${colors[0]}, ${style.pupilColor.split("|")[0]})` }} />
+    <div className="relative" style={{ width: `${4*p}px`, height: `${4*p}px`, imageRendering: "pixelated" }}>
+      {/* White of eye */}
+      <div className="absolute" style={{ left: `${p}px`, top: 0, width: `${2*p}px`, height: `${p}px`, backgroundColor: "#ffffff" }} />
+      <div className="absolute" style={{ left: 0, top: `${p}px`, width: `${4*p}px`, height: `${2*p}px`, backgroundColor: "#ffffff" }} />
+      <div className="absolute" style={{ left: `${p}px`, top: `${3*p}px`, width: `${2*p}px`, height: `${p}px`, backgroundColor: "#ffffff" }} />
+      {/* Iris */}
+      <div className="absolute" style={{ left: `${p}px`, top: `${p}px`, width: `${2*p}px`, height: `${2*p}px`, backgroundColor: style.eyeColor }} />
+      {/* Pupil */}
+      <div className="absolute" style={{ left: `${2*p}px`, top: `${2*p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: style.pupilColor }} />
+      {/* Shine */}
+      <div className="absolute" style={{ left: `${p}px`, top: `${p}px`, width: `${p}px`, height: `${p}px`, backgroundColor: style.shineColor }} />
+      {/* Outline */}
+      <div className="absolute inset-0 border border-purple-700/30 rounded-sm" />
     </div>
   );
 }
