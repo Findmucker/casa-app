@@ -259,7 +259,15 @@ export function getPendingBoxes(points: number, boxesOpened: number): number {
   return Math.max(0, Math.floor(points / 50) - boxesOpened);
 }
 
-export async function openLootBox(owner: string): Promise<LootItem | null> {
+const DUPLICATE_XP: Record<string, number> = { legendary: 50, epic: 30, rare: 15, common: 5 };
+
+export interface LootBoxResult {
+  item: LootItem;
+  isDuplicate: boolean;
+  xpGained: number;
+}
+
+export async function openLootBox(owner: string): Promise<LootBoxResult | null> {
   const ref = doc(db, "gamification", owner);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
@@ -273,14 +281,21 @@ export async function openLootBox(owner: string): Promise<LootItem | null> {
   const item = rollLootBox();
   const inventory: InventoryItem[] = data.inventory || [];
   const existing = inventory.find((i) => i.itemId === item.id);
-  if (existing) {
-    existing.count++;
-  } else {
-    inventory.push({ itemId: item.id, count: 1 });
-  }
 
-  await updateDoc(ref, { boxesOpened: boxesOpened + 1, inventory });
-  return item;
+  if (existing) {
+    // Duplicate — convert to XP
+    const xpGained = DUPLICATE_XP[item.rarity] || 5;
+    await updateDoc(ref, {
+      boxesOpened: boxesOpened + 1,
+      points: increment(xpGained),
+    });
+    return { item, isDuplicate: true, xpGained };
+  } else {
+    // New item — add to inventory
+    inventory.push({ itemId: item.id, count: 1 });
+    await updateDoc(ref, { boxesOpened: boxesOpened + 1, inventory });
+    return { item, isDuplicate: false, xpGained: 0 };
+  }
 }
 
 export async function equipItem(owner: string, itemId: string, slot: LootSlot): Promise<void> {

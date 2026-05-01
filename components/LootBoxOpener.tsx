@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { type LootItem } from "@/lib/gamification";
+import { type LootItem, type LootBoxResult } from "@/lib/gamification";
 
 interface LootBoxOpenerProps {
   pendingBoxes: number;
-  onOpen: () => Promise<LootItem | null>;
+  onOpen: () => Promise<LootBoxResult | null>;
 }
 
 const RARITY_GLOW: Record<string, string> = {
@@ -25,6 +25,8 @@ const RARITY_LABEL: Record<string, string> = {
 export default function LootBoxOpener({ pendingBoxes, onOpen }: LootBoxOpenerProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "opening" | "reveal">("idle");
   const [revealedItem, setRevealedItem] = useState<LootItem | null>(null);
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [xpGained, setXpGained] = useState(0);
 
   const handleOpen = async () => {
     if (pendingBoxes <= 0 || phase !== "idle") return;
@@ -34,14 +36,20 @@ export default function LootBoxOpener({ pendingBoxes, onOpen }: LootBoxOpenerPro
     setPhase("opening");
     await sleep(600);
 
-    const item = await onOpen();
-    setRevealedItem(item);
+    const result = await onOpen();
+    if (result) {
+      setRevealedItem(result.item);
+      setIsDuplicate(result.isDuplicate);
+      setXpGained(result.xpGained);
+    }
     setPhase("reveal");
   };
 
   const handleClose = () => {
     setPhase("idle");
     setRevealedItem(null);
+    setIsDuplicate(false);
+    setXpGained(0);
   };
 
   if (pendingBoxes <= 0 && phase === "idle") {
@@ -99,6 +107,14 @@ export default function LootBoxOpener({ pendingBoxes, onOpen }: LootBoxOpenerPro
             {RARITY_LABEL[revealedItem.rarity]} - {revealedItem.slot}
           </p>
           <p className="text-purple-400 text-[11px] mt-1">{revealedItem.description}</p>
+
+          {isDuplicate ? (
+            <div className="mt-2 px-3 py-1.5 rounded-lg bg-amber-900/30 border border-amber-700/30">
+              <p className="text-amber-300 text-[11px] font-medium">🔄 Duplicado! Convertido em +{xpGained} XP</p>
+            </div>
+          ) : (
+            <p className="text-green-300 text-[11px] mt-2 font-medium">✨ Novo item adicionado ao inventário!</p>
+          )}
 
           <button
             onClick={handleClose}

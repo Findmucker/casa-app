@@ -209,9 +209,9 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
   const pending = getPendingBoxes(stats.points, boxesOpened);
 
   const handleOpen = async () => {
-    const item = await openLootBox(owner);
+    const result = await openLootBox(owner);
     onUpdate();
-    return item;
+    return result;
   };
 
   const handleEquip = async (itemId: string, slot: LootSlot) => {
