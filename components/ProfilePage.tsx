@@ -19,6 +19,7 @@ import {
   openLootBox,
   equipItem,
   unequipItem,
+  LOOT_POOL,
   type InventoryItem,
   type EquippedItems,
   type LootSlot,
@@ -257,11 +258,11 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
               <div className="relative px-2 py-4">
                 {/* Main layout: left slots | character | right slots */}
                 <div className="flex items-stretch justify-between gap-1">
-                  {/* Left column — Head, Shoulder, Chest */}
+                  {/* Left column */}
                   <div className="flex flex-col gap-2 justify-center items-center">
-                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "crown")!} unlocked={EQUIPMENT.find((e) => e.slot === "crown")!.condition(stats, level)} rarity="legendary" label="Cabeça" />
-                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "weapon")!} unlocked={EQUIPMENT.find((e) => e.slot === "weapon")!.condition(stats, level)} rarity="epic" label="Arma" />
-                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "gloves")!} unlocked={EQUIPMENT.find((e) => e.slot === "gloves")!.condition(stats, level)} rarity="epic" label="Luvas" />
+                    <LootEquipSlot slot="helmet" equipped={equipped} label="Cabeça" onUnequip={handleUnequip} />
+                    <LootEquipSlot slot="weapon" equipped={equipped} label="Arma" onUnequip={handleUnequip} />
+                    <LootEquipSlot slot="armor" equipped={equipped} label="Corpo" onUnequip={handleUnequip} />
                   </div>
 
                   {/* Center — Character model */}
@@ -273,11 +274,11 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
                     </div>
                   </div>
 
-                  {/* Right column — Shield, Boots, Ring */}
+                  {/* Right column */}
                   <div className="flex flex-col gap-2 justify-center items-center">
-                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "shield")!} unlocked={EQUIPMENT.find((e) => e.slot === "shield")!.condition(stats, level)} rarity="rare" label="Escudo" />
-                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "boots")!} unlocked={EQUIPMENT.find((e) => e.slot === "boots")!.condition(stats, level)} rarity="common" label="Botas" />
-                    <WowSlot eq={EQUIPMENT.find((e) => e.slot === "ring")!} unlocked={EQUIPMENT.find((e) => e.slot === "ring")!.condition(stats, level)} rarity="rare" label="Anel" />
+                    <LootEquipSlot slot="shield" equipped={equipped} label="Escudo" onUnequip={handleUnequip} />
+                    <LootEquipSlot slot="boots" equipped={equipped} label="Botas" onUnequip={handleUnequip} />
+                    <LootEquipSlot slot="accessory" equipped={equipped} label="Acess." onUnequip={handleUnequip} />
                   </div>
                 </div>
               </div>
@@ -676,6 +677,75 @@ function WowSlot({ eq, unlocked, rarity, label }: { eq: Equipment; unlocked: boo
           }`}>
             {rarity === "legendary" ? "Lendário" : rarity === "epic" ? "Épico" : rarity === "rare" ? "Raro" : "Comum"}
           </p>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-purple-800/30" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Loot-based equipment slot — shows the equipped loot item from inventory
+function LootEquipSlot({ slot, equipped, label, onUnequip }: { slot: LootSlot; equipped: EquippedItems; label: string; onUnequip: (slot: LootSlot) => void }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const itemId = equipped[slot];
+  const item = itemId ? LOOT_POOL.find((i) => i.id === itemId) : null;
+
+  const rarityBorder = item
+    ? { common: "border-[#1eff00]/50", rare: "border-[#0070dd]/50", epic: "border-[#a335ee]/50", legendary: "border-[#ff8000]/50" }[item.rarity] || ""
+    : "border-amber-900/30";
+
+  return (
+    <div className="relative flex flex-col items-center">
+      <button
+        onClick={() => item ? setShowTooltip(!showTooltip) : null}
+        className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-md ${rarityBorder} ${
+          item
+            ? "bg-gradient-to-b from-[#2a1f3d] to-[#1a0f2e] hover:from-[#352750] hover:to-[#231740]"
+            : "bg-gradient-to-b from-[#1a1025] to-[#0d0614] opacity-50"
+        }`}
+        style={{
+          boxShadow: item
+            ? `inset 0 1px 3px rgba(0,0,0,0.6), 0 0 6px ${item.rarity === "legendary" ? "rgba(255,128,0,0.2)" : item.rarity === "epic" ? "rgba(163,53,238,0.2)" : item.rarity === "rare" ? "rgba(0,112,221,0.15)" : "rgba(30,255,0,0.1)"}`
+            : "inset 0 2px 4px rgba(0,0,0,0.8)",
+        }}
+      >
+        {item ? (
+          <span className="drop-shadow-md">{item.emoji}</span>
+        ) : (
+          <span className="text-amber-900/30 text-xs">✦</span>
+        )}
+      </button>
+      <span className="text-[8px] text-amber-300/60 mt-0.5 font-medium">{label}</span>
+
+      {/* Tooltip */}
+      {showTooltip && item && (
+        <div
+          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 rounded-md p-2.5 shadow-2xl"
+          style={{
+            background: "linear-gradient(to bottom, #1a0f2e, #0d0614)",
+            border: "1px solid rgba(168, 85, 247, 0.3)",
+            boxShadow: "0 0 12px rgba(0,0,0,0.8), inset 0 0 20px rgba(168,85,247,0.05)",
+          }}
+          onClick={() => setShowTooltip(false)}
+        >
+          <p className={`text-[11px] font-bold leading-tight ${
+            item.rarity === "legendary" ? "text-[#ff8000]" : item.rarity === "epic" ? "text-[#a335ee]" : item.rarity === "rare" ? "text-[#0070dd]" : "text-[#1eff00]"
+          }`}>
+            {item.name}
+          </p>
+          <p className="text-[9px] text-amber-200/50 mt-0.5">{item.description}</p>
+          <div className="border-t border-purple-800/30 my-1.5" />
+          <p className={`text-[9px] capitalize font-medium ${
+            item.rarity === "legendary" ? "text-[#ff8000]" : item.rarity === "epic" ? "text-[#a335ee]" : item.rarity === "rare" ? "text-[#0070dd]" : "text-[#1eff00]"
+          }`}>
+            {item.rarity === "legendary" ? "Lendário" : item.rarity === "epic" ? "Épico" : item.rarity === "rare" ? "Raro" : "Comum"}
+          </p>
+          <button
+            onClick={(e) => { e.stopPropagation(); onUnequip(slot); setShowTooltip(false); }}
+            className="mt-1.5 w-full text-[9px] py-1 rounded bg-red-900/40 text-red-300 border border-red-800/30 hover:bg-red-800/40 transition-all"
+          >
+            Desequipar
+          </button>
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-purple-800/30" />
         </div>
       )}
