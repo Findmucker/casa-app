@@ -233,8 +233,8 @@ function DashboardInner() {
                 </p>
                 <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
                   {(menuSubPanel === "communication" ? [
-                    { emoji: "💌", label: t("menu.message"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowSendMessage(true); } },
                     { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
+                    { emoji: "💌", label: t("menu.message"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowSendMessage(true); } },
                   ] : menuSubPanel === "house" ? [
                     { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
                     { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); } },

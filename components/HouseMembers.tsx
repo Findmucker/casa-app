@@ -23,12 +23,27 @@ interface MemberData {
   maxStreak: number;
 }
 
+const QUICK_MESSAGES = [
+  "❤️ Amo-te!",
+  "🏠 Estou a caminho de casa",
+  "🛒 Vou ao supermercado, precisas de algo?",
+  "🍽️ O jantar está pronto!",
+  "☕ Queres um café?",
+  "🧹 Já limpei a cozinha!",
+  "💤 Vou dormir, boa noite!",
+  "🎉 Tenho uma surpresa para ti!",
+];
+
 export default function HouseMembers({ onClose }: HouseMembersProps) {
   const { t } = useT();
-  const { members, houseId, userId } = useHouseContext();
+  const { members, houseId, userId, userName } = useHouseContext();
   const [memberData, setMemberData] = useState<MemberData[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  const [messageTo, setMessageTo] = useState<MemberData | null>(null);
+  const [customMessage, setCustomMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [msgStatus, setMsgStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -84,6 +99,100 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
       console.error("Error removing member:", e);
     }
   };
+
+  const sendMessage = async (text: string, toMember: MemberData) => {
+    if (!text.trim()) return;
+    setSending(true);
+    setMsgStatus(null);
+    try {
+      const res = await fetch("/api/send-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: toMember.name.toLowerCase(),
+          title: `💌 Mensagem de ${userName}`,
+          body: text,
+          tag: "message",
+        }),
+      });
+      if (res.ok) {
+        setMsgStatus("✅ Mensagem enviada!");
+        setCustomMessage("");
+        setTimeout(() => { setMsgStatus(null); setMessageTo(null); }, 2000);
+      } else {
+        setMsgStatus("❌ Não consegui enviar. Notificações ativas?");
+      }
+    } catch {
+      setMsgStatus("❌ Erro ao enviar.");
+    }
+    setSending(false);
+  };
+
+  // Message sub-panel for a specific member
+  if (messageTo) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 z-50 overflow-y-auto animate-fade-in-up">
+        <div className="relative pt-6 pb-4 text-center border-b border-pink-100/50">
+          <button
+            onClick={() => { setMessageTo(null); setMsgStatus(null); }}
+            className="absolute top-4 left-4 text-rose-400 hover:text-rose-600 text-sm transition-colors"
+          >
+            ← Voltar
+          </button>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-rose-400 hover:text-rose-600 text-sm transition-colors"
+          >
+            ✕
+          </button>
+          <h2 className="text-lg font-bold text-rose-600">💌 Mensagem</h2>
+          <p className="text-xs text-purple-500 mt-0.5">Para: {messageTo.name}</p>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {/* Quick messages */}
+          <p className="text-xs font-semibold text-pink-400 mb-2">{t("messages.quickMessages")}</p>
+          <div className="grid grid-cols-1 gap-2">
+            {QUICK_MESSAGES.map((msg) => (
+              <button
+                key={msg}
+                onClick={() => sendMessage(msg, messageTo)}
+                disabled={sending}
+                className="text-left px-4 py-2.5 rounded-2xl bg-white/70 border border-pink-100/30 shadow-sm hover:shadow-md active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                <span className="text-sm text-rose-700">{msg}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Custom message */}
+          <p className="text-xs font-semibold text-pink-400 mb-2 mt-4">{t("messages.custom")}</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={customMessage}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && customMessage.trim()) sendMessage(customMessage, messageTo); }}
+              placeholder={t("messages.placeholder") as string}
+              className="flex-1 px-4 py-2.5 rounded-2xl bg-white/70 border border-pink-100/30 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-200"
+              disabled={sending}
+            />
+            <button
+              onClick={() => sendMessage(customMessage, messageTo)}
+              disabled={sending || !customMessage.trim()}
+              className="px-4 py-2.5 rounded-2xl bg-rose-400 text-white font-semibold text-sm shadow-md hover:bg-rose-500 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {sending ? "..." : "📤"}
+            </button>
+          </div>
+
+          {msgStatus && (
+            <p className="text-sm text-center text-pink-500 animate-fade-in-up mt-3">{msgStatus}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 z-50 overflow-y-auto animate-fade-in-up">
@@ -149,9 +258,18 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
                 </div>
               </div>
 
-              {/* Remove action (can't remove yourself) */}
+              {/* Actions (not yourself) */}
               {m.uid !== userId && (
                 <div className="flex gap-2 mt-2 ml-15">
+                  {/* Send message button */}
+                  <button
+                    onClick={() => setMessageTo(m)}
+                    className="text-[10px] px-2.5 py-1 rounded-full bg-pink-50 text-pink-500 font-medium hover:bg-pink-100 active:scale-95 transition-all"
+                  >
+                    💌 {t("menu.message")}
+                  </button>
+
+                  {/* Remove button */}
                   {confirmRemove === m.uid ? (
                     <div className="flex gap-1.5 items-center">
                       <span className="text-[10px] text-red-500">{t("members.management.removeConfirm")}</span>
