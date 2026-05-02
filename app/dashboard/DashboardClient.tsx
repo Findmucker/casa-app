@@ -58,7 +58,7 @@ function DashboardInner() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
   const [showPanel, setShowPanel] = useState(false);
-  const [menuSubPanel, setMenuSubPanel] = useState<"communication" | "house" | "settings" | null>(null);
+  const [menuSubPanel, setMenuSubPanel] = useState<"house" | "settings" | null>(null);
   const [showMaintenance, setShowMaintenance] = useState(false);
   const [showGamification, setShowGamification] = useState(false);
   const [profileViewMember, setProfileViewMember] = useState<string | undefined>(undefined);
@@ -264,15 +264,14 @@ function DashboardInner() {
                   ← {t("common.close")}
                 </button>
                 <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>
-                  {menuSubPanel === "communication" ? t("menu.communication") : menuSubPanel === "house" ? t("menu.house") : t("menu.settings")}
+                  {menuSubPanel === "house" ? t("menu.house") : t("menu.settings")}
                 </p>
                 <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
-                  {(menuSubPanel === "communication" ? [
-                    { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
-                  ] : menuSubPanel === "house" ? [
+                  {(menuSubPanel === "house" ? [
                     { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
                     { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); } },
                   ] : [
+                    { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
                     { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowMaintenance(true); } },
                     { emoji: "❓", label: t("menu.tutorial"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowTutorial(true); } },
                   ]).map((item) => (
@@ -464,9 +463,8 @@ function DashboardInner() {
                 <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
 
                 {/* Category buttons */}
-                <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
+                <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
                   {[
-                    { key: "communication" as const, emoji: "💬", label: t("menu.communication") },
                     { key: "house" as const, emoji: "🏠", label: t("menu.house") },
                     { key: "settings" as const, emoji: "⚙️", label: t("menu.settings") },
                   ].map((cat) => (

@@ -201,7 +201,7 @@ host=github.com
 
 ### Issue Management
 ```bash
-# List open issues
+# List open issues (never show closed issues unless explicitly asked)
 curl -s "https://api.github.com/repos/Findmucker/casa-app/issues?state=open&sort=created&direction=desc" \
   -H "Authorization: token $TOKEN" | python3 -c "import json,sys;[print(f'#{i[\"number\"]} {i[\"title\"]}') for i in json.load(sys.stdin)]"
 
