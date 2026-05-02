@@ -299,24 +299,47 @@ Projeto pessoal — feito com 💕
 
 ## Roadmap / TODO
 
-### Acessibilidade & UX
+### UX & Interação
 - ♿ Aria-labels e keyboard navigation ([#48](https://github.com/Findmucker/casa-app/issues/48))
+- 🖐️ Drag & drop nas listas ([#55](https://github.com/Findmucker/casa-app/issues/55))
+- ↩️ Undo ao apagar items ([#56](https://github.com/Findmucker/casa-app/issues/56))
+- 👆 Swipe to complete ([#57](https://github.com/Findmucker/casa-app/issues/57))
 
-### Temas
+### Temas & Personalização
 - 🎀 Tema Fofinho melhorado ([#33](https://github.com/Findmucker/casa-app/issues/33))
 - 💀 Tema Dark Spooky ([#32](https://github.com/Findmucker/casa-app/issues/32))
 - 🤖 Tema Cyberpunk ([#34](https://github.com/Findmucker/casa-app/issues/34))
 - 🌿 Tema Nature Magical ([#35](https://github.com/Findmucker/casa-app/issues/35))
+- 🎨 Temas customizáveis e desbloqueáveis ([#67](https://github.com/Findmucker/casa-app/issues/67))
 
 ### Finanças
 - 💰 Reestruturar tab Gastinhos: Despesas + Poupanças + Rendimentos ([#36](https://github.com/Findmucker/casa-app/issues/36))
 - 📊 Gráficos visuais para tab Gastinhos ([#37](https://github.com/Findmucker/casa-app/issues/37))
+
+### Hábitos & Rotinas
+- 📊 Heatmap visual de hábitos estilo GitHub ([#58](https://github.com/Findmucker/casa-app/issues/58))
+
+### Gamificação
+- 🐾 Pet virtual ([#60](https://github.com/Findmucker/casa-app/issues/60))
+- ⚔️ Daily quests ([#61](https://github.com/Findmucker/casa-app/issues/61))
+- 🏅 Conquistas secretas ([#62](https://github.com/Findmucker/casa-app/issues/62))
+
+### Casa & Gestão
+- ⏰ Countdown para eventos ([#59](https://github.com/Findmucker/casa-app/issues/59))
+- 🔧 Lembretes de manutenção da casa ([#63](https://github.com/Findmucker/casa-app/issues/63))
+- 📞 Lista de contactos úteis ([#64](https://github.com/Findmucker/casa-app/issues/64))
+- 💍 Tracker de aniversários e datas especiais ([#69](https://github.com/Findmucker/casa-app/issues/69))
 
 ### Avatares / Customização
 - 👕 Tab Roupa Cima - 7 estilos ([#15](https://github.com/Findmucker/casa-app/issues/15))
 - 👖 Tab Roupa Baixo - 7 estilos ([#16](https://github.com/Findmucker/casa-app/issues/16))
 - 🎩 Tab Acessórios - 7 estilos ([#17](https://github.com/Findmucker/casa-app/issues/17))
 - ✨ Skins para animais avatar ([#21](https://github.com/Findmucker/casa-app/issues/21))
+
+### Técnico / Infra
+- 📱 PWA completa ([#65](https://github.com/Findmucker/casa-app/issues/65))
+- 🔔 Push notifications reais — FCM ([#66](https://github.com/Findmucker/casa-app/issues/66))
+- 📲 Widgets para home screen ([#68](https://github.com/Findmucker/casa-app/issues/68))
 
 ### Features
 - 🏠 Título da casa customizável ([#39](https://github.com/Findmucker/casa-app/issues/39))
