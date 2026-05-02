@@ -360,36 +360,41 @@ function DashboardInner() {
 
                       {/* Member avatars — larger, more spacious */}
                       <div className="flex gap-3 justify-center flex-wrap">
-                        {memberWidgets.map((m) => (
+                        {memberWidgets.map((m, i) => (
                           <button
                             key={m.uid}
                             onClick={() => setMemberActionTarget(memberActionTarget?.uid === m.uid ? null : m)}
-                            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all active:scale-90 min-w-[70px] ${
+                            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all duration-300 active:scale-90 min-w-[70px] animate-fade-in-up ${
                               memberActionTarget?.uid === m.uid
                                 ? darkMode
                                   ? "bg-purple-200/80 border border-purple-300/70 shadow-lg shadow-purple-200/30 scale-105"
                                   : "bg-white border border-pink-200/70 shadow-lg shadow-pink-100/40 scale-105"
                                 : darkMode
-                                  ? "hover:bg-purple-200/30"
-                                  : "hover:bg-white/60"
+                                  ? "hover:bg-purple-200/30 hover:scale-[1.03]"
+                                  : "hover:bg-white/60 hover:scale-[1.03]"
                             }`}
+                            style={{ animationDelay: `${i * 100}ms`, animationFillMode: "both" }}
                           >
-                            {m.avatar ? (
-                              <div className={`w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center ${
-                                darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
-                              }`}>
-                                <AnimeAnimalCharacter config={m.avatar} size={40} />
-                              </div>
-                            ) : (
-                              <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center ${
-                                darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
-                              }`}>
-                                <span className="text-white font-bold text-base">{m.name.charAt(0).toUpperCase()}</span>
-                              </div>
-                            )}
+                            <div className={`transition-transform duration-300 ${memberActionTarget?.uid === m.uid ? "animate-bounce-gentle" : ""}`}>
+                              {m.avatar ? (
+                                <div className={`w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center ${
+                                  darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
+                                }`}>
+                                  <AnimeAnimalCharacter config={m.avatar} size={40} />
+                                </div>
+                              ) : (
+                                <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center ${
+                                  darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
+                                }`}>
+                                  <span className="text-white font-bold text-base">{m.name.charAt(0).toUpperCase()}</span>
+                                </div>
+                              )}
+                            </div>
                             <span className={`text-[10px] font-semibold leading-tight ${darkMode ? "text-purple-700" : "text-rose-700"}`}>{m.name}</span>
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                              darkMode ? "bg-purple-200/50" : "bg-pink-100/60"
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-300 ${
+                              memberActionTarget?.uid === m.uid
+                                ? darkMode ? "bg-purple-300/60 scale-110" : "bg-pink-200/80 scale-110"
+                                : darkMode ? "bg-purple-200/50" : "bg-pink-100/60"
                             }`}>
                               <span className={`text-[8px] font-bold ${darkMode ? "text-purple-600" : "text-pink-500"}`}>Nv.{m.level}</span>
                             </div>

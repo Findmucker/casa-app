@@ -269,6 +269,15 @@ body {
   animation: fade-in-up 0.35s ease-out both;
 }
 
+/* Gentle bounce for selected member avatar */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-bounce-gentle {
+  animation: bounce-gentle 1.2s ease-in-out infinite;
+}
+
 /* Slide in from right — tab content */
 @keyframes slide-in-right {
   from { opacity: 0; transform: translateX(16px); }
