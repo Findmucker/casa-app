@@ -41,6 +41,7 @@ export default function HabitList() {
   const [showAdd, setShowAdd] = useState(false);
   const [celebrating, setCelebrating] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [filter, setFilter] = useState("all");
 
   const today = getToday();
 
@@ -155,6 +156,10 @@ export default function HabitList() {
 
   const allChecked = habits.length > 0 && habits.every((h) => todayChecks.has(h.id));
 
+  const filteredHabits = filter === "all"
+    ? habits
+    : habits.filter((h) => h.assignee === filter || (!h.assignee && filter === "ambos"));
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -182,6 +187,29 @@ export default function HabitList() {
               +
             </button>
           </div>
+        </div>
+
+        {/* Filter by person */}
+        <div className="flex gap-1.5 mt-3">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+              filter === "all" ? "bg-purple-200 text-purple-700" : "bg-purple-50 text-purple-400"
+            }`}
+          >
+            {t("common.all")}
+          </button>
+          {memberNames.map((m) => (
+            <button
+              key={m.key}
+              onClick={() => setFilter(m.key)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+                filter === m.key ? "bg-purple-200 text-purple-700" : "bg-purple-50 text-purple-400"
+              }`}
+            >
+              {m.emoji} {m.label}
+            </button>
+          ))}
         </div>
 
         {/* Add form */}
@@ -293,7 +321,7 @@ export default function HabitList() {
           </div>
         )}
 
-        {habits.map((habit) => {
+        {filteredHabits.map((habit) => {
           const checked = todayChecks.has(habit.id);
           const streak = getStreak(habit.id);
           const isCelebrating = celebrating === habit.id;
