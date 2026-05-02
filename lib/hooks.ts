@@ -92,6 +92,26 @@ export interface ExpenseItem {
   createdAt: unknown;
 }
 
+export interface IncomeItem {
+  id: string;
+  name: string;
+  amount: number;
+  recurring: boolean;
+  date: string;
+  owner: string;
+  createdAt: unknown;
+}
+
+export interface SavingsGoal {
+  id: string;
+  name: string;
+  emoji: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline?: string;
+  createdAt: unknown;
+}
+
 export interface MealPlan {
   id: string;
   date: string; // "YYYY-MM-DD"
