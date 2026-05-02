@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSharedCollections, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck } from "@/lib/hooks";
+import { getWeatherInfo } from "@/lib/weather";
 
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -66,16 +67,57 @@ function getMovingHolidays(year: number): Record<string, string> {
 interface CalendarDot {
   color: string;
   label: string;
-  type: "event" | "habit" | "deadline";
+  type: "event" | "habit" | "deadline" | "weather";
+}
+
+interface DayWeather {
+  tempMax: number;
+  tempMin: number;
+  weathercode: number;
+  precipProb: number;
+}
+
+// Cache weather data in memory
+let weatherCache: { data: Record<string, DayWeather>; fetchedAt: number } | null = null;
+
+async function fetchWeather7Days(): Promise<Record<string, DayWeather>> {
+  if (weatherCache && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
+    return weatherCache.data;
+  }
+  try {
+    const res = await fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=Europe/Lisbon&forecast_days=7"
+    );
+    const json = await res.json();
+    const result: Record<string, DayWeather> = {};
+    for (let i = 0; i < json.daily.time.length; i++) {
+      result[json.daily.time[i]] = {
+        tempMax: Math.round(json.daily.temperature_2m_max[i]),
+        tempMin: Math.round(json.daily.temperature_2m_min[i]),
+        weathercode: json.daily.weather_code[i],
+        precipProb: json.daily.precipitation_probability_max[i],
+      };
+    }
+    weatherCache = { data: result, fetchedAt: Date.now() };
+    return result;
+  } catch {
+    return {};
+  }
 }
 
 export default function Calendar() {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [weatherData, setWeatherData] = useState<Record<string, DayWeather>>({});
 
   const { habits, checks, coisinhas, projects } = useSharedCollections();
 
   const today = new Date().toISOString().split("T")[0];
+
+  // Fetch weather on mount
+  useEffect(() => {
+    fetchWeather7Days().then(setWeatherData);
+  }, []);
 
   // Build dots map: date → dots[]
   const dotsMap = useMemo(() => {
@@ -151,17 +193,18 @@ export default function Calendar() {
   };
 
   const selectedDots = selectedDate ? dotsMap[selectedDate] || [] : [];
+  const selectedWeather = selectedDate ? weatherData[selectedDate] : null;
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-blue-100/40">
         <div className="flex items-center justify-between">
-          <button onClick={() => changeMonth(-1)} className="text-blue-400 px-3 py-1 active:scale-90 text-lg">←</button>
+          <button onClick={() => changeMonth(-1)} className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&larr;</button>
           <h2 className="text-base font-bold text-blue-600 capitalize">
             {MONTHS_PT[viewDate.getMonth()]} {viewDate.getFullYear()}
           </h2>
-          <button onClick={() => changeMonth(1)} className="text-blue-400 px-3 py-1 active:scale-90 text-lg">→</button>
+          <button onClick={() => changeMonth(1)} className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&rarr;</button>
         </div>
       </div>
 
@@ -182,12 +225,13 @@ export default function Calendar() {
             const dots = dotsMap[dateStr] || [];
             const isToday = dateStr === today;
             const isSelected = dateStr === selectedDate;
+            const dayWeather = weatherData[dateStr];
 
             return (
               <button
                 key={i}
                 onClick={() => setSelectedDate(dateStr === selectedDate ? null : dateStr)}
-                className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 ${
+                className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 relative ${
                   isSelected
                     ? "bg-blue-500 text-white shadow-md"
                     : isToday
@@ -196,6 +240,9 @@ export default function Calendar() {
                 }`}
               >
                 <span className="text-xs">{day}</span>
+                {dayWeather && (
+                  <span className="text-[8px] leading-none">{getWeatherInfo(dayWeather.weathercode).emoji}</span>
+                )}
                 {dots.length > 0 && (
                   <div className="flex gap-0.5">
                     {dots.slice(0, 3).map((d, j) => (
@@ -216,7 +263,24 @@ export default function Calendar() {
             <p className="text-xs font-semibold text-blue-500 mb-2">
               {new Date(selectedDate + "T12:00").toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" })}
             </p>
-            {selectedDots.length === 0 && (
+
+            {/* Weather card for selected day */}
+            {selectedWeather && (
+              <div className="flex items-center gap-3 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-3 border border-sky-200/40">
+                <span className="text-2xl">{getWeatherInfo(selectedWeather.weathercode).emoji}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-sky-700">{getWeatherInfo(selectedWeather.weathercode).label}</p>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <span className="text-xs text-sky-600">🌡️ {selectedWeather.tempMin}° — {selectedWeather.tempMax}°</span>
+                    {selectedWeather.precipProb > 0 && (
+                      <span className="text-xs text-sky-500">💧 {selectedWeather.precipProb}%</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedDots.length === 0 && !selectedWeather && (
               <p className="text-xs text-blue-300 text-center py-4">Nada neste dia</p>
             )}
             {selectedDots.map((dot, i) => (
@@ -231,7 +295,7 @@ export default function Calendar() {
         {!selectedDate && (
           <div className="text-center text-blue-300 py-6">
             <p className="text-xs">Tap num dia para ver detalhes</p>
-            <div className="flex items-center justify-center gap-4 mt-3">
+            <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-green-400" />
                 <span className="text-[10px]">Hábitos</span>
@@ -243,6 +307,13 @@ export default function Calendar() {
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-purple-400" />
                 <span className="text-[10px]">Projetos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px]">☀️ Meteo</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-amber-400" />
+                <span className="text-[10px]">Feriados</span>
               </div>
             </div>
           </div>
