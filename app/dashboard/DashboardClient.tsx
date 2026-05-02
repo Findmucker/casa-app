@@ -33,6 +33,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "meals", "calendar", "events", "weather"] as const;
+
+interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; }
 const TAB_EMOJIS = ["✨", "🛒", "🪴", "🏠", "🧘", "💰", "🍽️", "📅", "🎉", "🌤️"];
 const TAB_LABEL_KEYS = [
   "tabs.home", "tabs.shopping", "tabs.small", "tabs.big", "tabs.habits",
@@ -64,6 +66,7 @@ function DashboardInner() {
   const [showHouseMembers, setShowHouseMembers] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSendMessage, setShowSendMessage] = useState(false);
+  const [memberActionTarget, setMemberActionTarget] = useState<MemberWidget | null>(null);
   const theme = useTimeTheme();
   const darkMode = theme.isDark;
   const { user, logout } = useAuth();
@@ -71,7 +74,6 @@ function DashboardInner() {
   const { members, userName } = useHouseContext();
 
   // Members widget data
-  interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; }
   const [memberWidgets, setMemberWidgets] = useState<MemberWidget[]>([]);
   useEffect(() => {
     const load = async () => {
@@ -330,6 +332,87 @@ function DashboardInner() {
               </div>
             ) : (
               <div className="flex flex-col items-center">
+                {/* Members widget — special section at top */}
+                {memberWidgets.length > 0 && (
+                  <div className={`w-full px-4 max-w-sm mb-5 relative`}>
+                    <div className={`rounded-3xl p-4 ${
+                      darkMode
+                        ? "bg-purple-100/40 border border-purple-200/40"
+                        : "bg-gradient-to-br from-rose-50/80 to-pink-50/60 border border-pink-100/40"
+                    }`}>
+                      {/* Title as button */}
+                      <button
+                        onClick={() => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); }}
+                        className={`w-full text-center mb-3 py-1.5 rounded-2xl transition-all active:scale-[0.97] ${
+                          darkMode
+                            ? "hover:bg-purple-200/40"
+                            : "hover:bg-white/50"
+                        }`}
+                      >
+                        <span className={`text-[11px] font-semibold uppercase tracking-wider ${darkMode ? "text-purple-500" : "text-rose-400"}`}>
+                          👥 {t("menu.members")}
+                        </span>
+                        <span className={`text-[9px] ml-1.5 ${darkMode ? "text-purple-400" : "text-pink-300"}`}>→</span>
+                      </button>
+
+                      {/* Member avatars */}
+                      <div className="flex gap-2.5 justify-center flex-wrap">
+                        {memberWidgets.map((m) => (
+                          <button
+                            key={m.uid}
+                            onClick={() => setMemberActionTarget(memberActionTarget?.uid === m.uid ? null : m)}
+                            className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all active:scale-90 min-w-[64px] ${
+                              memberActionTarget?.uid === m.uid
+                                ? darkMode
+                                  ? "bg-purple-200/70 border border-purple-300/60 shadow-md"
+                                  : "bg-white/90 border border-pink-200/60 shadow-md"
+                                : "hover:bg-white/40"
+                            }`}
+                          >
+                            {m.avatar ? (
+                              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-rose-200/50 bg-white flex items-center justify-center">
+                                <AnimeAnimalCharacter config={m.avatar} size={34} />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center border-2 border-rose-200/50">
+                                <span className="text-white font-bold text-sm">{m.name.charAt(0).toUpperCase()}</span>
+                              </div>
+                            )}
+                            <span className={`text-[9px] font-medium leading-tight ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{m.name}</span>
+                            <span className={`text-[8px] ${darkMode ? "text-purple-400" : "text-pink-400"}`}>Nv.{m.level}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Action popup for selected member */}
+                      {memberActionTarget && (
+                        <div className={`mt-3 flex gap-2 justify-center animate-fade-in-up`}>
+                          <button
+                            onClick={() => { setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowHouseMembers(true); }}
+                            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[10px] font-medium transition-all active:scale-90 ${
+                              darkMode
+                                ? "bg-purple-200/60 text-purple-700 hover:bg-purple-200"
+                                : "bg-white/70 text-rose-600 border border-pink-100/40 hover:bg-white"
+                            }`}
+                          >
+                            <span>💌</span> {t("menu.message")}
+                          </button>
+                          <button
+                            onClick={() => { setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowGamification(true); }}
+                            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[10px] font-medium transition-all active:scale-90 ${
+                              darkMode
+                                ? "bg-purple-200/60 text-purple-700 hover:bg-purple-200"
+                                : "bg-white/70 text-rose-600 border border-pink-100/40 hover:bg-white"
+                            }`}
+                          >
+                            <span>👤</span> {t("menu.profile")}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* All tabs grid */}
                 <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.navigate")}</p>
                 <div className="grid grid-cols-5 gap-2.5 px-4 max-w-sm mb-6">
@@ -352,41 +435,6 @@ function DashboardInner() {
                     </button>
                   ))}
                 </div>
-
-                {/* Divider */}
-                <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
-
-                {/* Members widget */}
-                {memberWidgets.length > 0 && (
-                  <div className="w-full px-4 max-w-sm mb-5">
-                    <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 text-center ${darkMode ? "text-purple-500" : "text-rose-300"}`}>👥 {t("menu.members")}</p>
-                    <div className="flex gap-2 justify-center flex-wrap">
-                      {memberWidgets.map((m) => (
-                        <button
-                          key={m.uid}
-                          onClick={() => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); }}
-                          className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl transition-all active:scale-90 min-w-[72px] ${
-                            darkMode
-                              ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
-                              : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
-                          }`}
-                        >
-                          {m.avatar ? (
-                            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-rose-200/50 bg-white flex items-center justify-center">
-                              <AnimeAnimalCharacter config={m.avatar} size={30} />
-                            </div>
-                          ) : (
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center border-2 border-rose-200/50">
-                              <span className="text-white font-bold text-sm">{m.name.charAt(0).toUpperCase()}</span>
-                            </div>
-                          )}
-                          <span className={`text-[9px] font-medium leading-tight ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{m.name}</span>
-                          <span className={`text-[8px] ${darkMode ? "text-purple-400" : "text-pink-400"}`}>Nv.{m.level}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Divider */}
                 <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />

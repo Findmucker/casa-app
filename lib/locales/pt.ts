@@ -29,6 +29,7 @@ export const pt = {
   "menu.tutorial": "Tutorial",
   "menu.language": "Idioma",
   "menu.logout": "Sair",
+  "menu.profile": "Perfil",
 
   // Common
   "common.add": "Adicionar",

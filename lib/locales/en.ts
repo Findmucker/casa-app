@@ -31,6 +31,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "menu.tutorial": "Tutorial",
   "menu.language": "Language",
   "menu.logout": "Logout",
+  "menu.profile": "Profile",
 
   // Common
   "common.add": "Add",
