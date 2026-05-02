@@ -175,6 +175,19 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   // Search
   "search.placeholder": "Search everything...",
 
+  // Members management
+  "members.management.title": "House Members",
+  "members.management.member": "Member",
+  "members.management.members": "members",
+  "members.management.you": "you",
+  "members.management.promote": "Promote",
+  "members.management.demote": "Demote",
+  "members.management.remove": "Remove",
+  "members.management.promoteConfirm": "Promote to admin?",
+  "members.management.demoteConfirm": "Remove admin?",
+  "members.management.removeConfirm": "Remove from house?",
+  "members.management.adminNote": "As admin, you can manage roles and remove members.",
+
   // Tutorial
   "tutorial.skip": "Skip",
   "tutorial.prev": "Previous",

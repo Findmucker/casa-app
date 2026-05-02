@@ -67,6 +67,7 @@ function getMovingHolidays(year: number): Record<string, string> {
 
 interface CalendarDot {
   color: string;
+  emoji: string;
   label: string;
   type: "event" | "habit" | "deadline" | "weather";
 }
@@ -133,27 +134,27 @@ export default function Calendar() {
     // Habit checks (green)
     checks.forEach((c) => {
       const habit = habits.find((h) => h.id === c.habitId);
-      addDot(c.date, { color: "bg-green-400", label: `${habit?.emoji || "✓"} ${habit?.name || "Hábito"}`, type: "habit" });
+      addDot(c.date, { color: "bg-green-400", emoji: "💊", label: `${habit?.emoji || "✓"} ${habit?.name || "Hábito"}`, type: "habit" });
     });
 
     // Completed coisinhas (pink) - use completedAt
     coisinhas.forEach((c) => {
       if (c.done && c.completedAt) {
-        addDot(c.completedAt, { color: "bg-pink-400", label: `🪴 ${c.name}`, type: "deadline" });
+        addDot(c.completedAt, { color: "bg-pink-400", emoji: "🪴", label: `🪴 ${c.name}`, type: "deadline" });
       }
     });
 
     // Projects in progress (purple)
     projects.forEach((p) => {
       if (p.status === "concluido" && p.completedAt) {
-        addDot(p.completedAt, { color: "bg-purple-400", label: `🏠 ${p.name}`, type: "deadline" });
+        addDot(p.completedAt, { color: "bg-purple-400", emoji: "🏠", label: `🏠 ${p.name}`, type: "deadline" });
       }
     });
 
     // Events (red/coral)
     events.forEach((e) => {
       if (e.date) {
-        addDot(e.date, { color: "bg-red-400", label: `🎉 ${e.title}`, type: "event" });
+        addDot(e.date, { color: "bg-red-400", emoji: "🎉", label: `🎉 ${e.title}`, type: "event" });
       }
     });
 
@@ -161,11 +162,11 @@ export default function Calendar() {
     const year = viewDate.getFullYear();
     Object.entries(HOLIDAYS_FIXED).forEach(([mmdd, label]) => {
       const dateStr = `${year}-${mmdd}`;
-      addDot(dateStr, { color: "bg-amber-400", label, type: "event" });
+      addDot(dateStr, { color: "bg-amber-400", emoji: "🇵🇹", label, type: "event" });
     });
     const moving = getMovingHolidays(year);
     Object.entries(moving).forEach(([dateStr, label]) => {
-      addDot(dateStr, { color: "bg-amber-400", label, type: "event" });
+      addDot(dateStr, { color: "bg-amber-400", emoji: "🇵🇹", label, type: "event" });
     });
 
     return map;
@@ -255,7 +256,7 @@ export default function Calendar() {
                 {dots.length > 0 && (
                   <div className="flex gap-0.5">
                     {dots.slice(0, 3).map((d, j) => (
-                      <div key={j} className={`w-1 h-1 rounded-full ${isSelected ? "bg-white" : d.color}`} />
+                      <span key={j} className="text-[7px] leading-none">{d.emoji}</span>
                     ))}
                   </div>
                 )}
@@ -294,7 +295,7 @@ export default function Calendar() {
             )}
             {selectedDots.map((dot, i) => (
               <div key={i} className="flex items-center gap-2 bg-white/70 rounded-xl p-3 border border-blue-100/30">
-                <div className={`w-2 h-2 rounded-full ${dot.color}`} />
+                <span className="text-sm">{dot.emoji}</span>
                 <span className="text-sm text-blue-800">{dot.label}</span>
               </div>
             ))}
@@ -306,26 +307,27 @@ export default function Calendar() {
             <p className="text-xs">Tap num dia para ver detalhes</p>
             <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-green-400" />
+                <span className="text-[10px]">💊</span>
                 <span className="text-[10px]">Hábitos</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-pink-400" />
+                <span className="text-[10px]">🪴</span>
                 <span className="text-[10px]">Coisinhas</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-purple-400" />
+                <span className="text-[10px]">🏠</span>
                 <span className="text-[10px]">Projetos</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-red-400" />
+                <span className="text-[10px]">🎉</span>
                 <span className="text-[10px]">Eventos</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="text-[10px]">☀️ Meteo</span>
+                <span className="text-[10px]">☀️</span>
+                <span className="text-[10px]">Meteo</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-amber-400" />
+                <span className="text-[10px]">🇵🇹</span>
                 <span className="text-[10px]">Feriados</span>
               </div>
             </div>

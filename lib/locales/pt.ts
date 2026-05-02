@@ -173,6 +173,19 @@ export const pt = {
   // Search
   "search.placeholder": "Procurar em tudo...",
 
+  // Members management
+  "members.management.title": "Membros da Casa",
+  "members.management.member": "Membro",
+  "members.management.members": "membros",
+  "members.management.you": "tu",
+  "members.management.promote": "Promover",
+  "members.management.demote": "Despromover",
+  "members.management.remove": "Remover",
+  "members.management.promoteConfirm": "Promover a admin?",
+  "members.management.demoteConfirm": "Remover admin?",
+  "members.management.removeConfirm": "Remover da casa?",
+  "members.management.adminNote": "Como admin, podes gerir roles e remover membros.",
+
   // Tutorial
   "tutorial.skip": "Saltar",
   "tutorial.prev": "Anterior",
