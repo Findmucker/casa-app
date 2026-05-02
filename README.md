@@ -329,6 +329,10 @@ Projeto pessoal — feito com 💕
 - 🔧 Lembretes de manutenção da casa ([#63](https://github.com/Findmucker/casa-app/issues/63))
 - 📞 Lista de contactos úteis ([#64](https://github.com/Findmucker/casa-app/issues/64))
 - 💍 Tracker de aniversários e datas especiais ([#69](https://github.com/Findmucker/casa-app/issues/69))
+- 👯 Lista de casa de amigas ([#70](https://github.com/Findmucker/casa-app/issues/70))
+- 🔄 Sync de calendários de aniversários com amigos ([#71](https://github.com/Findmucker/casa-app/issues/71))
+- 🎂 Data de nascimento obrigatória no registo ([#72](https://github.com/Findmucker/casa-app/issues/72))
+- 🎂 Calcular aniversários automáticos por data de nascimento ([#73](https://github.com/Findmucker/casa-app/issues/73))
 
 ### Avatares / Customização
 - 👕 Tab Roupa Cima - 7 estilos ([#15](https://github.com/Findmucker/casa-app/issues/15))
