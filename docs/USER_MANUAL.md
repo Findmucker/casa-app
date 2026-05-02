@@ -1,8 +1,12 @@
 # A Nossa Casinha - Manual do Utilizador
 
+> Ultima atualizacao: 2 de Maio de 2026 | Versao 0.8.0
+
 ## O que e a app?
 
 A Nossa Casinha e uma app de gestao domestica para casais e familias. Permite organizar compras, tarefas, habitos, despesas, refeicoes, eventos e muito mais — tudo partilhado entre os membros da casa, com notificacoes push reais e um sistema de gamificacao RPG completo.
+
+Todos os membros da casa sao **iguais** — nao ha hierarquia de administrador.
 
 ---
 
@@ -21,7 +25,7 @@ A app tem uma **barra de tabs** na parte inferior com 10 seccoes. Podes navegar 
 | 🛒 | Comprinhas | Lista de compras partilhada |
 | 🪴 | Coisinhas | Pequenas tarefas/prioridades |
 | 🏠 | Projetinhos | Projetos maiores da casa |
-| 💊 | Rotinazinhas | Habitos diarios com streaks e filtros |
+| ✅ | Rotinazinhas | Habitos diarios com streaks e filtros |
 | 💰 | Gastinhos | Financas: despesas, rendimentos, poupancas |
 | 🍽️ | Receitinhas | Planeamento de refeicoes semanal |
 | 📅 | Calendarzinho | Calendario mensal integrado |
@@ -48,7 +52,7 @@ O ecra inicial mostra:
 - Items sao agrupados por **categoria** automaticamente (Frescos, Carnes, Frutas, Padaria, Despensa, Bebidas, Snacks, Higiene, Pets)
 - Tap num item para marcar como comprado (com animacao de celebracao)
 - Categorias colapsaveis com barra de progresso por seccao
-- Atribui a pessoa responsavel (membros da casa ou "Ambos")
+- Atribui a pessoa responsavel (qualquer membro da casa)
 - Preco estimado opcional
 - Ordenado por fluxo de supermercado
 
@@ -83,7 +87,7 @@ O ecra inicial mostra:
 - Sistema de **streaks** — dias consecutivos com animacao 🔥
 - Hora configuravel por habito (para lembretes)
 - **Selector de dias da semana** — define em que dias o habito esta ativo
-- **Filtro por pessoa** — filtra habitos por membro (Todos / nome / Ambos)
+- **Filtro por pessoa** — filtra habitos por membro da casa (Todos / nome individual)
 - **Atribui a pessoa** responsavel (dinamico por membros da casa)
 - **Notificacoes repetidas** — lembrete a cada 10 min enquanto nao completo (max 2h)
 - **Push notifications reais** — recebe lembretes mesmo com a app fechada (via FCM)
@@ -98,7 +102,7 @@ A tab Gastinhos esta organizada em **3 sub-tabs** para gestao financeira complet
 ### Sub-tab: Despesas
 - Regista gastos com nome, valor, categoria e quem pagou
 - Resumo mensal por categoria com barras visuais
-- Total por pessoa (membros da casa + "Ambos")
+- Total por pessoa (membros da casa)
 - Navegacao por meses (setas para avancar/recuar)
 
 ### Sub-tab: Rendimentos
@@ -134,19 +138,18 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 ## Calendarzinho
 
 - Vista mensal com grid interativo
-- **Dots coloridos** por tipo de atividade no dia:
-  - 🟢 Verde — habitos completados
-  - 🩷 Rosa — coisinhas concluidas
-  - 🟣 Roxo — projetos concluidos
-  - 🔴 Vermelho — eventos agendados
-  - 🟡 Amarelo — feriados portugueses
+- **Emojis** por tipo de atividade no dia (substituiram os dots coloridos):
+  - ✅ Habitos completados
+  - 🪴 Coisinhas concluidas
+  - 🏠 Projetos concluidos
+  - 🎉 Eventos agendados
+  - 🇵🇹 Feriados portugueses
 - **Feriados portugueses** automaticos (fixos + moveis como Pascoa e Carnaval)
 - **Previsao meteorologica** — emoji do tempo nos proximos 7 dias diretamente no grid
 - Tap num dia para ver todos os detalhes:
   - Card de meteo com temperatura min/max e probabilidade de chuva
   - Lista de eventos, habitos, coisinhas e projetos desse dia
   - Feriados e datas especiais
-- Legenda de cores na vista inicial
 
 ---
 
@@ -161,7 +164,7 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
   - Veem detalhes do evento e podem juntar-se
   - Confirmacao antes de participar
 - Historico de eventos passados com opcao de clonar
-- **Integrado no Calendarzinho** — eventos aparecem como dots vermelhos
+- **Integrado no Calendarzinho** — eventos aparecem com emoji 🎉
 
 ---
 
@@ -200,10 +203,19 @@ A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 - 🏠 Estou a caminho de casa
 - 🛒 Vou ao supermercado, precisas de algo?
 - 🍽️ O jantar esta pronto!
-- 💊 Nao te esquecas da pilula!
 - 🐱 O gato precisa de comer
 - ☕ Queres um cafe?
 - 🧹 Ja limpei a cozinha!
+
+---
+
+## Tutorial
+
+A app inclui um **tutorial interativo** que aparece na primeira utilizacao. O tutorial foi completamente reescrito e suporta ambos os idiomas (PT/EN).
+
+Podes rever o tutorial a qualquer momento:
+1. Tap no titulo "A Nossa Casinha"
+2. Seccao Definicoes → **❓ Tutorial**
 
 ---
 
@@ -215,7 +227,7 @@ Ao tocar no titulo "A Nossa Casinha" no header, abre um menu organizado em secco
 Grid com todas as 10 tabs — tap para ir directamente.
 
 ### Comunicacao
-- **💌 Mensagem** — envia notificacao push com mensagem ao outro membro
+- **💌 Mensagem** — envia notificacao push com mensagem a outro membro
 - **📜 Historico** — registo de items completados com data e stats
 
 ### Casa
@@ -297,6 +309,24 @@ Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Ce
 
 ---
 
+## Membros da Casa
+
+Todos os membros sao **iguais** — nao existe hierarquia de administrador.
+
+Na seccao Membros podes ver:
+- Avatar pixel art de cada membro
+- Nivel e titulo RPG
+- Pontos totais
+- Melhor streak
+
+### Convidar novos membros
+1. Menu central → 🔗 Convidar
+2. Gera um codigo de convite
+3. Partilha o link com o novo membro
+4. O membro aceita e junta-se automaticamente a casa
+
+---
+
 ## Temas Visuais
 
 A app muda automaticamente de tema ao longo do dia:
@@ -309,23 +339,6 @@ A app muda automaticamente de tema ao longo do dia:
 | 20h - 7h | 🌙 Noite | Modo escuro, slate, purple |
 
 A transicao entre temas e suave e automatica.
-
----
-
-## Membros da Casa
-
-Na seccao Membros podes ver:
-- Avatar pixel art de cada membro
-- Nivel e titulo RPG
-- Pontos totais
-- Melhor streak
-- Role (admin/membro)
-
-### Convidar novos membros
-1. Menu central → 🔗 Convidar
-2. Gera um codigo de convite
-3. Partilha o link com o novo membro
-4. O membro aceita e junta-se automaticamente a casa
 
 ---
 
@@ -352,19 +365,6 @@ A app suporta **Portugues** 🇵🇹 e **Ingles** 🇬🇧.
 
 ---
 
-## Dicas
-
-- **Swipe** entre tabs para navegar rapidamente
-- **Marca items como urgentes** nas comprinhas para destacar no topo
-- **Mantem streaks** nos habitos para ganhar mais pontos e badges
-- **Usa o planeador de refeicoes** e envia ingredientes direto para as comprinhas
-- O **dashboard** mostra o que e mais importante para hoje
-- **Ativa notificacoes** para nao perderes lembretes de habitos
-- **Envia mensagens** ao outro membro diretamente pela app
-- O **calendario** mostra uma visao geral de tudo o que acontece na casa
-
----
-
 ## PWA e Atualizacoes
 
 A app funciona como **Progressive Web App (PWA)** — podes instala-la no telemovel ou computador.
@@ -380,6 +380,19 @@ A app funciona como **Progressive Web App (PWA)** — podes instala-la no telemo
 
 ---
 
+## Dicas
+
+- **Swipe** entre tabs para navegar rapidamente
+- **Marca items como urgentes** nas comprinhas para destacar no topo
+- **Mantem streaks** nos habitos para ganhar mais pontos e badges
+- **Usa o planeador de refeicoes** e envia ingredientes direto para as comprinhas
+- O **dashboard** mostra o que e mais importante para hoje
+- **Ativa notificacoes** para nao perderes lembretes de habitos
+- **Envia mensagens** a outros membros diretamente pela app
+- O **calendario** mostra uma visao geral de tudo o que acontece na casa
+
+---
+
 ## Suporte
 
-Problemas ou sugestoes? Contacta os administradores da casinha ou abre um issue no [repositorio do projeto](https://github.com/Findmucker/casa-app).
+Problemas ou sugestoes? Contacta os membros da casinha ou abre um issue no [repositorio do projeto](https://github.com/Findmucker/casa-app).

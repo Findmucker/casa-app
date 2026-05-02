@@ -1,6 +1,6 @@
 # Contributing to Casa App
 
-Obrigado por querer contribuir! 🏠✨
+Thank you for wanting to contribute! Here's everything you need to get started.
 
 ## Quick Start
 
@@ -13,51 +13,67 @@ npm run dev
 
 ## Workflow
 
-1. **Escolhe um issue** em [GitHub Issues](https://github.com/Findmucker/casa-app/issues)
-2. **Cria branch** a partir de `develop`:
+1. **Pick an issue** from [GitHub Issues](https://github.com/Findmucker/casa-app/issues) (#88–#97 are good starting points)
+2. **Create a branch** from `develop`:
    ```bash
    git checkout develop && git pull
-   git checkout -b feature/issue-XX-descricao
+   git checkout -b feature/issue-XX-description
    ```
-3. **Desenvolve** e verifica:
+3. **Develop** and verify quality gates pass:
    ```bash
    npm run typecheck  # Zero errors
    npm run lint       # Zero warnings
    npm run build      # Build OK
+   npm test           # Tests pass
    ```
-4. **Commit** com Conventional Commits:
+4. **Commit** using Conventional Commits:
    ```bash
    git commit -m "feat: add savings progress bar"
    ```
-5. **Push e abre PR** para `develop`:
+5. **Push and open PR** targeting `develop`:
    ```bash
-   git push -u origin feature/issue-XX-descricao
+   git push -u origin feature/issue-XX-description
+   gh pr create --base develop
    ```
 
-## Convenções
+## Branching Strategy
+
+```
+feature/* ──PR──► develop ──PR──► master
+                    │                │
+                    ▼                ▼
+             Preview Deploy    Production Deploy
+```
+
+See [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) for full details.
 
 ### Branch naming
-| Prefixo | Uso |
-|---------|-----|
-| `feature/` | Nova funcionalidade |
+
+| Prefix | Usage |
+|--------|-------|
+| `feature/` | New functionality |
 | `fix/` | Bug fix |
-| `chore/` | Manutenção, deps |
-| `i18n/` | Traduções |
-| `docs/` | Documentação |
+| `chore/` | Maintenance, deps |
+| `i18n/` | Translations |
+| `docs/` | Documentation |
+| `hotfix/` | Urgent production fix (branch from `master`) |
 
 ### Commit messages
-Seguir [Conventional Commits](https://www.conventionalcommits.org/):
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `feat: add meal planner export`
 - `fix: prevent crash on empty habit days`
 - `chore: update dependencies`
 - `i18n: wire calendar strings`
+- `docs: update contributing guide`
 
 ### PR title
-Mesmo formato dos commits. O CI valida automaticamente.
+
+Same format as commits. CI validates automatically.
 
 ## i18n
 
-Todas as strings visíveis ao user devem usar `t("key")`:
+All user-visible strings must use `t("key")`:
 ```tsx
 import { useT } from "@/lib/i18n";
 const { t } = useT();
@@ -65,29 +81,40 @@ const { t } = useT();
 <p>{t("expenses.empty")}</p>
 ```
 
-Adicionar keys em ambos:
-- `lib/locales/pt.ts` (Português)
+Add keys to both:
+- `lib/locales/pt.ts` (Portuguese)
 - `lib/locales/en.ts` (English)
+
+The tutorial system is fully i18n-aware — update both locale files when modifying tutorial content.
 
 ## Code Style
 
-- **TypeScript** strict (sem `any`)
-- **Tailwind** para estilos (sem CSS custom)
-- **Componentes** em `components/` com nome PascalCase
-- **Hooks/utils** em `lib/`
-- **Firestore types** em `lib/hooks.ts`
+- **TypeScript** strict (no `any`)
+- **Tailwind** for styles (no custom CSS)
+- **Components** in `components/` with PascalCase names
+- **Hooks/utils** in `lib/`
+- **Firestore types** in `lib/hooks.ts`
+- **No external chart libraries** — use pure SVG for visualizations
+- **No admin hierarchy** — all house members are treated equally in code
 
-## CI/CD
+## CI/CD Quality Gates
 
-O pipeline corre automaticamente em PRs:
-- ✅ TypeScript check
-- ✅ ESLint
-- ✅ Build
-- ✅ Tests
-- ✅ PR title validation
-- ✅ Auto-labeling
-- ✅ PR stats comment
+The pipeline runs automatically on all PRs — all gates must pass:
+- TypeScript typecheck
+- ESLint
+- Build verification
+- Test suite
+- PR title validation (conventional commits)
+- Branch naming check
+- Auto-labeling
+- PR stats comment
 
-## Dúvidas?
+## Tech Notes
 
-Abre um issue com label `question` ou fala no grupo.
+- **Next.js 16** App Router — Firebase pages use `force-dynamic` export
+- **Calendar** uses emoji indicators (not colored dots)
+- **Charts** are pure SVG — no chart libraries allowed
+
+## Questions?
+
+Open an issue with the `question` label or reach out to the team.

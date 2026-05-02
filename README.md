@@ -1,16 +1,16 @@
 # A Nossa Casinha
 
-A household management PWA for couples — organize shopping, tasks, projects, habits, expenses, meals, events, and more. Built with love.
+A household management PWA for couples and families — organize shopping, tasks, projects, habits, expenses, meals, events, and more. Built with love.
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.7.0
+**Version:** 0.8.0
 
 ## Features
 
 ### Shopping List (Comprinhas)
 - Add/remove items with estimated price
-- Assign to house member or "Both"
+- Assign to any house member
 - Auto-categorization (Fresh, Meats, Fruits, Bakery, Pantry, Drinks, Snacks, Hygiene, Pets)
 - Collapsible categories with progress bars
 - Mark as urgent (pinned to top)
@@ -33,13 +33,13 @@ A household management PWA for couples — organize shopping, tasks, projects, h
 - Daily check that resets at midnight
 - **Streak tracking** with fire animations
 - **Weekday selector** — define which days a habit is active
-- **Person filter** — filter habits by house member
+- **Person filter** — filter habits by house member (no redundant "Ambos" button)
 - Assign to person (dynamic by house members)
 - **Repeating notifications** — reminder every 10 min until completed
 - Push notifications via FCM
 
 ### Expenses (Gastinhos)
-- **3 sub-tabs:** Despesas (expenses), Rendimentos (income), Poupanças (savings goals)
+- **3 sub-tabs:** Despesas (expenses), Rendimentos (income), Poupancas (savings goals)
 - Track: name, amount, category, who paid
 - Monthly summary by category with visual bars
 - Total per person + monthly navigation
@@ -58,7 +58,7 @@ A household management PWA for couples — organize shopping, tasks, projects, h
 - Autocomplete with past meals
 
 ### Calendar (Calendarzinho)
-- Monthly grid with colored dots by type
+- Monthly grid with **emoji indicators** by type (replaced colored dots)
 - Portuguese holidays (fixed + Easter-based)
 - Weather emoji integration (next 7 days)
 - Event integration
@@ -97,6 +97,7 @@ A household management PWA for couples — organize shopping, tasks, projects, h
 - `LocaleProvider` + `useT()` hook architecture
 - Locale dictionaries in `lib/locales/pt.ts` and `lib/locales/en.ts`
 - Language toggle on login screen and dashboard menu
+- **Tutorial fully localized** with i18n support
 - Persists in localStorage
 
 ### PWA & Push Notifications
@@ -104,6 +105,12 @@ A household management PWA for couples — organize shopping, tasks, projects, h
 - Push notifications via Firebase Cloud Messaging (FCM)
 - **Service worker with `skipWaiting` + cache purge** for reliable updates
 - Repeating habit reminders (client-side, every 10 min)
+
+### Member Management
+- Invite system with 6-char codes and shareable links
+- **Flat hierarchy** — all members are equal (no admin roles)
+- View members with avatar, level, and stats
+- Dynamic member names throughout the app
 
 ### Send Message Panel
 - Send push notification with message to other house members
@@ -116,12 +123,8 @@ A household management PWA for couples — organize shopping, tasks, projects, h
 
 ### Tutorial System
 - Interactive step-by-step tutorial on first use
+- **Fully rewritten** with updated content and full i18n support
 - Accessible anytime via menu
-
-### House Member Management
-- Invite system with 6-char codes and shareable links
-- View members with avatar, level, and stats
-- Dynamic member names throughout the app
 
 ### Profile with Avatar Customization
 - 11 pixel art animals with unique idle animations
@@ -130,24 +133,35 @@ A household management PWA for couples — organize shopping, tasks, projects, h
 
 ## Tech Stack
 
-- **Framework:** Next.js 14 (App Router)
+- **Framework:** Next.js 16 (App Router, `force-dynamic` for Firebase pages)
 - **Language:** TypeScript
 - **UI:** Tailwind CSS
 - **Database:** Firebase Firestore (real-time sync)
 - **Auth:** Firebase Auth (email/password + Google)
 - **Notifications:** Firebase Cloud Messaging (FCM)
 - **Weather:** Open-Meteo API (free, no API key)
-- **Deploy:** Vercel (auto-deploy from GitHub)
-- **CI/CD:** GitHub Actions (typecheck, lint, build, tests, PR validation)
+- **Deploy:** Vercel (auto-deploy from GitHub) + Firebase
+- **CI/CD:** GitHub Actions with quality gates (typecheck, lint, build, tests, PR validation)
 - **Multi-tenant:** Each house has isolated data, invites by link
+
+## Branching Strategy
+
+```
+feature/* ──PR──► develop ──PR──► master
+                    │                │
+                    ▼                ▼
+             Preview Deploy    Production Deploy
+```
+
+See [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) for full details.
 
 ## Local Setup
 
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/Findmucker/my_projects.git
-cd my_projects
+git clone https://github.com/Findmucker/casa-app.git
+cd casa-app
 npm install
 ```
 
@@ -179,13 +193,15 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-### 5. Tests
+### 5. Quality checks
 
 ```bash
+npm run typecheck     # TypeScript type check
+npm run lint          # ESLint
+npm run build         # Build verification
 npm test              # Run all tests
 npm run test:watch    # Watch mode
 npm run test:coverage # With coverage
-npm run typecheck     # TypeScript type check
 ```
 
 ## Project Structure
@@ -209,7 +225,7 @@ casa-app/
 │   ├── ExpenseList.tsx       # Expense tracking (3 sub-tabs)
 │   ├── ExpenseCharts.tsx     # SVG donut, bar chart, split rings
 │   ├── MealPlanner.tsx       # Weekly meal planner
-│   ├── Calendar.tsx          # Monthly calendar view
+│   ├── Calendar.tsx          # Monthly calendar with emojis
 │   ├── EventList.tsx         # Events with weather
 │   ├── Weather.tsx           # Weather forecast
 │   ├── DashboardSummary.tsx  # Dashboard overview
@@ -217,7 +233,7 @@ casa-app/
 │   ├── AvatarBuilder.tsx     # 8-bit pixel art avatar
 │   ├── Inventory.tsx         # WoW-style inventory grid
 │   ├── LootBoxOpener.tsx     # Loot box opening animation
-│   ├── Tutorial.tsx          # Interactive tutorial
+│   ├── Tutorial.tsx          # Interactive tutorial (i18n)
 │   ├── SearchOverlay.tsx     # Global search
 │   ├── SendMessagePanel.tsx  # Send push message to members
 │   └── ...
@@ -241,7 +257,7 @@ casa-app/
 | Collection | Description |
 |---|---|
 | `users/{uid}` | User profile (name, email, houseId) |
-| `houses/{houseId}` | House (name, members) |
+| `houses/{houseId}` | House (name, members — all equal, no admin hierarchy) |
 | `invites/{code}` | Pending invites |
 | `houses/{houseId}/shopping` | Shopping list items |
 | `houses/{houseId}/priorities_small` | Tasks (coisinhas) |
@@ -259,11 +275,11 @@ casa-app/
 
 ## Deploy
 
-Connected to Vercel via GitHub. Every push to `main` auto-deploys via CI/CD pipeline.
+Connected to Vercel via GitHub with Firebase backend. Merges to `master` auto-deploy via CI/CD pipeline.
 
 ### CI/CD Pipeline (GitHub Actions)
 
-On every PR:
+On every PR — quality gates must pass:
 - TypeScript typecheck
 - ESLint
 - Build verification
@@ -277,6 +293,10 @@ On every PR:
 # Manual deploy (if needed)
 npx vercel --prod
 ```
+
+## GitHub Issues
+
+Active issues are tracked at [GitHub Issues](https://github.com/Findmucker/casa-app/issues) (#88–#97 cover upcoming improvements).
 
 ## License
 

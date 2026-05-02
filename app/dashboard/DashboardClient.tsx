@@ -26,6 +26,11 @@ import { useAuth } from "@/lib/auth";
 import { useTimeTheme } from "@/lib/themes";
 import { registerPushToken } from "@/lib/notifications";
 import { LocaleProvider, useT } from "@/lib/i18n";
+import { useHouseContext } from "@/lib/context";
+import { getLevel, getTitle } from "@/lib/gamification";
+import { AnimeAnimalCharacter, type AvatarConfig } from "@/components/AvatarBuilder";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "meals", "calendar", "events", "weather"] as const;
 const TAB_EMOJIS = ["✨", "🛒", "🪴", "🏠", "🧘", "💰", "🍽️", "📅", "🎉", "🌤️"];
@@ -63,6 +68,31 @@ function DashboardInner() {
   const darkMode = theme.isDark;
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
+  const { members, userName } = useHouseContext();
+
+  // Members widget data
+  interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; }
+  const [memberWidgets, setMemberWidgets] = useState<MemberWidget[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      const data: MemberWidget[] = await Promise.all(
+        members.map(async (m) => {
+          try {
+            const snap = await getDoc(doc(db, "gamification", m.name));
+            if (snap.exists()) {
+              const d = snap.data();
+              const pts = d.points || 0;
+              const { level } = getLevel(pts);
+              return { uid: m.uid, name: m.name, avatar: d.avatar || undefined, level, title: getTitle(level), points: pts };
+            }
+          } catch { /* ignore */ }
+          return { uid: m.uid, name: m.name, level: 1, title: getTitle(1), points: 0 };
+        })
+      );
+      setMemberWidgets(data);
+    };
+    if (members.length > 0) load();
+  }, [members]);
 
   // Shared collection data — single set of listeners for Dashboard + DashboardSummary
   const { items: shopping } = useCollection<ShoppingItem>("shopping", "createdAt");
@@ -234,7 +264,6 @@ function DashboardInner() {
                 <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
                   {(menuSubPanel === "communication" ? [
                     { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
-                    { emoji: "💌", label: t("menu.message"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowSendMessage(true); } },
                   ] : menuSubPanel === "house" ? [
                     { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
                     { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); } },
@@ -323,6 +352,41 @@ function DashboardInner() {
                     </button>
                   ))}
                 </div>
+
+                {/* Divider */}
+                <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
+
+                {/* Members widget */}
+                {memberWidgets.length > 0 && (
+                  <div className="w-full px-4 max-w-sm mb-5">
+                    <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 text-center ${darkMode ? "text-purple-500" : "text-rose-300"}`}>👥 {t("menu.members")}</p>
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      {memberWidgets.map((m) => (
+                        <button
+                          key={m.uid}
+                          onClick={() => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); }}
+                          className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl transition-all active:scale-90 min-w-[72px] ${
+                            darkMode
+                              ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
+                              : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                          }`}
+                        >
+                          {m.avatar ? (
+                            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-rose-200/50 bg-white flex items-center justify-center">
+                              <AnimeAnimalCharacter config={m.avatar} size={30} />
+                            </div>
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center border-2 border-rose-200/50">
+                              <span className="text-white font-bold text-sm">{m.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                          )}
+                          <span className={`text-[9px] font-medium leading-tight ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{m.name}</span>
+                          <span className={`text-[8px] ${darkMode ? "text-purple-400" : "text-pink-400"}`}>Nv.{m.level}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Divider */}
                 <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />

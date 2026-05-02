@@ -1,92 +1,107 @@
 # Branching Strategy
 
-## Branches Principais
+> Last updated: 2026-05-02
 
-| Branch | Propósito | Deploy |
-|--------|-----------|--------|
-| `main` | Produção estável | Vercel Production (auto) |
-| `develop` | Integração de features | Vercel Preview (auto) |
+## Main Branches
 
-## Branches de Trabalho
+| Branch | Purpose | Deploy |
+|--------|---------|--------|
+| `master` | Stable production | Vercel Production (auto) |
+| `develop` | Feature integration | Vercel Preview (auto) |
 
-| Prefixo | Uso | Exemplo |
-|---------|-----|---------|
-| `feature/` | Nova funcionalidade | `feature/meal-planner-improvements` |
-| `fix/` | Correção de bug | `fix/pwa-cache-stale` |
-| `hotfix/` | Fix urgente em produção | `hotfix/login-crash` |
-| `chore/` | Manutenção, deps, docs | `chore/update-dependencies` |
-| `i18n/` | Traduções e localização | `i18n/wire-calendar-strings` |
+## Working Branches
 
-## Fluxo de Trabalho
+| Prefix | Usage | Example |
+|--------|-------|---------|
+| `feature/` | New functionality | `feature/meal-planner-improvements` |
+| `fix/` | Bug fix | `fix/pwa-cache-stale` |
+| `hotfix/` | Urgent production fix | `hotfix/login-crash` |
+| `chore/` | Maintenance, deps, docs | `chore/update-dependencies` |
+| `i18n/` | Translations and localization | `i18n/wire-calendar-strings` |
+| `docs/` | Documentation only | `docs/update-readme` |
+
+## Workflow
 
 ```
-feature/xyz  ──PR──►  develop  ──PR──►  main
-    │                     │                │
-    │                     ▼                ▼
-    │              Preview Deploy    Production Deploy
+feature/*  ──PR──►  develop  ──PR──►  master
+    │                  │                │
+    │                  ▼                ▼
+    │           Preview Deploy    Production Deploy
     ▼
   Local dev
 ```
 
-### 1. Criar branch de trabalho
+### 1. Create a working branch
 
 ```bash
 git checkout develop
 git pull origin develop
-git checkout -b feature/nome-da-feature
+git checkout -b feature/issue-XX-description
 ```
 
-### 2. Desenvolver e commitar
+### 2. Develop and commit
 
 ```bash
 git add <files>
-git commit -m "feat: descrição curta do que foi feito"
+git commit -m "feat: short description of what was done"
 ```
 
-### 3. Push e Pull Request → develop
+### 3. Push and Pull Request → develop
 
 ```bash
-git push -u origin feature/nome-da-feature
-gh pr create --base develop --title "feat: descrição" --body "..."
+git push -u origin feature/issue-XX-description
+gh pr create --base develop --title "feat: description" --body "..."
 ```
 
-### 4. Merge para main (release)
+### 4. Merge to master (release)
 
-Quando `develop` está estável e testado:
+When `develop` is stable and tested:
 
 ```bash
-gh pr create --base main --head develop --title "release: v0.X.0"
+gh pr create --base master --head develop --title "release: v0.X.0"
 ```
 
-## Convenção de Commits
+## Commit Convention
 
-Seguir [Conventional Commits](https://www.conventionalcommits.org/):
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-| Prefixo | Quando usar |
-|---------|-------------|
-| `feat:` | Nova feature |
+| Prefix | When to use |
+|--------|-------------|
+| `feat:` | New feature |
 | `fix:` | Bug fix |
-| `chore:` | Manutenção, deps |
-| `docs:` | Documentação |
-| `style:` | Formatação (sem alteração de lógica) |
-| `refactor:` | Refactoring sem alterar comportamento |
-| `perf:` | Melhoria de performance |
-| `i18n:` | Traduções |
+| `chore:` | Maintenance, deps |
+| `docs:` | Documentation |
+| `style:` | Formatting (no logic change) |
+| `refactor:` | Refactoring without behavior change |
+| `perf:` | Performance improvement |
+| `i18n:` | Translations |
+| `ci:` | CI/CD pipeline changes |
 
-## Regras
+## Rules
 
-1. **Nunca commitar direto na `main`** — sempre via PR de `develop`
-2. **Nunca commitar direto na `develop`** — sempre via PR de branch de trabalho
-3. **Hotfixes** são a exceção: branch de `main`, PR para `main`, depois cherry-pick para `develop`
-4. **Delete branch** após merge do PR
-5. **Squash merge** para PRs de feature (manter histórico limpo na develop)
-6. **Merge commit** de develop → main (preservar histórico de release)
+1. **Never commit directly to `master`** — always via PR from `develop`
+2. **Never commit directly to `develop`** — always via PR from a working branch
+3. **Hotfixes** are the exception: branch from `master`, PR to `master`, then cherry-pick to `develop`
+4. **Delete branch** after PR merge
+5. **Squash merge** for feature PRs (keep history clean on develop)
+6. **Merge commit** from develop → master (preserve release history)
 
-## Proteções Recomendadas (GitHub)
+## CI/CD Quality Gates
 
-### Branch `main`
+All PRs must pass before merge:
+- TypeScript typecheck
+- ESLint (zero warnings)
+- Build verification
+- Test suite
+- PR title validation (conventional commits format)
+- Branch naming validation
+- Auto-labeling based on changed files
+
+## Branch Protections (GitHub)
+
+### Branch `master`
 - ✅ Require PR before merge
-- ✅ Require 1 approval (ou self-approve para solo dev)
+- ✅ Require 1 approval (or self-approve for solo dev)
 - ✅ Require status checks (build + typecheck)
 - ❌ Allow force push
 
@@ -95,24 +110,23 @@ Seguir [Conventional Commits](https://www.conventionalcommits.org/):
 - ✅ Require status checks (build + typecheck)
 - ❌ Allow force push
 
-## Versionamento
+## Versioning
 
-Seguir [SemVer](https://semver.org/):
+Follow [SemVer](https://semver.org/):
 
-- **MAJOR** (1.0.0) — breaking changes, redesign total
-- **MINOR** (0.7.0) — nova feature
-- **PATCH** (0.6.1) — bug fix
+- **MAJOR** (1.0.0) — breaking changes, total redesign
+- **MINOR** (0.8.0) — new feature
+- **PATCH** (0.7.1) — bug fix
 
-Versão atual: **v0.7.0**
+Current version: **v0.8.0**
 
-## Setup Inicial
+## Setup
 
 ```bash
-# Criar branch develop a partir de main
-git checkout main
+# Create develop branch from master
+git checkout master
 git checkout -b develop
 git push -u origin develop
 
-# Configurar Vercel preview para develop
-# (automático se o projeto Vercel está ligado ao repo)
+# Vercel preview is automatic for develop branch
 ```
