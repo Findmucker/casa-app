@@ -118,8 +118,8 @@ export default function HabitList() {
 
     const newStreak = getStreak(habit.id) + 1;
     await update(habit.id, { streak: newStreak, lastChecked: today });
-    await awardPoints("shared", 2, "habit_check");
-    await updateStreak("shared", newStreak);
+    await awardPoints(userName, 2, "habit_check");
+    await updateStreak(userName, newStreak);
   };
 
   const handleAdd = async () => {

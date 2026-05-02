@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { BADGES, type GameStats } from "@/lib/gamification";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useHouseContext } from "@/lib/context";
 
 interface GamificationProps {
   onClose: () => void;
@@ -12,9 +13,10 @@ interface GamificationProps {
 export default function Gamification({ onClose }: GamificationProps) {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [earnedBadges, setEarnedBadges] = useState<string[]>([]);
+  const { userName } = useHouseContext();
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "gamification", "shared"), (snap) => {
+    const unsub = onSnapshot(doc(db, "gamification", userName), (snap) => {
       if (snap.exists()) {
         const data = snap.data() as GameStats & { badges?: string[] };
         setStats(data);

@@ -97,6 +97,8 @@ export function useHouse(uid: string | null) {
   useEffect(() => {
     if (!uid) { setLoading(false); return; } // eslint-disable-line react-hooks/set-state-in-effect
 
+    let unsubHouse: (() => void) | null = null;
+
     const load = async () => {
       try {
         const userSnap = await getDoc(doc(db, "users", uid));
@@ -104,10 +106,15 @@ export function useHouse(uid: string | null) {
           const hid = userSnap.data().houseId;
           if (hid) {
             setHouseId(hid);
-            const houseSnap = await getDoc(doc(db, "houses", hid));
-            if (houseSnap.exists()) {
-              setHouse(houseSnap.data() as HouseData);
-            }
+            // Use real-time listener so name/member changes propagate immediately
+            const { onSnapshot } = await import("firebase/firestore");
+            unsubHouse = onSnapshot(doc(db, "houses", hid), (snap) => {
+              if (snap.exists()) {
+                setHouse(snap.data() as HouseData);
+              }
+              setLoading(false);
+            });
+            return;
           }
         }
       } catch (e) {
@@ -116,6 +123,10 @@ export function useHouse(uid: string | null) {
       setLoading(false);
     };
     load();
+
+    return () => {
+      if (unsubHouse) unsubHouse();
+    };
   }, [uid]);
 
   return { houseId, house, loading };

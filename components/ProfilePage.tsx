@@ -394,17 +394,19 @@ function SettingsTab({ user, houseId }: { user: User | null; houseId: string }) 
         const oldRef = doc(db, "gamification", oldName);
         const oldSnap = await getDoc(oldRef);
         if (oldSnap.exists()) {
-          const { setDoc } = await import("firebase/firestore");
+          const { setDoc, deleteDoc } = await import("firebase/firestore");
           const newRef = doc(db, "gamification", displayName);
           await setDoc(newRef, oldSnap.data());
+          await deleteDoc(oldRef);
         }
         // Update FCM token key
         const oldTokenRef = doc(db, "fcm_tokens", oldName.toLowerCase());
         const oldTokenSnap = await getDoc(oldTokenRef);
         if (oldTokenSnap.exists()) {
-          const { setDoc } = await import("firebase/firestore");
+          const { setDoc, deleteDoc } = await import("firebase/firestore");
           const newTokenRef = doc(db, "fcm_tokens", displayName.toLowerCase());
           await setDoc(newTokenRef, oldTokenSnap.data());
+          await deleteDoc(oldTokenRef);
         }
       }
 

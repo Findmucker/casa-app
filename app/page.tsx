@@ -82,6 +82,15 @@ function HomeInner() {
     );
   }
 
+  // Derive userName from house members (real-time) or fallback to local state
+  const resolvedUserName = (() => {
+    if (user && house?.members) {
+      const me = house.members.find((m) => m.uid === user.uid);
+      if (me) return me.name;
+    }
+    return userName || user?.displayName || "User";
+  })();
+
   // No house yet
   if (!houseId) {
     return (
@@ -102,7 +111,7 @@ function HomeInner() {
 
   // Authenticated + has house
   return (
-    <HouseProvider houseId={houseId} userName={userName || user.displayName || "User"} userId={user.uid} members={house?.members || []}>
+    <HouseProvider houseId={houseId} userName={resolvedUserName} userId={user.uid} members={house?.members || []}>
       <HouseIdContext.Provider value={houseId}>
         {showGreeting && <Greeting onDone={handleGreetingDone} />}
         <Dashboard />
