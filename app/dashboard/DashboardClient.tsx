@@ -64,6 +64,7 @@ function DashboardInner() {
   const [showHistory, setShowHistory] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showHouseMembers, setShowHouseMembers] = useState(false);
+  const [houseMembersMessageTo, setHouseMembersMessageTo] = useState<string | undefined>(undefined);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSendMessage, setShowSendMessage] = useState(false);
   const [memberActionTarget, setMemberActionTarget] = useState<MemberWidget | null>(null);
@@ -387,16 +388,18 @@ function DashboardInner() {
                       {/* Action popup for selected member */}
                       {memberActionTarget && (
                         <div className={`mt-3 flex gap-2 justify-center animate-fade-in-up`}>
-                          <button
-                            onClick={() => { setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowHouseMembers(true); }}
-                            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[10px] font-medium transition-all active:scale-90 ${
-                              darkMode
-                                ? "bg-purple-200/60 text-purple-700 hover:bg-purple-200"
-                                : "bg-white/70 text-rose-600 border border-pink-100/40 hover:bg-white"
-                            }`}
-                          >
-                            <span>💌</span> {t("menu.message")}
-                          </button>
+                          {memberActionTarget.uid !== user?.uid && (
+                            <button
+                              onClick={() => { setHouseMembersMessageTo(memberActionTarget.name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowHouseMembers(true); }}
+                              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[10px] font-medium transition-all active:scale-90 ${
+                                darkMode
+                                  ? "bg-purple-200/60 text-purple-700 hover:bg-purple-200"
+                                  : "bg-white/70 text-rose-600 border border-pink-100/40 hover:bg-white"
+                              }`}
+                            >
+                              <span>💌</span> {t("menu.message")}
+                            </button>
+                          )}
                           <button
                             onClick={() => { setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowGamification(true); }}
                             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[10px] font-medium transition-all active:scale-90 ${
@@ -471,7 +474,7 @@ function DashboardInner() {
         {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} onNavigate={(tab) => switchTab(tab as TabId)} />}
         {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
-        {showHouseMembers && <HouseMembers onClose={() => setShowHouseMembers(false)} />}
+        {showHouseMembers && <HouseMembers onClose={() => { setShowHouseMembers(false); setHouseMembersMessageTo(undefined); }} initialMessageTo={houseMembersMessageTo} />}
         {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
         {showSendMessage && <SendMessagePanel onClose={() => setShowSendMessage(false)} />}
         <UndoToast />

@@ -10,6 +10,7 @@ import { useT } from "@/lib/i18n";
 
 interface HouseMembersProps {
   onClose: () => void;
+  initialMessageTo?: string; // member name to auto-open message panel
 }
 
 interface MemberData {
@@ -34,7 +35,7 @@ const QUICK_MESSAGES = [
   "🎉 Tenho uma surpresa para ti!",
 ];
 
-export default function HouseMembers({ onClose }: HouseMembersProps) {
+export default function HouseMembers({ onClose, initialMessageTo }: HouseMembersProps) {
   const { t } = useT();
   const { members, houseId, userId, userName } = useHouseContext();
   const [memberData, setMemberData] = useState<MemberData[]>([]);
@@ -84,6 +85,14 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
     };
     load();
   }, [members]);
+
+  // Auto-open message panel if initialMessageTo is set
+  useEffect(() => {
+    if (initialMessageTo && memberData.length > 0 && !messageTo) {
+      const target = memberData.find((m) => m.name === initialMessageTo);
+      if (target) setMessageTo(target);
+    }
+  }, [initialMessageTo, memberData]);
 
   const handleLeavehouse = async () => {
     try {
