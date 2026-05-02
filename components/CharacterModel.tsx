@@ -20,8 +20,27 @@ export default function CharacterModel({ equipped, size = "md" }: CharacterModel
   const boots = getItem(equipped.boots);
   const accessory = getItem(equipped.accessory);
 
+  const hasAnyEquipment = Object.values(equipped).some(Boolean);
   const scales = { sm: 0.6, md: 1, lg: 1.4 };
   const scale = scales[size];
+
+  // If no equipment at all, show a cute chibi placeholder
+  if (!hasAnyEquipment) {
+    return (
+      <div
+        className="relative select-none flex flex-col items-center justify-center"
+        style={{ width: `${120 * scale}px`, height: `${160 * scale}px` }}
+      >
+        <div className="animate-bounce-gentle">
+          <div className="rounded-full bg-gradient-to-br from-rose-200 to-pink-300 border-2 border-rose-300/50 shadow-lg flex items-center justify-center"
+            style={{ width: `${60 * scale}px`, height: `${60 * scale}px` }}>
+            <span style={{ fontSize: `${28 * scale}px` }}>⚔️</span>
+          </div>
+        </div>
+        <p className="text-[10px] text-purple-400 mt-2 text-center">Sem equipamento</p>
+      </div>
+    );
+  }
 
   return (
     <div

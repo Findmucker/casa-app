@@ -27,6 +27,8 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
   );
 
   useEffect(() => {
+    if (!docName) { setAvatar(null); return; }
+
     if (avatarCache.has(docName)) {
       const cached = avatarCache.get(docName)!;
       setAvatar(cached.avatar);
@@ -38,8 +40,22 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
     const load = async () => {
       try {
         const snap = await getDoc(doc(db, "gamification", docName));
-        const config = snap.exists() ? snap.data()?.avatar || null : null;
-        const eq = snap.exists() ? snap.data()?.equipped || {} : {};
+        if (!snap.exists()) {
+          // Also try lowercase version
+          const snapLower = await getDoc(doc(db, "gamification", name.toLowerCase()));
+          if (snapLower.exists()) {
+            const config = snapLower.data()?.avatar || null;
+            const eq = snapLower.data()?.equipped || {};
+            avatarCache.set(docName, { avatar: config, equipped: eq });
+            if (!cancelled) { setAvatar(config); setEquipped(eq); }
+            return;
+          }
+          avatarCache.set(docName, { avatar: null, equipped: {} });
+          if (!cancelled) { setAvatar(null); setEquipped({}); }
+          return;
+        }
+        const config = snap.data()?.avatar || null;
+        const eq = snap.data()?.equipped || {};
         avatarCache.set(docName, { avatar: config, equipped: eq });
         if (!cancelled) { setAvatar(config); setEquipped(eq); }
       } catch {
@@ -49,7 +65,7 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
     };
     load();
     return () => { cancelled = true; };
-  }, [docName]);
+  }, [docName, name]);
 
   // Get helmet emoji for badge
   const helmetItem = equipped.helmet ? LOOT_POOL.find((i) => i.id === equipped.helmet) : null;
