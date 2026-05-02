@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-05-02
+
+### Added
+- **MiniAvatar in person filters and assignee selectors** — pixel art avatars now shown in HabitList, ExpenseList, and PriorityList person filters
+- **Deterministic default avatar** — MiniAvatar always shows pixel art based on member name when no avatar is configured
+- **CharacterModel cute placeholder** — shows a cute placeholder when no equipment is equipped instead of a generic silhouette
+- **ProfilePage initial letter circle** — displays a letter circle when member has no avatar AND no equipment
+- **Equipment helmet badge** — MiniAvatar and members widget show a helmet badge when equipment is equipped
+
+### Changed
+- **ProfilePage viewMember** — now correctly loads the viewed member's equipment data
+- **InventoryTab read-only for other members** — viewing another member's profile no longer shows loot boxes
+
+### Fixed
+- **MiniAvatar case-sensitivity** — tries capitalized name then lowercase for Firestore lookup, with fallback (#95)
+- **Equipment sync across app** — equipped data now loaded consistently in MiniAvatar, widget, and profile (#95)
+
 ## [0.8.1] - 2026-05-02
 
 ### Added

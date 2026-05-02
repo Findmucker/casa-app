@@ -4,7 +4,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.8.0
+**Version:** 0.8.2
 
 ## Features
 
@@ -136,6 +136,10 @@ A household management PWA for couples and families — organize shopping, tasks
 - 11 pixel art animals with unique idle animations
 - 6 customization tabs (Animal, Eyes, Mouth, Top, Bottom, Accessories)
 - Avatar displayed in profile header
+- **MiniAvatar** with deterministic pixel art default (based on name) — used in person filters and assignee selectors
+- **Equipment sync** — helmet badge shown on MiniAvatar and members widget when equipped
+- **CharacterModel** shows cute placeholder when no equipment (instead of generic silhouette)
+- Profile shows initial letter circle when no avatar and no equipment configured
 
 ## Tech Stack
 

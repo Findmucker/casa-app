@@ -1,40 +1,68 @@
-# Polir Tema Fofinho (#33)
+# Fix: Página de equipamento e sincronização com avatar (#95)
 
 ## Contexto
-O tema atual "fofinho" funciona bem mas pode ser mais polido e consistente. Melhorar gradientes, espaçamentos, micro-interações e coerência visual para um look mais premium e coeso.
+Existem 2 sistemas de avatar:
+1. **AnimeAnimalCharacter** (`AvatarConfig`) — avatar animal com roupa integrada (top/bottom/accessory como índices de estilo)
+2. **CharacterModel** (`EquippedItems`) — boneco RPG com loot equipado (helmet/weapon/shield/armor/boots/accessory como item IDs)
 
-## Ficheiros a modificar
+O CharacterModel só aparece no ProfilePage (header e tab inventário). O resto da app (widget membros, HouseMembers, MiniAvatar) usa AnimeAnimalCharacter. O equipamento RPG não é visível em lado nenhum fora do perfil próprio.
+
+## Problemas Identificados
+1. EquippedItems não é mostrado nos avatares de membros em lado nenhum
+2. Quando se vê o perfil de outro membro (`viewMember`), não carrega o `equipped` deles
+3. Não há sync real-time do equipamento (usa `getDoc` one-shot)
+4. O `CharacterModel` devia ter uma representação mini para mostrar junto ao AnimeAnimalCharacter
+
+## Solução
+
+### Abordagem: Mostrar loot equipped como badges/overlay no avatar
+
+Em vez de substituir o AnimeAnimalCharacter pelo CharacterModel (são sistemas visuais diferentes), vou:
+
+1. **Adicionar overlay de equipamento ao MiniAvatar e avatar no widget** — mostrar emojis do loot equipado como pequenos badges ao redor do avatar
+2. **Fix viewMember no ProfilePage** — carregar `equipped` e `inventory` do membro visualizado
+3. **Adicionar `equipped` ao dados carregados no widget de membros** — para poder mostrar badges
+
+### Ficheiros a modificar
 
 | Ficheiro | Alteração |
 |---|---|
-| `app/globals.css` | Melhorar variáveis, adicionar backdrop-blur, suavizar transições |
-| `lib/themes.ts` | Ajustar gradientes para serem mais suaves e harmoniosos |
-| `app/dashboard/DashboardClient.tsx` | Melhorar tab bar, header, menu overlay |
+| `components/MiniAvatar.tsx` | Carregar `equipped` do Firestore, mostrar badge de helmet/weapon como overlay |
+| `components/ProfilePage.tsx` | Fix: quando `viewMember`, carregar o equipped/inventory desse membro |
+| `app/dashboard/DashboardClient.tsx` | Adicionar `equipped` ao `MemberWidget`, mostrar badge no widget |
+| `components/HouseMembers.tsx` | Mostrar equipped badges nos cards de membros |
 
-## Alterações
+### Implementação
 
-### 1. `lib/themes.ts` — Gradientes mais suaves
-- **afternoon** (tema principal): `from-rose-50/80 via-pink-50 to-fuchsia-50/60` — mais rosa suave, menos roxo
-- **morning**: `from-amber-50/80 via-orange-50/40 to-yellow-50/60` — mais quente e acolhedor
-- **dusk**: `from-orange-50 via-rose-100 to-purple-100/80` — sunset mais suave
-- **night**: manter `from-pink-100 via-purple-100 to-indigo-100` (já corrigido)
+#### 1. MiniAvatar — overlay de equipamento
+```tsx
+// Carregar equipped junto com avatar
+const equipped = snap.data()?.equipped || {};
+// Mostrar badge do helmet (se existir) como pequeno emoji no canto superior
+```
 
-### 2. `app/globals.css` — Melhoramentos visuais
-- Adicionar `backdrop-filter: blur(8px)` global nos cards (`.bg-white\/70`)
-- Melhorar scrollbar thumb: gradiente rosa em vez de cor fixa
-- Adicionar transição suave em todos os border-color
-- Suavizar sombras: usar `shadow-sm shadow-pink-100/20` padrão
-- Inputs: border radius mais arredondado, focus ring mais suave
-- Melhorar `:root` vars para cores mais harmoniosas
+#### 2. ProfilePage viewMember fix
+```tsx
+// Quando viewMember é definido, usar viewMember como owner para carregar tudo
+const owner = viewMember || user?.displayName || user?.email || "user";
+// Já está parcialmente feito, verificar que equipped carrega corretamente
+```
 
-### 3. `app/dashboard/DashboardClient.tsx` — Tab bar e header
-- Tab bar: adicionar blur no fundo, separador mais suave
-- Tab ativa: gradiente no indicador em vez de cor sólida
-- Header: texto com gradiente (background-clip) no título
-- Menu overlay: glassmorphism mais pronunciado
+#### 3. Widget de membros — equipped badges
+```tsx
+interface MemberWidget {
+  // ... existing fields
+  equipped?: EquippedItems;
+}
+// Mostrar helmet emoji como badge no avatar do widget
+```
+
+#### 4. HouseMembers — equipped no card
+Mostrar emojis do equipamento principal (helmet + weapon) como mini-badges.
 
 ## Verificação
 - `npx tsc --noEmit` passa
-- Visualmente: gradientes mais suaves, cards com blur, tab bar premium
-- Não quebra nenhum dos 4 temas (morning/afternoon/dusk/night)
-- Animações existentes continuam a funcionar
+- MiniAvatar mostra badge de equipamento quando o membro tem loot equipped
+- Widget de membros mostra badges de equipamento
+- Ver perfil de outro membro mostra o CharacterModel com o equipped deles
+- Equipar/desequipar no próprio perfil reflete após refresh nos outros locais

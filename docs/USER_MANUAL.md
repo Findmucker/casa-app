@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Ultima atualizacao: 2 de Maio de 2026 | Versao 0.8.0
+> Ultima atualizacao: 2 de Maio de 2026 | Versao 0.8.2
 
 ## O que e a app?
 
@@ -258,6 +258,10 @@ Acede ao perfil tocando no icone ⚔️ no canto superior direito.
 - 6 tabs de customizacao: Animal, Olhos, Boca, Roupa Cima, Roupa Baixo, Acessorios (7 opcoes cada)
 - Sombras realisticas por peso do animal
 - Avatar exibido no header do perfil
+- **MiniAvatar** — versao compacta do avatar pixel art, usada nos filtros de pessoa e selectores de responsavel (Rotinazinhas, Gastinhos, Coisinhas)
+- Se nao tiveres avatar configurado, o MiniAvatar mostra um **avatar pixel art deterministico** baseado no teu nome
+- Se nao tiveres avatar NEM equipamento, o perfil mostra um **circulo com a letra inicial** do teu nome
+- **Badge de capacete** — quando tens equipamento equipado, o MiniAvatar e o widget de membros mostram um pequeno badge de capacete
 
 ### Sistema RPG
 - **Pontos** ganhos ao completar tarefas (+1 compra, +2 coisinha, +5 projeto, +2 habito)
@@ -281,6 +285,8 @@ Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Ce
 - 🧤 Luvas do Faz-Tudo — 50 coisinhas
 - 👟 Botas do Maratonista — 30 comprinhas
 - 💍 Anel da Comunidade — 100 pontos
+- O modelo do personagem mostra um **placeholder fofo** quando nao tens equipamento (em vez de uma silhueta generica)
+- O equipamento e sincronizado em toda a app — ao ver o perfil de outro membro, o equipamento dele e carregado corretamente
 
 ### Loot Boxes
 - Ganha 1 caixa por cada 50 pontos
@@ -292,6 +298,7 @@ Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Ce
 ### Inventario WoW TBC-style
 - Grid com filtro por slot
 - Drag-and-drop para equipar items no avatar
+- **Modo leitura** — ao ver o perfil de outro membro, o inventario e visivel mas nao podes abrir loot boxes
 
 ---
 
