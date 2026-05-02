@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-05-02
+
+### Added
+- **Gastinhos restructured with 3 sub-tabs:** Despesas, Rendimentos, Poupanças (#36)
+- **Visual charts** — pure SVG, no external dependencies (#37):
+  - Donut chart for category breakdown
+  - Bar chart for 6-month spending history
+  - Member split rings
+- **Income tracking** — new `IncomeItem` type + Firestore `income` collection
+- **Savings goals** — new `SavingsGoal` type + Firestore `savings_goals` collection with progress bars
+- **ExpenseCharts component** — reusable SVG chart component
+- **CI/CD pipeline** with GitHub Actions:
+  - TypeScript typecheck
+  - ESLint
+  - Build verification
+  - Test suite
+- **PR validation workflows:**
+  - Conventional commits title check
+  - Branch naming validation
+  - Auto-labeling
+  - PR stats comment
+- **Branching strategy** — develop → main flow with feature branches
+- **CONTRIBUTING.md** guide for contributors
+- **Issue templates** — bug report and feature request
+- **PR template** for consistent pull requests
+- **docs/BRANCHING_STRATEGY.md** — full workflow documentation
+
+### Changed
+- Dashboard forced to dynamic rendering to fix Vercel prerender Firebase error
+- Environment variables added to Vercel Preview environment
+- Deploy target changed from `master` to `main` branch
+
+### Fixed
+- Vercel prerender error caused by Firebase client SDK in static page
+
 ## [0.6.0] - 2026-05-02
 
 ### Added

@@ -22,7 +22,7 @@ A app tem uma **barra de tabs** na parte inferior com 10 seccoes. Podes navegar 
 | 🪴 | Coisinhas | Pequenas tarefas/prioridades |
 | 🏠 | Projetinhos | Projetos maiores da casa |
 | 💊 | Rotinazinhas | Habitos diarios com streaks e filtros |
-| 💰 | Gastinhos | Controlo de despesas |
+| 💰 | Gastinhos | Financas: despesas, rendimentos, poupancas |
 | 🍽️ | Receitinhas | Planeamento de refeicoes semanal |
 | 📅 | Calendarzinho | Calendario mensal integrado |
 | 🎉 | Eventinhos | Eventos e planos partilhados |
@@ -91,12 +91,34 @@ O ecra inicial mostra:
 
 ---
 
-## Gastinhos (Despesas)
+## Gastinhos (Financas)
 
+A tab Gastinhos esta organizada em **3 sub-tabs** para gestao financeira completa:
+
+### Sub-tab: Despesas
 - Regista gastos com nome, valor, categoria e quem pagou
 - Resumo mensal por categoria com barras visuais
 - Total por pessoa (membros da casa + "Ambos")
 - Navegacao por meses (setas para avancar/recuar)
+
+### Sub-tab: Rendimentos
+- Regista entradas de dinheiro (salario, freelance, outros)
+- Associa a um membro da casa
+- Historico mensal de rendimentos
+
+### Sub-tab: Poupancas
+- Define **objetivos de poupanca** (ex: ferias, carro, fundo de emergencia)
+- Cada objetivo tem um valor alvo e valor atual
+- **Barras de progresso** visuais para acompanhar cada objetivo
+- Adiciona contribuicoes ao longo do tempo
+
+### Graficos Visuais
+Na seccao de despesas, tens acesso a graficos interativos (SVG puro, sem dependencias externas):
+- **Donut chart** — distribuicao de gastos por categoria (cores por tipo)
+- **Bar chart** — historico de gastos dos ultimos 6 meses
+- **Split rings** — visualizacao da divisao de gastos entre membros da casa
+
+Os graficos atualizam automaticamente com os dados do mes selecionado.
 
 ---
 
@@ -340,6 +362,21 @@ A app suporta **Portugues** 🇵🇹 e **Ingles** 🇬🇧.
 - **Ativa notificacoes** para nao perderes lembretes de habitos
 - **Envia mensagens** ao outro membro diretamente pela app
 - O **calendario** mostra uma visao geral de tudo o que acontece na casa
+
+---
+
+## PWA e Atualizacoes
+
+A app funciona como **Progressive Web App (PWA)** — podes instala-la no telemovel ou computador.
+
+### Instalar a app
+- **Android/Chrome:** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
+- **iOS/Safari:** Botao de partilha → "Adicionar ao ecra inicial"
+
+### Atualizacoes automaticas
+- O **service worker** usa `skipWaiting` + **cache purge** para garantir que recebes sempre a versao mais recente
+- Quando ha uma atualizacao, a app carrega automaticamente a nova versao na proxima visita
+- Nao precisas de fazer nada — as atualizacoes sao transparentes e fiaveis
 
 ---
 

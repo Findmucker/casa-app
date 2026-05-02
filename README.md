@@ -1,190 +1,149 @@
-# 🏡 A Nossa Casinha
+# A Nossa Casinha
 
-App de gestão de casa para casais — organiza compras, tarefas, projetos, eventos e mais. Feito com amor pelo Eduardo & Moniquinha.
+A household management PWA for couples — organize shopping, tasks, projects, habits, expenses, meals, events, and more. Built with love.
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-## Funcionalidades
+**Version:** 0.7.0
 
-### 🛒 Comprinhas (Lista de Compras)
-- Adicionar/remover items com preço estimado
-- Atribuir a pessoa (Eduardo, Moniquinha, ou Ambos)
-- Marcar como comprado com animação de celebração
-- **Auto-categorização** por tipo (Frescos, Carnes, Frutas, Padaria, Despensa, Bebidas, Snacks, Higiene, Pets)
-- Categorias colapsáveis com progress tracker por secção
-- Ordenado por fluxo de supermercado
-- Marcar items como urgentes (aparecem no topo)
+## Features
 
-### 🪴 Coisinhas (Tarefas pequenas)
-- Auto-categorização (Casa, Cozinha, Decoração, Organização, Bricolage, WC, Tech, Jardim, Roupa, Tarefazinhas)
-- Categorias em caixas colapsáveis com progresso
-- Priorização por ordem (mover cima/baixo)
-- Atribuir a pessoa + notas em cada item
-- Autocomplete com sugestões
-- Animações de celebração ao completar categorias
+### Shopping List (Comprinhas)
+- Add/remove items with estimated price
+- Assign to house member or "Both"
+- Auto-categorization (Fresh, Meats, Fruits, Bakery, Pantry, Drinks, Snacks, Hygiene, Pets)
+- Collapsible categories with progress bars
+- Mark as urgent (pinned to top)
+- Celebration animations on completion
 
-### 🏠 Projetinhos (Projetos grandes)
-- Auto-categorização (Pintura, Obras, Portas/Janelas, Eletricidade, Reparações, Canalização, Cozinha, Exterior, Aquecimento)
-- Status: Pendente → A fazer → Feito
-- Subtarefas, orçamento, notas detalhadas
-- Categorias colapsáveis com contadores de estado
+### Priority/Task List (Coisinhas)
+- Auto-categorization (House, Kitchen, Decor, Organization, DIY, Bathroom, Tech, Garden, Laundry, Tasks)
+- **Drag reorder** for prioritization
+- Assign to person + notes per item
+- Collapsible categories with progress bars
+- Autocomplete suggestions
 
-### ⚙️ Manutenção
-- Reorganizar categorias automaticamente
-- Limpar comprinhas/coisinhas já concluídas
-- Acessível via menu do dashboard (tap no título)
+### Projects (Projetinhos)
+- Status workflow: Pending → In Progress → Done
+- **Subtasks**, budget, detailed notes
+- Auto-categorization (Painting, Construction, Doors/Windows, Electrical, Repairs, Plumbing, Kitchen, Exterior, Heating)
+- Collapsible categories with state counters
 
-### 💊 Rotinazinhas (Hábitos diários)
-- Check diário que reseta à meia-noite
-- Streak counter com 🔥 e animações
-- Hora configurável por hábito
-- **Selector de dias da semana** — define em que dias o hábito é ativo
-- **Filtro por pessoa** — filtra hábitos por membro da casa
-- **Atribuir a pessoa** (dinâmico por membros da casa)
-- **Notificações repetidas** — lembrete a cada 10 min enquanto não completo
-- Push notifications (com permissão)
+### Habit Tracking (Rotinazinhas)
+- Daily check that resets at midnight
+- **Streak tracking** with fire animations
+- **Weekday selector** — define which days a habit is active
+- **Person filter** — filter habits by house member
+- Assign to person (dynamic by house members)
+- **Repeating notifications** — reminder every 10 min until completed
+- Push notifications via FCM
 
-### 💰 Gastinhos (Despesas)
-- Tracking simples: nome, valor, categoria, quem pagou
-- Resumo mensal por categoria (com barras visuais)
-- Total por pessoa (Eduardo/Moniquinha/Ambos)
-- Navegação por meses
+### Expenses (Gastinhos)
+- **3 sub-tabs:** Despesas (expenses), Rendimentos (income), Poupanças (savings goals)
+- Track: name, amount, category, who paid
+- Monthly summary by category with visual bars
+- Total per person + monthly navigation
+- Split tracking between members
+- **Visual charts** (pure SVG, no external deps):
+  - Donut chart for category breakdown
+  - Bar chart for 6-month spending history
+  - Member split rings
+- **Income tracking** — log income entries per member
+- **Savings goals** — set targets with progress bars
 
-### 🍽️ Receitinhas (Plano de refeições)
-- Vista semanal (7 dias)
-- Slots: Pequeno-almoço, Almoço, Jantar, Snack
-- Enviar ingredientes direto para as Comprinhas
-- Autocomplete com refeições passadas
+### Meal Planner (Receitinhas)
+- Weekly view (7 days)
+- Slots: Breakfast, Lunch, Dinner, Snack
+- Send ingredients directly to Shopping List
+- Autocomplete with past meals
 
-### 📅 Calendarzinho
-- Vista mensal com grid interativo
-- Dots coloridos por tipo: 🟢 hábitos, 🩷 coisinhas, 🟣 projetos, 🔴 eventos, 🟡 feriados
-- **Feriados portugueses** automáticos (fixos + Páscoa/Carnaval)
-- Datas especiais (Dia dos Namorados, Natal, etc.)
-- **Integração meteorológica** — emoji do tempo nos próximos 7 dias diretamente no grid
-- **Integração de eventos** — eventos aparecem como dots vermelhos no dia correspondente
-- Tap num dia para ver detalhes: tempo, eventos, hábitos, coisinhas, projetos, feriados
-- Card de meteorologia com temperatura min/max e probabilidade de precipitação
+### Calendar (Calendarzinho)
+- Monthly grid with colored dots by type
+- Portuguese holidays (fixed + Easter-based)
+- Weather emoji integration (next 7 days)
+- Event integration
+- Tap day for details panel
 
-### ✨ Dashboard Resumo
-- Cards com status de todas as áreas
-- Barra de progresso semanal
-- Acesso rápido a cada secção
+### Events (Eventinhos)
+- Create events with date and participants
+- Shopping list and tasks per event
+- Assign responsible members
+- Auto weather forecast for upcoming events
+- Share with friends via public link
+- Clone past events
 
-### ❓ Tutorial
-- Tutorial interativo passo-a-passo na primeira utilização
-- Acessível a qualquer momento via menu
-- Explica todas as funcionalidades da app
+### Weather Widget
+- 7-day forecast (Open-Meteo API)
+- Temperature, wind, precipitation
+- Expandable hourly view
+- Integrated in Calendar and Events
 
-### 🏆 Gamificação & Perfil RPG
-- Sistema de pontos (+1 compra, +2 coisinha, +5 projeto, +2 hábito)
-- Níveis (cada 50 pontos) com títulos progressivos
-- 9 badges desbloqueáveis
-- **Perfil RPG** com ficha de personagem completa
-  - 6 atributos (STR, INT, DEX, CHA, VIT, LCK) baseados em atividade real
-  - 6 equipamentos desbloqueáveis por conquistas
-  - Sistema de loot aleatório (common/rare/epic/legendary)
-  - Level-up com notificação e recompensas
-- Streak tracking
-- **Loot Boxes** — 1 caixa por cada 50 pontos
-  - 30 items cosméticos em 6 slots (cabeça, arma, escudo, corpo, pés, acessório)
-  - 4 raridades com pesos: Comum (50%), Raro (30%), Épico (15%), Lendário (5%)
-  - Animação de abertura com shake → explosão → reveal
-  - **Duplicados** convertidos em XP (Lendário: 50, Épico: 30, Raro: 15, Comum: 5)
-- **Inventário WoW TBC-style** — grid com filtro por slot, drag-and-drop para equipar
-- **Avatar 8-bit Pixel Art** — personagem pixel art fofo com customização completa
-  - 11 animais disponíveis (Panda, Gatinho, Coelhinho, Raposa, Ursinho, Cãozinho, Pinguim, Hamster, Coala, Coruja, Sapinho)
-  - Animações idle únicas por animal (munch, groom, hop, sly, sleepy, excited, waddle, nibble, blink, croak)
-  - Sombras realistas por peso do animal
-  - 6 tabs de customização: Animal, Olhos, Boca, Roupa Cima, Roupa Baixo, Acessórios (7 opções cada)
-  - Panda com representação 8-bit pixel art detalhada (16x20 grid)
-  - Avatar exibido no header do perfil
+### Dashboard Summary
+- Cards with status from all areas
+- Weekly progress bar
+- Quick access to each section
 
-#### Como funciona a Gamificação
+### Gamification & RPG Profile
+- Points system (+1 shopping, +2 task, +5 project, +2 habit)
+- Levels (every 50 points) with progressive titles
+- 9 unlockable badges
+- RPG profile with 6 stats based on real activity
+- Loot boxes with cosmetic items (4 rarities)
+- WoW TBC-style inventory with drag-and-drop
+- 8-bit pixel art avatar with full customization (11 animals, 6 customization tabs)
 
-| Ação | Pontos |
-|------|--------|
-| Completar comprinha | +1 |
-| Completar coisinha | +2 |
-| Completar projetinho | +5 |
-| Check de hábito | +2 |
-| 5 dias de streak | +10 |
-| 10 dias de streak | +25 |
-| 30 dias de streak | +100 |
+### i18n (Internationalization)
+- Portuguese and English support
+- `LocaleProvider` + `useT()` hook architecture
+- Locale dictionaries in `lib/locales/pt.ts` and `lib/locales/en.ts`
+- Language toggle on login screen and dashboard menu
+- Persists in localStorage
 
-**Níveis:** Cada 50 pontos = 1 nível. Títulos progressivos desde "Aprendiz da Casa" (Nv.1) até "Divindade do Lar" (Nv.30).
+### PWA & Push Notifications
+- Full PWA with installable manifest
+- Push notifications via Firebase Cloud Messaging (FCM)
+- **Service worker with `skipWaiting` + cache purge** for reliable updates
+- Repeating habit reminders (client-side, every 10 min)
 
-**Badges (9):** Primeiro Passo, Em Chamas, Imparável, Lenda, Compradora, Faz-Tudo, Arquiteto, Centenário, Top Scorer.
+### Send Message Panel
+- Send push notification with message to other house members
+- 8 predefined quick messages
+- Custom message input
 
-**Equipamento desbloqueável (6 slots):**
-- 🗡️ Espada do Construtor — 3 projetinhos
-- 🛡️ Escudo da Consistência — 10 dias streak
-- 👑 Coroa Real — nível 10
-- 🧤 Luvas do Faz-Tudo — 50 coisinhas
-- 👟 Botas do Maratonista — 30 comprinhas
-- 💍 Anel da Comunidade — 100 pontos
+### Search Overlay
+- Global search across all tabs (2+ characters)
+- Results grouped by type
 
-**Loot Boxes:** A cada 50 pontos ganhas uma caixa. Ao abrir recebes um item cosmético aleatório que podes equipar no teu personagem. Items disponíveis por slot:
-- 🎩 Cabeça: Coroa de Flores, Orelhas de Coelho, Tiara Estelar, Coroa Real, Auréola Divina
-- ⚔️ Arma: Vassoura Mágica, Espátula de Chef, Varinha Fofinha, Martelo Dourado, Tridente Lendário
-- 🛡️ Escudo: Escudo de Bolacha, Escudo Folha, Escudo do Amor, Escudo Cristal, Escudo Arco-Íris
-- 👗 Corpo: Avental Fofo, Camisola Quentinha, Capa de Super-Herói, Armadura de Diamante, Armadura de Dragão
-- 👟 Pés: Pantufas Fofas, Botas de Jardim, Botas de Velocidade, Botas de Nuvem, Botas Foguete
-- 💍 Acessório: Sininho, Gatinho de Ombro, Borboleta Mágica, Fadinha Ajudante, Fénix Miniatura
+### Tutorial System
+- Interactive step-by-step tutorial on first use
+- Accessible anytime via menu
 
-### 🌐 Localização (i18n)
-- Suporte Português 🇵🇹 e Inglês 🇬🇧
-- Toggle de idioma na página de login (primeira visita)
-- Toggle inline no menu central do dashboard
-- Persistência em localStorage
-- Todas as strings da UI traduzidas
+### House Member Management
+- Invite system with 6-char codes and shareable links
+- View members with avatar, level, and stats
+- Dynamic member names throughout the app
 
-### 🔍 Pesquisa Global
-- Buscar em todas as tabs de uma vez
-- Resultados agrupados por tipo
-
-### 💌 Mensagens entre Membros
-- Enviar notificação push com mensagem ao outro membro da casa
-- 8 mensagens rápidas pré-definidas (amor, supermercado, jantar, etc.)
-- Mensagem personalizada com input livre
-- Acessível via menu central (💌 Mensagem)
-
-### 📜 Histórico
-- Items completados com data
-- Stats por categoria
-
-### 🎉 Eventos
-- Criar eventos com data e participantes
-- Lista de compras e tarefas por evento
-- Atribuir responsáveis a cada item
-- Meteorologia automática para eventos com data (próximos 7 dias)
-- **Partilha com amigos** via link público
-  - Amigos registam-se com nome
-  - Vêem eventos, podem juntar-se e colaborar
-  - Confirmação com detalhes do evento antes de participar
-- Histórico de eventos passados com opção de clonar
-
-### 🌤️ Meteorologia
-- Previsão a 7 dias (Open-Meteo API)
-- Temperatura, vento, precipitação
-- Vista horária expandível por dia
-- **Integrada no Calendário** — emoji do tempo visível no grid
-- **Integrada nos Eventos** — previsão automática para eventos próximos
+### Profile with Avatar Customization
+- 11 pixel art animals with unique idle animations
+- 6 customization tabs (Animal, Eyes, Mouth, Top, Bottom, Accessories)
+- Avatar displayed in profile header
 
 ## Tech Stack
 
-- **Framework:** Next.js 16.2.4 (App Router, Turbopack)
-- **UI:** Tailwind CSS v4, design pink/purple/rose
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **UI:** Tailwind CSS
 - **Database:** Firebase Firestore (real-time sync)
-- **Weather:** Open-Meteo API (grátis, sem API key)
-- **Deploy:** Vercel (conectado ao GitHub, auto-deploy)
-- **Auth:** Firebase Auth (email/password + Google login)
-- **Multi-tenant:** Cada casa tem dados isolados, convites por link
-- **Nomes dinâmicos:** Assignees e payers adaptam-se aos membros da casa
+- **Auth:** Firebase Auth (email/password + Google)
+- **Notifications:** Firebase Cloud Messaging (FCM)
+- **Weather:** Open-Meteo API (free, no API key)
+- **Deploy:** Vercel (auto-deploy from GitHub)
+- **CI/CD:** GitHub Actions (typecheck, lint, build, tests, PR validation)
+- **Multi-tenant:** Each house has isolated data, invites by link
 
-## Setup Local
+## Local Setup
 
-### 1. Clonar e instalar
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/Findmucker/my_projects.git
@@ -192,12 +151,11 @@ cd my_projects
 npm install
 ```
 
-### 2. Configurar variáveis de ambiente
+### 2. Environment variables
 
-Criar ficheiro `.env.local`:
+Create `.env.local`:
 
 ```env
-# Firebase (obrigatório)
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
@@ -206,178 +164,120 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-### 3. Configurar Firebase
+### 3. Firebase setup
 
-1. Criar projeto no [Firebase Console](https://console.firebase.google.com)
-2. Ativar Firestore Database
-3. Ativar Authentication → Sign-in methods: Email/Password + Google
-4. (Opcional) Ativar Cloud Messaging para push notifications
+1. Create project in [Firebase Console](https://console.firebase.google.com)
+2. Enable Firestore Database
+3. Enable Authentication → Email/Password + Google
+4. (Optional) Enable Cloud Messaging for push notifications
 
-### 4. Correr localmente
+### 4. Run locally
 
 ```bash
 npm run dev
 ```
 
-Abrir [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000)
 
-### 5. Testes
+### 5. Tests
 
 ```bash
-npm test              # Correr todos os testes
-npm run test:watch    # Modo watch
-npm run test:coverage # Com cobertura
-npm run typecheck     # Verificar tipos TypeScript
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:coverage # With coverage
+npm run typecheck     # TypeScript type check
 ```
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 casa-app/
 ├── app/
-│   ├── page.tsx              # Entrada: Auth → House Setup → Dashboard
-│   ├── dashboard/page.tsx    # Dashboard principal com todas as tabs
-│   ├── convite/[code]/       # Página pública para aceitar convites
-│   ├── api/send-notification/ # POST endpoint para enviar push FCM
-│   ├── api/cron/habits/      # Cron endpoint para lembretes de hábitos
-│   └── globals.css           # Animações e estilos globais
+│   ├── page.tsx              # Entry: Auth → House Setup → Dashboard
+│   ├── dashboard/page.tsx    # Main dashboard with all tabs
+│   ├── convite/[code]/       # Public invite acceptance page
+│   ├── api/send-notification/ # POST endpoint for FCM push
+│   ├── api/cron/habits/      # Cron endpoint for habit reminders
+│   └── globals.css           # Animations and global styles
 ├── components/
-│   ├── AuthScreen.tsx        # Login/registo (email + Google)
-│   ├── HouseSetup.tsx        # Criar casa ou aceitar convite
-│   ├── InvitePanel.tsx       # Gerar códigos de convite
-│   ├── Greeting.tsx          # Saudação personalizada
-│   ├── EventList.tsx         # Gestão de eventos + meteorologia
-│   ├── PriorityList.tsx      # Coisinhas (tarefas pequenas)
-│   ├── ProjectList.tsx       # Projetinhos (projetos grandes)
-│   ├── ShoppingList.tsx      # Comprinhas (lista de compras)
-│   ├── HabitList.tsx         # Rotinazinhas (hábitos diários)
-│   ├── ExpenseList.tsx       # Gastinhos (despesas)
-│   ├── MealPlanner.tsx       # Receitinhas (plano refeições)
-│   ├── Calendar.tsx          # Calendarzinho (vista mensal)
-│   ├── DashboardSummary.tsx  # Resumo com cards e progresso
-│   ├── Gamification.tsx      # Pontos, níveis, badges (legacy)
-│   ├── ProfilePage.tsx       # Perfil RPG completo + inventário + avatar
-│   ├── AvatarBuilder.tsx     # Avatar 8-bit pixel art + customização Genshin-style
-│   ├── CharacterModel.tsx    # Boneco chibi com loot equipado (fallback)
-│   ├── Inventory.tsx         # Grid de inventário com drag-and-drop
-│   ├── LootBoxOpener.tsx     # Abertura animada de loot boxes
-│   ├── Tutorial.tsx          # Tutorial interativo da app
-│   ├── SearchOverlay.tsx     # Pesquisa global
-│   ├── SendMessagePanel.tsx  # Enviar mensagem push a membros
-│   ├── HistoryPanel.tsx      # Histórico de completados
-│   ├── MaintenancePanel.tsx  # Painel de manutenção/utilitários
-│   ├── Weather.tsx           # Previsão meteorológica
-│   ├── FloatingCuties.tsx    # Animações decorativas
-│   └── AutocompleteInput.tsx # Input com sugestões
+│   ├── AuthScreen.tsx        # Login/register (email + Google)
+│   ├── HouseSetup.tsx        # Create house or accept invite
+│   ├── ShoppingList.tsx      # Shopping list with categories
+│   ├── PriorityList.tsx      # Tasks with drag reorder
+│   ├── ProjectList.tsx       # Projects with subtasks
+│   ├── HabitList.tsx         # Habits with streaks and filters
+│   ├── ExpenseList.tsx       # Expense tracking (3 sub-tabs)
+│   ├── ExpenseCharts.tsx     # SVG donut, bar chart, split rings
+│   ├── MealPlanner.tsx       # Weekly meal planner
+│   ├── Calendar.tsx          # Monthly calendar view
+│   ├── EventList.tsx         # Events with weather
+│   ├── Weather.tsx           # Weather forecast
+│   ├── DashboardSummary.tsx  # Dashboard overview
+│   ├── ProfilePage.tsx       # RPG profile + inventory + avatar
+│   ├── AvatarBuilder.tsx     # 8-bit pixel art avatar
+│   ├── Inventory.tsx         # WoW-style inventory grid
+│   ├── LootBoxOpener.tsx     # Loot box opening animation
+│   ├── Tutorial.tsx          # Interactive tutorial
+│   ├── SearchOverlay.tsx     # Global search
+│   ├── SendMessagePanel.tsx  # Send push message to members
+│   └── ...
 ├── lib/
-│   ├── firebase.ts           # Config Firebase + Auth
-│   ├── auth.ts               # Hooks de auth + house operations
-│   ├── context.tsx           # HouseProvider context
-│   ├── hooks.ts              # useCollection hook (real-time, house-scoped)
+│   ├── firebase.ts           # Firebase config + Auth
 │   ├── i18n.tsx              # LocaleProvider + useT hook
 │   ├── locales/
-│   │   ├── pt.ts             # Dicionário Português
-│   │   └── en.ts             # Dicionário Inglês
-│   ├── categories.ts         # Categorias + auto-classificação
-│   ├── gamification.ts       # Sistema de pontos + badges + loot boxes + inventário
-│   ├── seed.ts               # Dados de teste (seed/reset modo teste)
-│   ├── notifications.ts      # Push notifications + lembretes
-│   ├── weather.ts            # WMO weather codes + getWeatherInfo (shared)
-│   └── share.ts              # Gerar/validar shareId para eventos
+│   │   ├── pt.ts             # Portuguese dictionary
+│   │   └── en.ts             # English dictionary
+│   ├── gamification.ts       # Points, badges, loot, inventory
+│   ├── notifications.ts      # Push notifications + reminders
+│   ├── categories.ts         # Categories + auto-classification
+│   └── weather.ts            # WMO codes + weather helpers
 └── public/
-    └── manifest.json         # PWA manifest
+    ├── manifest.json         # PWA manifest
+    └── sw.js                 # Service worker (skipWaiting + cache purge)
 ```
 
 ## Firestore Collections
 
-| Collection | Descrição |
+| Collection | Description |
 |---|---|
-| `users/{uid}` | Perfil do utilizador (nome, email, houseId) |
-| `houses/{houseId}` | Casa (nome, membros) |
-| `invites/{code}` | Convites pendentes |
-| `houses/{houseId}/shopping` | Items da lista de compras |
-| `houses/{houseId}/priorities_small` | Coisinhas (tarefas pequenas) |
-| `houses/{houseId}/priorities_big` | Projetos (tarefas grandes) |
-| `houses/{houseId}/events` | Eventos |
-| `houses/{houseId}/habits` | Hábitos/rotinas configurados |
-| `houses/{houseId}/habit_checks` | Checks diários de hábitos |
-| `houses/{houseId}/expenses` | Despesas/gastos |
-| `houses/{houseId}/meal_plans` | Plano de refeições por dia |
-| `houses/{houseId}/gamification` | Pontos, badges, stats |
-| `gamification/{owner}` | Perfil RPG: pontos, inventário, equipped, avatar, lootBoxes |
-| `fcm_tokens/{owner}` | Tokens FCM para push notifications |
+| `users/{uid}` | User profile (name, email, houseId) |
+| `houses/{houseId}` | House (name, members) |
+| `invites/{code}` | Pending invites |
+| `houses/{houseId}/shopping` | Shopping list items |
+| `houses/{houseId}/priorities_small` | Tasks (coisinhas) |
+| `houses/{houseId}/priorities_big` | Projects |
+| `houses/{houseId}/events` | Events |
+| `houses/{houseId}/habits` | Habit configurations |
+| `houses/{houseId}/habit_checks` | Daily habit checks |
+| `houses/{houseId}/expenses` | Expenses |
+| `houses/{houseId}/income` | Income entries |
+| `houses/{houseId}/savings_goals` | Savings goals with targets |
+| `houses/{houseId}/meal_plans` | Meal plans by day |
+| `houses/{houseId}/gamification` | Points, badges, stats |
+| `gamification/{owner}` | RPG profile: inventory, equipped, avatar, lootBoxes |
+| `fcm_tokens/{owner}` | FCM tokens for push notifications |
 
 ## Deploy
 
-O projeto está ligado ao Vercel via GitHub. Cada push para `master` faz deploy automático.
+Connected to Vercel via GitHub. Every push to `main` auto-deploys via CI/CD pipeline.
+
+### CI/CD Pipeline (GitHub Actions)
+
+On every PR:
+- TypeScript typecheck
+- ESLint
+- Build verification
+- Test suite
+- PR title validation (conventional commits)
+- Branch naming check
+- Auto-labeling
+- PR stats comment
 
 ```bash
-# Deploy manual (se necessário)
+# Manual deploy (if needed)
 npx vercel --prod
 ```
 
-## Licença
+## License
 
-Projeto pessoal — feito com 💕
-
-## Roadmap / TODO
-
-### ✅ Concluído recentemente
-- 🌐 Localização PT/EN com toggle na login e menu
-- 🔔 Notificações repetidas a cada 10 min nos hábitos
-- 📅 Selector de dias da semana nos hábitos
-- 👤 Filtro por pessoa nos hábitos
-- 📂 Menu reestruturado em secções (Comunicação, Casa, Definições)
-- ♿ Aria-labels e keyboard navigation ([#48](https://github.com/Findmucker/casa-app/issues/48))
-- 🔔 Push notifications reais — FCM ([#66](https://github.com/Findmucker/casa-app/issues/66))
-- 💬 Enviar notificação entre membros ([#23](https://github.com/Findmucker/casa-app/issues/23))
-- 🎂 Data de nascimento obrigatória no registo ([#72](https://github.com/Findmucker/casa-app/issues/72))
-
-### UX & Interação
-- 🖐️ Drag & drop nas listas ([#55](https://github.com/Findmucker/casa-app/issues/55))
-- ↩️ Undo ao apagar items ([#56](https://github.com/Findmucker/casa-app/issues/56))
-- 👆 Swipe to complete ([#57](https://github.com/Findmucker/casa-app/issues/57))
-
-### Temas & Personalização
-- 🎀 Tema Fofinho melhorado ([#33](https://github.com/Findmucker/casa-app/issues/33))
-- 💀 Tema Dark Spooky ([#32](https://github.com/Findmucker/casa-app/issues/32))
-- 🤖 Tema Cyberpunk ([#34](https://github.com/Findmucker/casa-app/issues/34))
-- 🌿 Tema Nature Magical ([#35](https://github.com/Findmucker/casa-app/issues/35))
-- 🎨 Temas customizáveis e desbloqueáveis ([#67](https://github.com/Findmucker/casa-app/issues/67))
-
-### Finanças
-- 💰 Reestruturar tab Gastinhos: Despesas + Poupanças + Rendimentos ([#36](https://github.com/Findmucker/casa-app/issues/36))
-- 📊 Gráficos visuais para tab Gastinhos ([#37](https://github.com/Findmucker/casa-app/issues/37))
-
-### Hábitos & Rotinas
-- 📊 Heatmap visual de hábitos estilo GitHub ([#58](https://github.com/Findmucker/casa-app/issues/58))
-
-### Gamificação
-- 🐾 Pet virtual ([#60](https://github.com/Findmucker/casa-app/issues/60))
-- ⚔️ Daily quests ([#61](https://github.com/Findmucker/casa-app/issues/61))
-- 🏅 Conquistas secretas ([#62](https://github.com/Findmucker/casa-app/issues/62))
-
-### Casa & Gestão
-- ⏰ Countdown para eventos ([#59](https://github.com/Findmucker/casa-app/issues/59))
-- 🔧 Lembretes de manutenção da casa ([#63](https://github.com/Findmucker/casa-app/issues/63))
-- 📞 Lista de contactos úteis ([#64](https://github.com/Findmucker/casa-app/issues/64))
-- 💍 Tracker de aniversários e datas especiais ([#69](https://github.com/Findmucker/casa-app/issues/69))
-- 👯 Lista de casa de amigas ([#70](https://github.com/Findmucker/casa-app/issues/70))
-- 🔄 Sync de calendários de aniversários com amigos ([#71](https://github.com/Findmucker/casa-app/issues/71))
-- 🎂 Calcular aniversários automáticos por data de nascimento ([#73](https://github.com/Findmucker/casa-app/issues/73))
-
-### Avatares / Customização
-- 👕 Tab Roupa Cima - 7 estilos ([#15](https://github.com/Findmucker/casa-app/issues/15))
-- 👖 Tab Roupa Baixo - 7 estilos ([#16](https://github.com/Findmucker/casa-app/issues/16))
-- 🎩 Tab Acessórios - 7 estilos ([#17](https://github.com/Findmucker/casa-app/issues/17))
-- ✨ Skins para animais avatar ([#21](https://github.com/Findmucker/casa-app/issues/21))
-
-### Técnico / Infra
-- 📱 PWA completa ([#65](https://github.com/Findmucker/casa-app/issues/65))
-- 📲 Widgets para home screen ([#68](https://github.com/Findmucker/casa-app/issues/68))
-
-### Features
-- 🏠 Título da casa customizável ([#39](https://github.com/Findmucker/casa-app/issues/39))
-- ❓ Melhorar Tutorial ([#38](https://github.com/Findmucker/casa-app/issues/38))
-- 📍 Location-based notifications ([#18](https://github.com/Findmucker/casa-app/issues/18))
-- 🤖 Assistant Moniquinha ([#19](https://github.com/Findmucker/casa-app/issues/19))
+Personal project — made with love.

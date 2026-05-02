@@ -103,7 +103,7 @@ Seguir [SemVer](https://semver.org/):
 - **MINOR** (0.7.0) — nova feature
 - **PATCH** (0.6.1) — bug fix
 
-Versão atual: **v0.6.0**
+Versão atual: **v0.7.0**
 
 ## Setup Inicial
 
