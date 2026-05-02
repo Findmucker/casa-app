@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useSharedCollections, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck } from "@/lib/hooks";
+import { useSharedCollections, useCollection, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck } from "@/lib/hooks";
 import { getWeatherInfo } from "@/lib/weather";
+import type { CasaEvent } from "./EventList";
 
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -111,6 +112,7 @@ export default function Calendar() {
   const [weatherData, setWeatherData] = useState<Record<string, DayWeather>>({});
 
   const { habits, checks, coisinhas, projects } = useSharedCollections();
+  const { items: events } = useCollection<CasaEvent>("events", "createdAt");
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -148,6 +150,13 @@ export default function Calendar() {
       }
     });
 
+    // Events (red/coral)
+    events.forEach((e) => {
+      if (e.date) {
+        addDot(e.date, { color: "bg-red-400", label: `🎉 ${e.title}`, type: "event" });
+      }
+    });
+
     // Holidays (amber)
     const year = viewDate.getFullYear();
     Object.entries(HOLIDAYS_FIXED).forEach(([mmdd, label]) => {
@@ -160,7 +169,7 @@ export default function Calendar() {
     });
 
     return map;
-  }, [habits, checks, coisinhas, projects, viewDate]);
+  }, [habits, checks, coisinhas, projects, events, viewDate]);
 
   // Calendar grid
   const calendarDays = useMemo(() => {
@@ -307,6 +316,10 @@ export default function Calendar() {
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-purple-400" />
                 <span className="text-[10px]">Projetos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-red-400" />
+                <span className="text-[10px]">Eventos</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">☀️ Meteo</span>
