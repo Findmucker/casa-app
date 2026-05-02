@@ -147,16 +147,16 @@ function DashboardInner() {
   return (
     <div className={`flex flex-col h-screen transition-all duration-1000 ${theme.cssClass} bg-gradient-to-br ${theme.bgGradient}`}>
       {/* Header */}
-      <header className={`backdrop-blur-md border-b px-4 py-3 flex items-center justify-between transition-colors duration-500 ${
+      <header className={`backdrop-blur-xl border-b px-4 py-3 flex items-center justify-between transition-colors duration-500 ${
         darkMode
-          ? "bg-slate-900/60 border-purple-800/30"
-          : "bg-white/60 border-pink-100/50"
+          ? "bg-white/40 border-purple-200/30"
+          : "bg-white/50 border-pink-100/40"
       }`}>
         <button
           onClick={() => setShowSearch(true)}
           aria-label="Pesquisar"
           className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
-            darkMode ? "bg-purple-900/50 text-purple-300 hover:bg-purple-800/50" : "bg-pink-50 text-pink-400 hover:bg-pink-100"
+            darkMode ? "bg-purple-100/60 text-purple-500 hover:bg-purple-100" : "bg-pink-50 text-pink-400 hover:bg-pink-100"
           }`}
         >
           🔍
@@ -166,7 +166,7 @@ function DashboardInner() {
           aria-label="Menu principal"
           aria-expanded={showPanel}
           className={`text-lg font-bold tracking-wide active:scale-95 transition-all ${
-            darkMode ? "text-purple-300 hover:text-purple-200" : "text-rose-400 hover:text-rose-500"
+            darkMode ? "text-purple-500 hover:text-purple-600" : "text-rose-400 hover:text-rose-500"
           }`}
         >
           🏡 {t("header.title")}
@@ -175,7 +175,7 @@ function DashboardInner() {
           onClick={() => setShowGamification(true)}
           aria-label="Perfil e gamificação"
           className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
-            darkMode ? "bg-purple-900/40 text-purple-300 hover:bg-purple-800/40" : "bg-purple-50 text-purple-500 hover:bg-purple-100"
+            darkMode ? "bg-purple-100/60 text-purple-500 hover:bg-purple-100" : "bg-purple-50 text-purple-500 hover:bg-purple-100"
           }`}
         >
           ⚔️
@@ -209,15 +209,15 @@ function DashboardInner() {
             onClick={(e) => { if (e.target === e.currentTarget) setShowPanel(false); }}
             className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up bg-gradient-to-br ${
             darkMode
-              ? "from-[#363258]/98 via-[#453d6e]/98 to-[#363258]/98"
+              ? "from-purple-100/98 via-indigo-100/98 to-pink-100/98"
               : theme.phase === "morning"
                 ? "from-amber-50/98 via-yellow-50/98 to-orange-50/98"
                 : theme.phase === "dusk"
-                  ? "from-orange-100/98 via-rose-200/98 to-purple-200/98"
-                  : "from-pink-50/98 via-rose-50/98 to-purple-50/98"
+                  ? "from-orange-50/98 via-rose-100/98 to-purple-100/98"
+                  : "from-rose-50/98 via-pink-50/98 to-fuchsia-50/98"
           }`}>
             {/* Navigation section */}
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.navigate")}</p>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.navigate")}</p>
             <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
               {ALL_TABS.map((section) => (
                 <button
@@ -226,24 +226,24 @@ function DashboardInner() {
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
                     activeTab === section.id
                       ? darkMode
-                        ? "bg-purple-800/60 shadow-md shadow-purple-900/50 border border-purple-600/60 scale-105"
+                        ? "bg-purple-200/70 shadow-md shadow-purple-200/30 border border-purple-300/60 scale-105"
                         : "bg-white shadow-md shadow-pink-100/50 border border-pink-200/60 scale-105"
                       : darkMode
-                        ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                        ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
                         : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
                   }`}
                 >
                   <span className="text-xl">{section.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{section.label}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{section.label}</span>
                 </button>
               ))}
             </div>
 
             {/* Divider */}
-            <div className={`w-32 h-px my-6 ${darkMode ? "bg-purple-700/50" : "bg-pink-200/60"}`} />
+            <div className={`w-32 h-px my-6 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
 
             {/* Options section */}
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.communication")}</p>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.communication")}</p>
             <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
               {[
                 { emoji: "💌", label: t("menu.message"), action: () => { setShowPanel(false); setShowSendMessage(true); } },
@@ -254,19 +254,19 @@ function DashboardInner() {
                   onClick={item.action}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
                     darkMode
-                      ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                      ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
                       : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
                   }`}
                 >
                   <span className="text-xl">{item.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{item.label}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
                 </button>
               ))}
             </div>
 
-            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-700/30" : "bg-pink-200/40"}`} />
+            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-200/30" : "bg-pink-200/40"}`} />
 
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.house")}</p>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.house")}</p>
             <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
               {[
                 { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setShowInvite(true); } },
@@ -277,19 +277,19 @@ function DashboardInner() {
                   onClick={item.action}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
                     darkMode
-                      ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                      ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
                       : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
                   }`}
                 >
                   <span className="text-xl">{item.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{item.label}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
                 </button>
               ))}
             </div>
 
-            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-700/30" : "bg-pink-200/40"}`} />
+            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-200/30" : "bg-pink-200/40"}`} />
 
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.settings")}</p>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.settings")}</p>
             <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
               {[
                 { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setShowMaintenance(true); } },
@@ -300,18 +300,18 @@ function DashboardInner() {
                   onClick={item.action}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
                     darkMode
-                      ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                      ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
                       : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
                   }`}
                 >
                   <span className="text-xl">{item.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{item.label}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
                 </button>
               ))}
               {/* Language toggle */}
               <div className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl ${
                 darkMode
-                  ? "bg-slate-800/60 border border-purple-800/30"
+                  ? "bg-purple-100/60 border border-purple-200/30"
                   : "bg-white/60 border border-pink-100/30"
               }`}>
                 <span className="text-xl">🌐</span>
@@ -369,8 +369,8 @@ function DashboardInner() {
       </UndoProvider>
 
       {/* Bottom tabs - scrollable */}
-      <nav aria-label="Navegação principal" className={`backdrop-blur-md border-t safe-area-bottom transition-colors duration-500 ${
-        darkMode ? "bg-slate-900/70 border-purple-800/30" : "bg-white/70 border-pink-100/50"
+      <nav aria-label="Navegação principal" className={`backdrop-blur-xl border-t safe-area-bottom transition-colors duration-500 ${
+        darkMode ? "bg-white/40 border-purple-200/30" : "bg-white/60 border-pink-100/40"
       }`}>
         <div ref={navRef} className="flex overflow-x-auto scrollbar-hide" role="tablist">
           {ALL_TABS.map((tab) => (
@@ -383,7 +383,7 @@ function DashboardInner() {
               onClick={() => switchTab(tab.id)}
               className={`flex-shrink-0 min-w-[56px] flex flex-col items-center gap-0.5 py-2.5 px-1.5 transition-all duration-300 relative ${
                 activeTab === tab.id && !showPanel
-                  ? darkMode ? "text-purple-300 scale-105" : "text-rose-500 scale-105"
+                  ? darkMode ? "text-purple-500 scale-105" : "text-rose-500 scale-105"
                   : darkMode ? "text-gray-500 hover:text-purple-400" : "text-gray-400 hover:text-rose-300"
               }`}
             >
@@ -394,8 +394,8 @@ function DashboardInner() {
               </span>
               <span className="text-[9px] font-medium leading-tight">{tab.label}</span>
               {activeTab === tab.id && !showPanel && (
-                <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full ${
-                  darkMode ? "bg-gradient-to-r from-purple-400 to-pink-400" : "bg-gradient-to-r from-pink-300 to-rose-300"
+                <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full ${
+                  darkMode ? "bg-gradient-to-r from-purple-400 to-pink-400" : "bg-gradient-to-r from-pink-400 to-rose-400"
                 }`} />
               )}
             </button>

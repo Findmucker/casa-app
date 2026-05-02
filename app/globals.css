@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fdf2f8;
-  --foreground: #831843;
+  --background: #fef7fa;
+  --foreground: #6b2150;
+}
+
+/* Global card glassmorphism */
+.bg-white\/60,
+.bg-white\/70,
+.bg-white\/80 {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Smooth transitions on interactive elements */
+button, input, textarea, select, a {
+  transition: all 0.2s ease;
+}
+
+/* Better focus ring */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.15);
 }
 
 .dark-mode {
@@ -206,7 +225,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #f9a8d4;
+  background: linear-gradient(to bottom, #f9a8d4, #f472b6);
   border-radius: 999px;
 }
 

@@ -15,19 +15,19 @@ const THEMES: Record<TimePhase, ThemeConfig> = {
   morning: {
     phase: "morning",
     cssClass: "theme-morning",
-    bgGradient: "from-amber-50 via-yellow-50 to-orange-50",
+    bgGradient: "from-amber-50/80 via-orange-50/40 to-yellow-50/60",
     isDark: false,
   },
   afternoon: {
     phase: "afternoon",
     cssClass: "",
-    bgGradient: "from-pink-50 via-rose-50 to-purple-50",
+    bgGradient: "from-rose-50/80 via-pink-50 to-fuchsia-50/60",
     isDark: false,
   },
   dusk: {
     phase: "dusk",
     cssClass: "theme-dusk",
-    bgGradient: "from-orange-100 via-rose-200 to-purple-200",
+    bgGradient: "from-orange-50 via-rose-100 to-purple-100/80",
     isDark: false,
   },
   night: {
