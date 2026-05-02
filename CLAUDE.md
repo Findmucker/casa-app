@@ -21,7 +21,7 @@
 | `lib/auth.ts` | `useAuth()`, `useHouse()` (real-time listener), `HouseMember` type |
 | `lib/context.tsx` | `HouseProvider`, `useHouseContext()` — houseId, userName, userId, members |
 | `lib/hooks.ts` | `useCollection()` generic Firestore hook, shared types |
-| `lib/themes.ts` | Time-based themes (morning/afternoon/dusk/night), `useTimeTheme()` |
+| `lib/themes.ts` | Time-based themes + selectable override system, `useTimeTheme()`, `SELECTABLE_THEMES` |
 | `lib/gamification.ts` | Points, levels, streaks, badges, inventory |
 | `lib/i18n.tsx` | `useT()` hook, `LocaleProvider` |
 | `lib/locales/pt.ts` | Portuguese translations — `LocaleKeys` type derived from here |
@@ -79,10 +79,11 @@ After feature work, update: `README.md`, `CHANGELOG.md`, `docs/USER_MANUAL.md`, 
 ## Design Principles
 
 1. **Equality**: No admin hierarchy — all house members are equal. Members can only remove themselves.
-2. **Fofinho aesthetic**: Soft gradients, rounded corners (2xl/3xl), glassmorphism, pink/rose/purple palette
+2. **Fofinho aesthetic** (default): Soft gradients, rounded corners (2xl/3xl), glassmorphism, pink/rose/purple palette
 3. **Time themes**: UI adapts to time of day (morning=warm amber, afternoon=rose/pink, dusk=orange/purple, night=light purple dimming)
 4. **Night mode**: NOT dark — it's a subtle pastel dimming with `from-pink-100 via-purple-100 to-indigo-100`
-5. **Animations**: `animate-fade-in-up` for entrances, staggered delays via `style={{ animationDelay }}`, `active:scale-95` for taps
+5. **Selectable themes**: Override time-based themes via localStorage (`casa-theme`). Currently: auto, cyberpunk
+6. **Animations**: `animate-fade-in-up` for entrances, staggered delays via `style={{ animationDelay }}`, `active:scale-95` for taps
 6. **Mobile-first**: All interactions designed for touch, PWA installed on phones
 7. **Real-time**: Use `onSnapshot` for live data, never stale reads for shared state
 
@@ -93,7 +94,7 @@ After feature work, update: `README.md`, `CHANGELOG.md`, `docs/USER_MANUAL.md`, 
 Menu (click title) → Main panel:
   ├── Members widget (top, premium card, clickable avatars with actions)
   ├── Tabs grid (5 cols, all navigation tabs)
-  ├── Category buttons (Communication, House, Settings → sub-panels)
+  ├── Category buttons (Themes, House, Settings → sub-panels)
 ```
 
 ### ProfilePage viewMember Pattern
@@ -129,8 +130,43 @@ Menu (click title) → Main panel:
 - **AnimeAnimalCharacter** needs minimum ~16px to render pixel grid visibly (each pixel = size/16)
 - **Two avatar systems**: `AvatarConfig` (animal pixel art, shown everywhere) vs `EquippedItems` (RPG loot, shown only in ProfilePage inventory). They are independent.
 - **Always show issue URL to user before starting work** — let them review/edit scope first
+- **Theme CSS must override ALL relevant Tailwind classes** — if a color class isn't overridden in `.theme-{name}`, it shows the default fofinho colors
+- **Vercel deploys can fail silently** — if push doesn't trigger deploy, do an empty commit (`git commit --allow-empty`) to retrigger, or check Vercel dashboard
+- **Never show closed GitHub issues** unless user explicitly asks for them
 
 ## Avatar System Reference
+
+### Theme System (`lib/themes.ts`)
+
+#### Architecture
+- **Time-based** (default): `useTimeTheme()` returns theme based on hour of day
+- **Override**: `useThemeOverride()` reads/writes `localStorage("casa-theme")`
+- Combined in `useTimeTheme()` which returns `ThemeConfig & { themeId, setThemeId }`
+
+#### Adding a New Theme
+1. Add `ThemeId` union type value in `lib/themes.ts`
+2. Add entry to `SELECTABLE_THEMES` array (emoji, nameKey, descKey, preview gradient)
+3. Add `ThemeConfig` to `OVERRIDE_THEMES` record (phase, cssClass, bgGradient, isDark)
+4. Add CSS in `app/globals.css` under `.theme-{name}` — override all color classes
+5. Add i18n keys to both locale files: `themes.{name}`, `themes.{name}Desc`
+
+#### Theme CSS Pattern
+Each theme overrides via `.theme-{name}` parent selector in `globals.css`:
+- `.bg-white/*` → card backgrounds
+- `.text-*` → all text color classes  
+- `.border-*` → border colors
+- `.bg-pink-*`, `.bg-purple-*` → UI backgrounds
+- `.bg-gradient-to-r.*` → button gradients
+- `.backdrop-blur-*` → header/nav
+- `.animate-*` → animation overrides
+- `.rounded-*` → border radius (cyberpunk uses angular)
+
+#### Cyberpunk Theme Reference
+- Colors: `#00f6ff` (cyan/primary), `#fcee0a` (yellow/secondary), `#ff003c` (red/danger)
+- Font: monospace, uppercase headers, letter-spacing: 1.5px
+- Corners: angular clip-path (no rounded)
+- Effects: scan lines overlay, glitch animations, neon glow box-shadows
+- Background: `#0d0d15` (near black)
 
 ### AvatarConfig (AnimeAnimalCharacter)
 - Stored in: `gamification/{name}.avatar`
