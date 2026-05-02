@@ -96,8 +96,12 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
         <div className="flex justify-center">
           {avatarConfig ? (
             <AnimeAnimalCharacter config={avatarConfig} size={96} />
-          ) : (
+          ) : Object.values(equipped).some(Boolean) ? (
             <CharacterModel equipped={equipped} size="sm" />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center border-3 border-rose-200/60 shadow-lg shadow-pink-100/30">
+              <span className="text-white font-bold text-3xl">{userName.charAt(0).toUpperCase()}</span>
+            </div>
           )}
         </div>
 
