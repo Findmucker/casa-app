@@ -60,6 +60,7 @@ function DashboardInner() {
   const [menuSubPanel, setMenuSubPanel] = useState<"communication" | "house" | "settings" | null>(null);
   const [showMaintenance, setShowMaintenance] = useState(false);
   const [showGamification, setShowGamification] = useState(false);
+  const [profileViewMember, setProfileViewMember] = useState<string | undefined>(undefined);
   const [showSearch, setShowSearch] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
@@ -414,7 +415,7 @@ function DashboardInner() {
                             </button>
                           )}
                           <button
-                            onClick={() => { setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowGamification(true); }}
+                            onClick={() => { const name = memberActionTarget.uid !== user?.uid ? memberActionTarget.name : undefined; setProfileViewMember(name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowGamification(true); }}
                             className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[11px] font-semibold transition-all active:scale-90 shadow-sm ${
                               darkMode
                                 ? "bg-purple-200/70 text-purple-700 hover:bg-purple-200 shadow-purple-200/20"
@@ -483,7 +484,7 @@ function DashboardInner() {
 
         {/* Overlays */}
         {showMaintenance && <MaintenancePanel onClose={() => setShowMaintenance(false)} />}
-        {showGamification && <ProfilePage onClose={() => setShowGamification(false)} />}
+        {showGamification && <ProfilePage onClose={() => { setShowGamification(false); setProfileViewMember(undefined); }} viewMember={profileViewMember} />}
         {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} onNavigate={(tab) => switchTab(tab as TabId)} />}
         {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}

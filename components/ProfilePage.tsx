@@ -29,9 +29,10 @@ import AvatarBuilder, { AnimeAnimalCharacter, type AvatarConfig } from "./Avatar
 
 interface ProfilePageProps {
   onClose: () => void;
+  viewMember?: string; // member name to view (read-only mode)
 }
 
-export default function ProfilePage({ onClose }: ProfilePageProps) {
+export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [currentBadges, setCurrentBadges] = useState<string[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -44,9 +45,9 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const { houseId } = useHouseContext();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user && !viewMember) return;
     const load = async () => {
-      const owner = user.displayName || user.email || "user";
+      const owner = viewMember || user?.displayName || user?.email || "user";
       const s = await getStats(owner);
       setStats(s);
 
@@ -63,7 +64,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
       setLoading(false);
     };
     load();
-  }, [user]);
+  }, [user, viewMember]);
 
   if (loading || !stats) {
     return (
@@ -76,7 +77,8 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const { level, xpInLevel, xpForNext } = getLevel(stats.points);
   const title = getTitle(level);
   const rpgStats = calculateStats(stats);
-  const userName = user?.displayName || user?.email?.split("@")[0] || "Herói";
+  const userName = viewMember || user?.displayName || user?.email?.split("@")[0] || "Herói";
+  const isReadOnly = !!viewMember;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in-up" style={{ background: "linear-gradient(to bottom right, #fdf2f8, #fff1f2, #faf5ff)" }}>
@@ -152,6 +154,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
           >
             🐼 Avatar
           </button>
+          {!isReadOnly && (
           <button
             onClick={() => setActiveTab("settings")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
@@ -162,6 +165,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
           >
             ⚙️ Perfil
           </button>
+          )}
         </div>
       </div>
 
