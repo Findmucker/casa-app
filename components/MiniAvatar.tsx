@@ -70,6 +70,18 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
   // Get helmet emoji for badge
   const helmetItem = equipped.helmet ? LOOT_POOL.find((i) => i.id === equipped.helmet) : null;
 
+  // Generate a deterministic default avatar config from name (so each person looks unique)
+  const defaultAvatar: AvatarConfig = {
+    animal: name.length % 11,
+    eyes: (name.charCodeAt(0) || 0) % 7,
+    mouth: (name.charCodeAt(1) || 0) % 7,
+    top: (name.charCodeAt(0) || 0) % 7,
+    bottom: (name.charCodeAt(1) || 0) % 7,
+    accessory: 0,
+    background: 0,
+    effect: 0,
+  };
+
   // Loading state
   if (avatar === undefined) {
     return (
@@ -80,37 +92,18 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
     );
   }
 
-  // No avatar — fallback to initial
-  if (!avatar) {
-    return (
-      <div className="relative" style={{ width: size, height: size }}>
-        <div
-          className="rounded-full bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center"
-          style={{ width: size, height: size }}
-        >
-          <span className="text-white font-bold" style={{ fontSize: size * 0.45 }}>
-            {name.charAt(0).toUpperCase()}
-          </span>
-        </div>
-        {showEquipBadge && helmetItem && size >= 28 && (
-          <span className="absolute -top-0.5 -right-0.5 leading-none" style={{ fontSize: size * 0.35 }}>{helmetItem.emoji}</span>
-        )}
-      </div>
-    );
-  }
+  // Use actual avatar or deterministic default
+  const displayAvatar = avatar || defaultAvatar;
 
   // Render pixel art avatar (only if size is large enough for pixels to be visible)
   if (size < 20) {
-    // Too small for pixel art — show colored initial with avatar's animal color hint
     return (
       <div className="relative" style={{ width: size, height: size }}>
         <div
-          className="rounded-full bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center border border-rose-200/50"
+          className="rounded-full overflow-hidden border border-rose-200/50 bg-white flex items-center justify-center"
           style={{ width: size, height: size }}
         >
-          <span className="text-white font-bold" style={{ fontSize: size * 0.5 }}>
-            {name.charAt(0).toUpperCase()}
-          </span>
+          <AnimeAnimalCharacter config={displayAvatar} size={size} />
         </div>
       </div>
     );
@@ -122,7 +115,7 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
         className="rounded-full overflow-hidden border border-rose-200/50 bg-white flex items-center justify-center"
         style={{ width: size, height: size }}
       >
-        <AnimeAnimalCharacter config={avatar} size={size - 4} />
+        <AnimeAnimalCharacter config={displayAvatar} size={size - 4} />
       </div>
       {showEquipBadge && helmetItem && size >= 28 && (
         <span className="absolute -top-0.5 -right-0.5 leading-none" style={{ fontSize: size * 0.35 }}>{helmetItem.emoji}</span>
