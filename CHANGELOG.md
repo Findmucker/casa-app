@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2026-05-02
+
+### Added
+- **English localization (i18n)** — full PT/EN support with toggle
+  - `LocaleProvider` + `useT()` hook architecture
+  - Locale dictionaries (`lib/locales/pt.ts`, `lib/locales/en.ts`)
+  - Language toggle on login screen (first-time users)
+  - Inline PT/EN toggle in dashboard menu
+  - Strings translated in: ShoppingList, HabitList, PriorityList, ProjectList, ExpenseList, SearchOverlay
+  - Persists choice in localStorage
+- **Habits: weekday selector** — choose which days a habit is active
+- **Habits: person filter** — filter habits by member (like tasks tab)
+- **Habits: repeating notifications** — reminder every 10 min until completed (client-side)
+- **Menu restructured** into categorized sections:
+  - Communication (Message, History)
+  - House (Invite, Members)
+  - Settings (Maintenance, Tutorial, Language toggle)
+- **Profile name sync** — changing name propagates to house members, gamification, and FCM tokens
+
+### Changed
+- Removed "Pílula" from default habits and all references
+- Empty habits page shows generic ✨ instead of pill emoji
+- Dashboard wrapped in `LocaleProvider` for standalone route support
+- Tabs built dynamically from locale keys
+
+### Fixed
+- FCM token key mismatch (was "shared", now per-user by lowercase name)
+- ESLint 48→0 problems (conditional hooks, unused vars, etc.)
+- Profile name not syncing across house members collection
+- Vercel cron `*/10` rejected on Hobby plan (changed to daily + client-side repeat)
+
 ## [0.5.0] - 2026-05-01
 
 ### Added

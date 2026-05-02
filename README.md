@@ -38,9 +38,11 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - Check diário que reseta à meia-noite
 - Streak counter com 🔥 e animações
 - Hora configurável por hábito
+- **Selector de dias da semana** — define em que dias o hábito é ativo
+- **Filtro por pessoa** — filtra hábitos por membro da casa
 - **Atribuir a pessoa** (dinâmico por membros da casa)
+- **Notificações repetidas** — lembrete a cada 10 min enquanto não completo
 - Push notifications (com permissão)
-- Pílula como hábito default
 
 ### 💰 Gastinhos (Despesas)
 - Tracking simples: nome, valor, categoria, quem pagou
@@ -129,6 +131,13 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - 👗 Corpo: Avental Fofo, Camisola Quentinha, Capa de Super-Herói, Armadura de Diamante, Armadura de Dragão
 - 👟 Pés: Pantufas Fofas, Botas de Jardim, Botas de Velocidade, Botas de Nuvem, Botas Foguete
 - 💍 Acessório: Sininho, Gatinho de Ombro, Borboleta Mágica, Fadinha Ajudante, Fénix Miniatura
+
+### 🌐 Localização (i18n)
+- Suporte Português 🇵🇹 e Inglês 🇬🇧
+- Toggle de idioma na página de login (primeira visita)
+- Toggle inline no menu central do dashboard
+- Persistência em localStorage
+- Todas as strings da UI traduzidas
 
 ### 🔍 Pesquisa Global
 - Buscar em todas as tabs de uma vez
@@ -265,6 +274,10 @@ casa-app/
 │   ├── auth.ts               # Hooks de auth + house operations
 │   ├── context.tsx           # HouseProvider context
 │   ├── hooks.ts              # useCollection hook (real-time, house-scoped)
+│   ├── i18n.tsx              # LocaleProvider + useT hook
+│   ├── locales/
+│   │   ├── pt.ts             # Dicionário Português
+│   │   └── en.ts             # Dicionário Inglês
 │   ├── categories.ts         # Categorias + auto-classificação
 │   ├── gamification.ts       # Sistema de pontos + badges + loot boxes + inventário
 │   ├── seed.ts               # Dados de teste (seed/reset modo teste)
@@ -310,6 +323,11 @@ Projeto pessoal — feito com 💕
 ## Roadmap / TODO
 
 ### ✅ Concluído recentemente
+- 🌐 Localização PT/EN com toggle na login e menu
+- 🔔 Notificações repetidas a cada 10 min nos hábitos
+- 📅 Selector de dias da semana nos hábitos
+- 👤 Filtro por pessoa nos hábitos
+- 📂 Menu reestruturado em secções (Comunicação, Casa, Definições)
 - ♿ Aria-labels e keyboard navigation ([#48](https://github.com/Findmucker/casa-app/issues/48))
 - 🔔 Push notifications reais — FCM ([#66](https://github.com/Findmucker/casa-app/issues/66))
 - 💬 Enviar notificação entre membros ([#23](https://github.com/Findmucker/casa-app/issues/23))

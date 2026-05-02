@@ -21,7 +21,7 @@ A app tem uma **barra de tabs** na parte inferior com 10 seccoes. Podes navegar 
 | 🛒 | Comprinhas | Lista de compras partilhada |
 | 🪴 | Coisinhas | Pequenas tarefas/prioridades |
 | 🏠 | Projetinhos | Projetos maiores da casa |
-| 💊 | Rotinazinhas | Habitos diarios com streaks |
+| 💊 | Rotinazinhas | Habitos diarios com streaks e filtros |
 | 💰 | Gastinhos | Controlo de despesas |
 | 🍽️ | Receitinhas | Planeamento de refeicoes semanal |
 | 📅 | Calendarzinho | Calendario mensal integrado |
@@ -82,10 +82,12 @@ O ecra inicial mostra:
 - Marca cada dia como feito com check diario (reseta a meia-noite)
 - Sistema de **streaks** — dias consecutivos com animacao 🔥
 - Hora configuravel por habito (para lembretes)
+- **Selector de dias da semana** — define em que dias o habito esta ativo
+- **Filtro por pessoa** — filtra habitos por membro (Todos / nome / Ambos)
 - **Atribui a pessoa** responsavel (dinamico por membros da casa)
+- **Notificacoes repetidas** — lembrete a cada 10 min enquanto nao completo (max 2h)
 - **Push notifications reais** — recebe lembretes mesmo com a app fechada (via FCM)
 - Pontos de gamificacao por cada check (+2 pontos)
-- Pilula como habito default
 
 ---
 
@@ -190,12 +192,17 @@ Ao tocar no titulo "A Nossa Casinha" no header, abre um menu organizado em secco
 ### Navegar
 Grid com todas as 10 tabs — tap para ir directamente.
 
-### Gestao
+### Comunicacao
 - **💌 Mensagem** — envia notificacao push com mensagem ao outro membro
 - **📜 Historico** — registo de items completados com data e stats
+
+### Casa
 - **🔗 Convidar** — gerar codigo de convite para novos membros
 - **👥 Membros** — ver todos os membros com avatar, nivel e stats
+
+### Definicoes
 - **⚙️ Manutencao** — reorganizar categorias, limpar items feitos, seed de teste
+- **🌐 Idioma** — toggle inline PT 🇵🇹 / EN 🇬🇧
 - **❓ Tutorial** — rever o tutorial interativo da app
 
 ### Sair
@@ -309,6 +316,17 @@ Acessivel via menu central → ⚙️ Manutencao:
 - **Migrar dados** — copia dados antigos para a casa atual (se aplicavel)
 - **Seed dados de teste** — preenche com dados exemplo (dev only)
 - **Sair do modo teste** — limpa dados de teste e reseta stats
+
+---
+
+## Idioma / Language
+
+A app suporta **Portugues** 🇵🇹 e **Ingles** 🇬🇧.
+
+### Mudar o idioma
+- **Na pagina de login:** botoes PT/EN no canto superior direito
+- **No menu central:** seccao Definicoes → toggle inline PT | EN
+- A escolha e guardada automaticamente (persiste entre sessoes)
 
 ---
 
