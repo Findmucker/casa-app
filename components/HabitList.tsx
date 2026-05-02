@@ -47,7 +47,7 @@ export default function HabitList() {
 
   // Check notification permission
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "granted") {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
       setNotificationsEnabled(true); // eslint-disable-line react-hooks/set-state-in-effect
     }
   }, []);

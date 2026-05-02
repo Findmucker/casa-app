@@ -54,6 +54,14 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
 export function useT() {
   const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useT must be inside LocaleProvider");
+  if (!ctx) {
+    // Fallback for when component renders outside LocaleProvider (shouldn't happen but prevents crash)
+    return {
+      locale: "pt" as Locale,
+      setLocale: () => {},
+      t: (key: string) => key,
+      tArray: (key: string) => [key] as readonly string[],
+    };
+  }
   return ctx;
 }
