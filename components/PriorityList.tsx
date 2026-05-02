@@ -10,6 +10,9 @@ import {
 import { useMemberNames } from "@/lib/context";
 import AutocompleteInput from "./AutocompleteInput";
 import MiniAvatar from "./MiniAvatar";
+import SwipeableRow from "./SwipeableRow";
+import { useUndo } from "@/lib/useUndoStack";
+import { useDragReorder } from "@/lib/useDragReorder";
 
 const COMMON_COISINHAS = [
   "Aspirador", "Toalhas", "Cortinas", "Almofadas", "Velas", "Plantas",
@@ -35,6 +38,7 @@ export default function PriorityList() {
   const [celebrating, setCelebrating] = useState<string | null>(null);
   const [celebratingCategory, setCelebratingCategory] = useState<string | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const { pushUndo } = useUndo();
 
   const nameSuggestions = useMemo(() => {
     const fromHistory = items.map((i) => i.name);
@@ -115,6 +119,23 @@ export default function PriorityList() {
     await update(item.id, { order: other.order });
     await update(other.id, { order: item.order });
   };
+
+  const removeWithUndo = useCallback((item: SmallPriorityItem) => {
+    const data = { name: item.name, done: item.done, order: item.order, assignee: item.assignee, category: item.category, notes: item.notes, price: item.price };
+    remove(item.id);
+    pushUndo(`"${item.name}" apagado`, async () => {
+      await add(data as Omit<SmallPriorityItem, "id" | "createdAt">);
+    });
+  }, [remove, add, pushUndo]);
+
+  const handleDragReorder = useCallback((fromIndex: number, toIndex: number, catItems: SmallPriorityItem[]) => {
+    const item = catItems[fromIndex];
+    const target = catItems[toIndex];
+    if (item && target) {
+      update(item.id, { order: target.order });
+      update(target.id, { order: item.order });
+    }
+  }, [update]);
 
   return (
     <div className="flex flex-col h-full">
@@ -259,26 +280,24 @@ export default function PriorityList() {
               {!isCollapsed && (
                 <div className="mt-2 ml-2 space-y-2">
                   {catItems.map((item, idx) => (
+                    <SwipeableRow key={item.id} onSwipeRight={() => handleToggleDone(item)} onSwipeLeft={() => removeWithUndo(item)}>
                     <div
-                      key={item.id}
                       className={`bg-white/70 backdrop-blur-sm rounded-2xl p-3 shadow-sm shadow-pink-100/30 border border-pink-100/30 transition-all hover:shadow-md ${
                         item.done ? "opacity-50" : ""
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        {/* Move arrows */}
-                        <div className="flex flex-col gap-0.5">
-                          <button
-                            onClick={() => moveItem(item, "up", catItems)}
-                            disabled={idx === 0}
-                            className="w-6 h-5 flex items-center justify-center text-xs text-pink-300 disabled:opacity-20 active:scale-90 rounded"
-                          >▲</button>
-                          <button
-                            onClick={() => moveItem(item, "down", catItems)}
-                            disabled={idx === catItems.length - 1}
-                            className="w-6 h-5 flex items-center justify-center text-xs text-pink-300 disabled:opacity-20 active:scale-90 rounded"
-                          >▼</button>
-                        </div>
+                        {/* Drag handle */}
+                        <button
+                          onClick={() => {
+                            if (idx > 0) moveItem(item, "up", catItems);
+                          }}
+                          onDoubleClick={() => {
+                            if (idx < catItems.length - 1) moveItem(item, "down", catItems);
+                          }}
+                          aria-label="Reordenar"
+                          className="w-6 h-8 flex items-center justify-center text-pink-300 hover:text-pink-500 active:scale-90 cursor-grab active:cursor-grabbing select-none"
+                        >⠿</button>
 
                         {/* Checkbox */}
                         <div className="relative">
@@ -340,7 +359,7 @@ export default function PriorityList() {
 
                         {/* Delete */}
                         <button
-                          onClick={() => remove(item.id)}
+                          onClick={() => removeWithUndo(item)}
                           aria-label={`Apagar ${item.name}`}
                           className="w-8 h-8 flex items-center justify-center rounded-lg text-pink-300 hover:text-red-400 transition-all active:scale-90 text-sm"
                         >✕</button>
@@ -402,6 +421,7 @@ export default function PriorityList() {
                         <p className="mt-2 ml-8 text-xs text-pink-400/70 italic">{item.notes}</p>
                       )}
                     </div>
+                    </SwipeableRow>
                   ))}
                 </div>
               )}

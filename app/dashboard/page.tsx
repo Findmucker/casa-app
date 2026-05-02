@@ -19,6 +19,8 @@ import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
 import HouseMembers from "@/components/HouseMembers";
 import SendMessagePanel from "@/components/SendMessagePanel";
+import UndoToast from "@/components/UndoToast";
+import { UndoProvider } from "@/lib/useUndoStack";
 import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 import { useTimeTheme } from "@/lib/themes";
@@ -168,6 +170,7 @@ export default function Dashboard() {
       </header>
 
       {/* Content */}
+      <UndoProvider>
       <CollectionDataContext.Provider value={sharedData}>
       <main
         className="flex-1 overflow-hidden relative"
@@ -279,8 +282,10 @@ export default function Dashboard() {
         {showHouseMembers && <HouseMembers onClose={() => setShowHouseMembers(false)} />}
         {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
         {showSendMessage && <SendMessagePanel onClose={() => setShowSendMessage(false)} />}
+        <UndoToast />
       </main>
       </CollectionDataContext.Provider>
+      </UndoProvider>
 
       {/* Bottom tabs - scrollable */}
       <nav aria-label="Navegação principal" className={`backdrop-blur-md border-t safe-area-bottom transition-colors duration-500 ${

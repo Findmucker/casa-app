@@ -9,6 +9,8 @@ import {
   getAllCategoryNames,
 } from "@/lib/categories";
 import AutocompleteInput from "./AutocompleteInput";
+import SwipeableRow from "./SwipeableRow";
+import { useUndo } from "@/lib/useUndoStack";
 
 const COMMON_SHOPPING = [
   "Leite", "Ovos", "Pão", "Manteiga", "Queijo", "Fiambre", "Iogurtes",
@@ -135,6 +137,7 @@ export default function ShoppingList() {
   const [celebratingCategory, setCelebratingCategory] = useState<string | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const { pushUndo } = useUndo();
 
   const suggestions = useMemo(() => {
     const fromHistory = items.map((i) => i.name);
@@ -212,6 +215,14 @@ export default function ShoppingList() {
     setNewUrgent(false);
     inputRef.current?.focus();
   };
+
+  const removeWithUndo = useCallback((item: ShoppingItem) => {
+    const data = { name: item.name, addedBy: item.addedBy || "", done: item.done, urgent: item.urgent, category: (item as ShoppingItem & { category?: string }).category };
+    remove(item.id);
+    pushUndo(`"${item.name}" apagado`, async () => {
+      await add(data as Omit<ShoppingItem, "id" | "createdAt">);
+    });
+  }, [remove, add, pushUndo]);
 
   const toggleCollapse = (cat: string) => {
     setCollapsedCategories((prev) => {
@@ -313,7 +324,9 @@ export default function ShoppingList() {
               </span>
             </div>
             {urgentItems.map((item) => (
-              <ItemRow key={item.id} item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={remove} onEditCategory={setEditingCategory} />
+              <SwipeableRow key={item.id} onSwipeRight={() => handleCheck(item)} onSwipeLeft={() => removeWithUndo(item)}>
+                <ItemRow item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
+              </SwipeableRow>
             ))}
           </>
         )}
@@ -367,7 +380,9 @@ export default function ShoppingList() {
               {!isCollapsed && (
                 <div className="space-y-2">
                   {catItems.map((item) => (
-                    <ItemRow key={item.id} item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={remove} onEditCategory={setEditingCategory} />
+                    <SwipeableRow key={item.id} onSwipeRight={() => handleCheck(item)} onSwipeLeft={() => removeWithUndo(item)}>
+                      <ItemRow item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
+                    </SwipeableRow>
                   ))}
                 </div>
               )}
@@ -385,7 +400,9 @@ export default function ShoppingList() {
               </span>
             </div>
             {done.map((item) => (
-              <ItemRow key={item.id} item={item} isDone={true} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={remove} onEditCategory={setEditingCategory} />
+              <SwipeableRow key={item.id} onSwipeLeft={() => removeWithUndo(item)} disabled>
+                <ItemRow item={item} isDone={true} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
+              </SwipeableRow>
             ))}
           </>
         )}

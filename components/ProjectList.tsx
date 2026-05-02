@@ -11,6 +11,8 @@ import {
   PROJECTS_CATEGORY_ORDER,
   guessCategory,
 } from "@/lib/categories";
+import SwipeableRow from "./SwipeableRow";
+import { useUndo } from "@/lib/useUndoStack";
 
 const STATUS_LABELS = {
   pendente: { label: "Pendente", color: "bg-purple-100/80 text-purple-500", emoji: "💜" },
@@ -29,6 +31,15 @@ export default function ProjectList() {
   const [editingField, setEditingField] = useState<{ id: string; field: string } | null>(null);
   const [fieldValue, setFieldValue] = useState("");
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const { pushUndo } = useUndo();
+
+  const removeWithUndo = (item: BigPriorityItem) => {
+    const data = { name: item.name, status: item.status, order: item.order, category: item.category, notes: item.notes, budget: item.budget, subtasks: item.subtasks };
+    remove(item.id);
+    pushUndo(`"${item.name}" apagado`, async () => {
+      await add(data as Omit<BigPriorityItem, "id" | "createdAt">);
+    });
+  };
 
   // Migrate existing items without category (once per session)
   const hasMigrated = useRef(false);
@@ -152,8 +163,8 @@ export default function ProjectList() {
     const statusInfo = STATUS_LABELS[item.status];
 
     return (
+      <SwipeableRow key={item.id} onSwipeLeft={() => removeWithUndo(item)} rightLabel="→ Status" onSwipeRight={() => cycleStatus(item)}>
       <div
-        key={item.id}
         className={`bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm shadow-pink-100/30 border border-pink-100/30 transition-all overflow-hidden ${
           item.status === "concluido" ? "opacity-50" : ""
         }`}
@@ -208,7 +219,7 @@ export default function ProjectList() {
             </div>
 
             <button
-              onClick={() => remove(item.id)}
+              onClick={() => removeWithUndo(item)}
               aria-label={`Apagar projeto ${item.name}`}
               className="w-8 h-8 flex items-center justify-center rounded-xl bg-pink-50 text-pink-300 hover:bg-red-50 hover:text-red-400 transition-all active:scale-90 text-sm flex-shrink-0"
             >✕</button>
@@ -372,8 +383,8 @@ export default function ProjectList() {
           </div>
         )}
       </div>
-    );
-  };
+      </SwipeableRow>
+    );  };
 
   return (
     <div className="flex flex-col h-full">
