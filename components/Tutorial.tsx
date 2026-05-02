@@ -1,174 +1,106 @@
 "use client";
 
 import { useState } from "react";
+import { useT } from "@/lib/i18n";
+import type { LocaleKeys } from "@/lib/locales/pt";
 
 interface TutorialStep {
   emoji: string;
-  title: string;
-  text: string;
-  tips?: string[];
+  titleKey: LocaleKeys;
+  textKey: LocaleKeys;
+  tipsKeys?: LocaleKeys[];
 }
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     emoji: "🏡",
-    title: "Bem-vindo à Nossa Casinha!",
-    text: "A app que organiza a vida a dois. Compras, tarefas, hábitos, despesas, refeições, eventos e mais — tudo num sítio fofo e partilhado.",
-    tips: ["Toda a informação sincroniza em tempo real entre membros", "A app muda de tema ao longo do dia ☀️🌅🌙"],
+    titleKey: "tutorial.welcome.title",
+    textKey: "tutorial.welcome.text",
+    tipsKeys: ["tutorial.welcome.tip1", "tutorial.welcome.tip2", "tutorial.welcome.tip3"],
   },
   {
     emoji: "📱",
-    title: "Como Navegar",
-    text: "Usa a barra de tabs em baixo para mudar de secção. São 10 tabs organizadas por temas.",
-    tips: [
-      "Swipe ← → para mudar de tab rapidamente",
-      "Tap no título \"A Nossa Casinha\" para o menu rápido",
-      "🔍 no canto para pesquisar em tudo",
-      "⚔️ no canto para o teu perfil RPG",
-    ],
+    titleKey: "tutorial.nav.title",
+    textKey: "tutorial.nav.text",
+    tipsKeys: ["tutorial.nav.tip1", "tutorial.nav.tip2", "tutorial.nav.tip3", "tutorial.nav.tip4"],
   },
   {
     emoji: "🛒",
-    title: "Comprinhas",
-    text: "A lista de compras partilhada. Items organizam-se automaticamente por categoria (Frescos, Carnes, Padaria, etc.) seguindo o fluxo do supermercado.",
-    tips: [
-      "Marca como urgente para destacar no topo ⚡",
-      "Atribui a quem vai comprar (tu, o/a parceiro/a, ou ambos)",
-      "Preço estimado opcional para controlar gastos",
-      "Categorias colapsam com barra de progresso",
-    ],
+    titleKey: "tutorial.shopping.title",
+    textKey: "tutorial.shopping.text",
+    tipsKeys: ["tutorial.shopping.tip1", "tutorial.shopping.tip2", "tutorial.shopping.tip3", "tutorial.shopping.tip4"],
   },
   {
     emoji: "🪴",
-    title: "Coisinhas",
-    text: "Pequenas tarefas do dia-a-dia. Auto-categorizadas em Casa, Cozinha, Decoração, Bricolage, e mais.",
-    tips: [
-      "Adiciona notas em cada item para detalhes",
-      "Reordena por prioridade arrastando",
-      "Celebração especial quando completas uma categoria inteira! 🎉",
-      "Autocomplete sugere tarefas já usadas antes",
-    ],
+    titleKey: "tutorial.coisinhas.title",
+    textKey: "tutorial.coisinhas.text",
+    tipsKeys: ["tutorial.coisinhas.tip1", "tutorial.coisinhas.tip2", "tutorial.coisinhas.tip3", "tutorial.coisinhas.tip4"],
   },
   {
     emoji: "🏠",
-    title: "Projetinhos",
-    text: "Projetos maiores da casa — obras, pinturas, reparações. Acompanha desde a ideia até à conclusão.",
-    tips: [
-      "3 estados: Pendente → A Fazer → Concluído",
-      "Adiciona subtarefas para dividir o trabalho",
-      "Define orçamento para controlar custos",
-      "Cada projeto concluído dá +5 pontos XP! 🎮",
-    ],
+    titleKey: "tutorial.projects.title",
+    textKey: "tutorial.projects.text",
+    tipsKeys: ["tutorial.projects.tip1", "tutorial.projects.tip2", "tutorial.projects.tip3", "tutorial.projects.tip4"],
   },
   {
     emoji: "💊",
-    title: "Rotinazinhas",
-    text: "Hábitos diários com sistema de streaks. Cria rotinas saudáveis e acompanha o teu progresso.",
-    tips: [
-      "🔥 Streak conta os dias seguidos sem falhar",
-      "Configura a hora do lembrete em cada hábito",
-      "Ativa notificações 🔔 para receber push mesmo com a app fechada",
-      "Atribui hábitos a cada membro da casa",
-    ],
+    titleKey: "tutorial.habits.title",
+    textKey: "tutorial.habits.text",
+    tipsKeys: ["tutorial.habits.tip1", "tutorial.habits.tip2", "tutorial.habits.tip3", "tutorial.habits.tip4"],
   },
   {
     emoji: "💰",
-    title: "Gastinhos",
-    text: "Controlo de despesas simples e visual. Vê quanto gastaste por mês, categoria e pessoa.",
-    tips: [
-      "Barras visuais por categoria",
-      "Total separado por cada membro + gastos comuns",
-      "Navega entre meses com as setas ← →",
-    ],
+    titleKey: "tutorial.expenses.title",
+    textKey: "tutorial.expenses.text",
+    tipsKeys: ["tutorial.expenses.tip1", "tutorial.expenses.tip2", "tutorial.expenses.tip3", "tutorial.expenses.tip4", "tutorial.expenses.tip5"],
   },
   {
     emoji: "🍽️",
-    title: "Receitinhas",
-    text: "Planeia as refeições da semana. Pequeno-almoço, almoço, jantar e snacks para 7 dias.",
-    tips: [
-      "Autocomplete com refeições já usadas antes",
-      "Envia ingredientes direto para as Comprinhas! 🛒",
-    ],
+    titleKey: "tutorial.meals.title",
+    textKey: "tutorial.meals.text",
+    tipsKeys: ["tutorial.meals.tip1", "tutorial.meals.tip2"],
   },
   {
     emoji: "📅",
-    title: "Calendarzinho",
-    text: "Vista mensal integrada com tudo o que acontece na casa. Cada tipo de atividade tem uma cor diferente.",
-    tips: [
-      "🟢 Hábitos  🩷 Coisinhas  🟣 Projetos",
-      "🔴 Eventos  🟡 Feriados  ☀️ Meteo",
-      "Feriados portugueses automáticos (fixos + Páscoa/Carnaval)",
-      "Previsão meteo nos próximos 7 dias diretamente no grid",
-      "Tap num dia para ver todos os detalhes",
-    ],
+    titleKey: "tutorial.calendar.title",
+    textKey: "tutorial.calendar.text",
+    tipsKeys: ["tutorial.calendar.tip1", "tutorial.calendar.tip2", "tutorial.calendar.tip3", "tutorial.calendar.tip4"],
   },
   {
     emoji: "🎉",
-    title: "Eventinhos",
-    text: "Organiza eventos e partilha com amigos! Cada evento pode ter lista de compras e tarefas próprias.",
-    tips: [
-      "Partilha eventos via link público 🔗",
-      "Amigos vêem detalhes e podem juntar-se",
-      "Previsão meteo automática para eventos próximos 🌤️",
-      "Eventos aparecem como dots no Calendarzinho",
-    ],
+    titleKey: "tutorial.events.title",
+    textKey: "tutorial.events.text",
+    tipsKeys: ["tutorial.events.tip1", "tutorial.events.tip2", "tutorial.events.tip3"],
   },
   {
     emoji: "🌤️",
-    title: "Tempinho",
-    text: "Previsão meteorológica para os próximos 7 dias. Temperatura, precipitação e vento.",
-    tips: [
-      "Tap num dia para expandir vista horária",
-      "Integrado no calendário e nos eventos",
-    ],
+    titleKey: "tutorial.weather.title",
+    textKey: "tutorial.weather.text",
+    tipsKeys: ["tutorial.weather.tip1", "tutorial.weather.tip2"],
   },
   {
     emoji: "💌",
-    title: "Mensagens",
-    text: "Envia notificações push com mensagens ao outro membro da casa! Mensagens rápidas ou personalizadas.",
-    tips: [
-      "Menu → 💌 Mensagem",
-      "8 mensagens rápidas: amor, supermercado, jantar, café...",
-      "Escreve mensagens personalizadas",
-      "O outro membro recebe push mesmo com a app fechada",
-    ],
+    titleKey: "tutorial.messages.title",
+    textKey: "tutorial.messages.text",
+    tipsKeys: ["tutorial.messages.tip1", "tutorial.messages.tip2", "tutorial.messages.tip3"],
   },
   {
     emoji: "🏆",
-    title: "Perfil RPG & Gamificação",
-    text: "Cada tarefa dá XP! Sobe de nível, desbloqueia equipamentos, coleciona badges e recebe loot aleatório.",
-    tips: [
-      "+1 XP comprinhas  +2 coisinhas  +5 projetos  +2 hábitos",
-      "Loot boxes a cada 50 pontos com items cosméticos",
-      "4 raridades: Comum, Raro, Épico, Lendário ✨",
-      "Avatar 8-bit pixel art com 11 animais e customização total",
-      "Inventário estilo WoW com drag-and-drop",
-    ],
+    titleKey: "tutorial.rpg.title",
+    textKey: "tutorial.rpg.text",
+    tipsKeys: ["tutorial.rpg.tip1", "tutorial.rpg.tip2", "tutorial.rpg.tip3", "tutorial.rpg.tip4"],
   },
   {
     emoji: "🔔",
-    title: "Notificações Push",
-    text: "Recebe lembretes e mensagens mesmo com a app fechada! Ativa nas Rotinazinhas.",
-    tips: [
-      "Vai a Rotinazinhas → tap 🔔 → aceita permissão",
-      "Lembretes de hábitos na hora configurada",
-      "Mensagens de outros membros da casa",
-      "Funciona via Firebase Cloud Messaging",
-    ],
+    titleKey: "tutorial.notifications.title",
+    textKey: "tutorial.notifications.text",
+    tipsKeys: ["tutorial.notifications.tip1", "tutorial.notifications.tip2", "tutorial.notifications.tip3"],
   },
   {
     emoji: "💡",
-    title: "Dicas Finais",
-    text: "Estás pronto/a para organizar a tua casinha! Aqui ficam as dicas essenciais.",
-    tips: [
-      "Swipe entre tabs para navegar rápido ← →",
-      "Menu central: tap no título \"A Nossa Casinha\"",
-      "🔍 pesquisa em todas as tabs de uma vez",
-      "📜 Histórico mostra tudo o que completaste",
-      "⚙️ Manutenção para reorganizar categorias",
-      "🔗 Convida membros para a tua casa",
-      "O tema muda sozinho: ☀️ manhã → 🌤️ tarde → 🌅 anoitecer → 🌙 noite",
-    ],
+    titleKey: "tutorial.tips.title",
+    textKey: "tutorial.tips.text",
+    tipsKeys: ["tutorial.tips.tip1", "tutorial.tips.tip2", "tutorial.tips.tip3", "tutorial.tips.tip4", "tutorial.tips.tip5", "tutorial.tips.tip6", "tutorial.tips.tip7"],
   },
 ];
 
@@ -177,6 +109,7 @@ interface TutorialProps {
 }
 
 export default function Tutorial({ onClose }: TutorialProps) {
+  const { t } = useT();
   const [step, setStep] = useState(0);
   const current = TUTORIAL_STEPS[step];
   const isLast = step === TUTORIAL_STEPS.length - 1;
@@ -190,10 +123,10 @@ export default function Tutorial({ onClose }: TutorialProps) {
           <span className="text-[10px] text-purple-400">{step + 1} / {TUTORIAL_STEPS.length}</span>
           <button
             onClick={onClose}
-            aria-label="Saltar tutorial"
+            aria-label={t("tutorial.skip")}
             className="text-[10px] text-purple-500 hover:text-purple-300 transition-colors"
           >
-            Saltar ✕
+            {t("tutorial.skip")} ✕
           </button>
         </div>
         <div className="h-1 bg-purple-800 rounded-full overflow-hidden">
@@ -207,16 +140,16 @@ export default function Tutorial({ onClose }: TutorialProps) {
       {/* Card */}
       <div className="w-full max-w-sm bg-purple-900/40 border border-purple-700/40 rounded-3xl p-6 text-center shadow-xl">
         <span className="text-5xl block mb-3 animate-bounce">{current.emoji}</span>
-        <h3 className="text-lg font-bold text-white mb-2">{current.title}</h3>
-        <p className="text-sm text-purple-200 leading-relaxed">{current.text}</p>
+        <h3 className="text-lg font-bold text-white mb-2">{t(current.titleKey)}</h3>
+        <p className="text-sm text-purple-200 leading-relaxed">{t(current.textKey)}</p>
 
         {/* Tips */}
-        {current.tips && current.tips.length > 0 && (
+        {current.tipsKeys && current.tipsKeys.length > 0 && (
           <div className="mt-4 space-y-1.5 text-left">
-            {current.tips.map((tip, i) => (
+            {current.tipsKeys.map((tipKey, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className="text-amber-400 text-xs mt-0.5">•</span>
-                <span className="text-xs text-purple-300 leading-relaxed">{tip}</span>
+                <span className="text-xs text-purple-300 leading-relaxed">{t(tipKey)}</span>
               </div>
             ))}
           </div>
@@ -228,27 +161,27 @@ export default function Tutorial({ onClose }: TutorialProps) {
         {step > 0 && (
           <button
             onClick={() => setStep(step - 1)}
-            aria-label="Passo anterior"
+            aria-label={t("tutorial.prev")}
             className="px-5 py-2 rounded-full bg-purple-800/50 text-purple-300 text-sm font-medium hover:bg-purple-700/50 active:scale-95 transition-all"
           >
-            ← Anterior
+            ← {t("tutorial.prev")}
           </button>
         )}
         {!isLast ? (
           <button
             onClick={() => setStep(step + 1)}
-            aria-label="Próximo passo"
+            aria-label={t("tutorial.next")}
             className="px-5 py-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 active:scale-95 transition-all"
           >
-            Seguinte →
+            {t("tutorial.next")} →
           </button>
         ) : (
           <button
             onClick={onClose}
-            aria-label="Concluir tutorial"
+            aria-label={t("tutorial.start")}
             className="px-6 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold shadow-lg shadow-green-500/30 hover:shadow-green-500/50 active:scale-95 transition-all"
           >
-            ✨ Começar!
+            ✨ {t("tutorial.start")}
           </button>
         )}
       </div>
@@ -259,7 +192,7 @@ export default function Tutorial({ onClose }: TutorialProps) {
           <button
             key={i}
             onClick={() => setStep(i)}
-            aria-label={`Ir para passo ${i + 1}: ${s.title}`}
+            aria-label={`${t("tutorial.goTo")} ${i + 1}`}
             className={`w-6 h-6 rounded-full text-[10px] flex items-center justify-center transition-all ${
               i === step
                 ? "bg-amber-400 text-purple-900 scale-110 font-bold"
