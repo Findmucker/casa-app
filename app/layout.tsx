@@ -33,6 +33,25 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="h-full font-sans bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50">
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(reg) {
+                reg.update();
+                if (reg.waiting) { reg.waiting.postMessage({type:'SKIP_WAITING'}); }
+              });
+            });
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+              if (!window.__swReloaded) { window.__swReloaded = true; window.location.reload(); }
+            });
+            // Clear all caches on load (force fresh)
+            if ('caches' in window) {
+              caches.keys().then(function(keys) {
+                keys.forEach(function(k) { caches.delete(k); });
+              });
+            }
+          }
+        `}} />
         <FloatingCuties />
         {children}
       </body>
