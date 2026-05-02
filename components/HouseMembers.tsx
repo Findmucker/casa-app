@@ -39,7 +39,7 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
   const { members, houseId, userId, userName } = useHouseContext();
   const [memberData, setMemberData] = useState<MemberData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const [messageTo, setMessageTo] = useState<MemberData | null>(null);
   const [customMessage, setCustomMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -85,18 +85,17 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
     load();
   }, [members]);
 
-  const handleRemoveMember = async (member: MemberData) => {
-    if (member.uid === userId) return;
+  const handleLeavehouse = async () => {
     try {
       const houseRef = doc(db, "houses", houseId);
-      const memberObj = members.find((m) => m.uid === member.uid);
+      const memberObj = members.find((m) => m.uid === userId);
       if (memberObj) {
         await updateDoc(houseRef, { members: arrayRemove(memberObj) });
       }
-      setMemberData((prev) => prev.filter((m) => m.uid !== member.uid));
-      setConfirmRemove(null);
+      // Reload to go back to house setup
+      window.location.reload();
     } catch (e) {
-      console.error("Error removing member:", e);
+      console.error("Error leaving house:", e);
     }
   };
 
@@ -268,36 +267,40 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
                   >
                     💌 {t("menu.message")}
                   </button>
-
-                  {/* Remove button */}
-                  {confirmRemove === m.uid ? (
-                    <div className="flex gap-1.5 items-center">
-                      <span className="text-[10px] text-red-500">{t("members.management.removeConfirm")}</span>
-                      <button
-                        onClick={() => handleRemoveMember(m)}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-red-400 text-white font-medium active:scale-95"
-                      >
-                        ✓
-                      </button>
-                      <button
-                        onClick={() => setConfirmRemove(null)}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 font-medium active:scale-95"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmRemove(m.uid)}
-                      className="text-[10px] px-2.5 py-1 rounded-full bg-red-50 text-red-400 font-medium hover:bg-red-100 active:scale-95 transition-all"
-                    >
-                      🚪 {t("members.management.remove")}
-                    </button>
-                  )}
                 </div>
               )}
             </div>
           ))
+        )}
+
+        {/* Leave house — only for yourself */}
+        {!loading && (
+          <div className="mt-6 flex justify-center">
+            {confirmRemove ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-red-500">Sair da casa?</span>
+                <button
+                  onClick={handleLeavehouse}
+                  className="text-xs px-3 py-1.5 rounded-full bg-red-400 text-white font-medium active:scale-95"
+                >
+                  ✓ Confirmar
+                </button>
+                <button
+                  onClick={() => setConfirmRemove(false)}
+                  className="text-xs px-3 py-1.5 rounded-full bg-gray-200 text-gray-600 font-medium active:scale-95"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmRemove(true)}
+                className="text-[11px] px-4 py-2 rounded-full bg-red-50 text-red-400 font-medium hover:bg-red-100 active:scale-95 transition-all border border-red-100/50"
+              >
+                🚪 Sair da casa
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
