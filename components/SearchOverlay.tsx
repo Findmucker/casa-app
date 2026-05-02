@@ -85,6 +85,7 @@ export default function SearchOverlay({ onClose, onNavigate }: SearchOverlayProp
           />
           <button
             onClick={onClose}
+            aria-label="Fechar pesquisa"
             className="text-sm text-pink-400 hover:text-pink-600 px-2 py-1 transition-colors"
           >
             Cancelar

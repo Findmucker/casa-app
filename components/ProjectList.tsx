@@ -209,6 +209,7 @@ export default function ProjectList() {
 
             <button
               onClick={() => remove(item.id)}
+              aria-label={`Apagar projeto ${item.name}`}
               className="w-8 h-8 flex items-center justify-center rounded-xl bg-pink-50 text-pink-300 hover:bg-red-50 hover:text-red-400 transition-all active:scale-90 text-sm flex-shrink-0"
             >✕</button>
           </div>

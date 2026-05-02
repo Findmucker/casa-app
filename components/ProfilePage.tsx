@@ -84,6 +84,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
       <div className="relative pt-6 pb-4 text-center">
         <button
           onClick={onClose}
+          aria-label="Fechar perfil"
           className="absolute top-4 right-4 text-rose-400 hover:text-rose-600 text-sm transition-colors"
         >
           ✕

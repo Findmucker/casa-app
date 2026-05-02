@@ -200,11 +200,11 @@ export default function Calendar() {
       {/* Header */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-blue-100/40">
         <div className="flex items-center justify-between">
-          <button onClick={() => changeMonth(-1)} className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&larr;</button>
+          <button onClick={() => changeMonth(-1)} aria-label="Mês anterior" className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&larr;</button>
           <h2 className="text-base font-bold text-blue-600 capitalize">
             {MONTHS_PT[viewDate.getMonth()]} {viewDate.getFullYear()}
           </h2>
-          <button onClick={() => changeMonth(1)} className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&rarr;</button>
+          <button onClick={() => changeMonth(1)} aria-label="Mês seguinte" className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&rarr;</button>
         </div>
       </div>
 

@@ -48,6 +48,7 @@ const ItemRow = memo(function ItemRow({
       <div className="relative">
         <button
           onClick={() => onCheck(item)}
+          aria-label={isDone ? `Desmarcar ${item.name}` : `Marcar ${item.name} como comprado`}
           className={`h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm transition-all active:scale-90 ${
             isDone
               ? "bg-gradient-to-r from-pink-300 to-rose-300 text-white shadow-sm shadow-pink-200/50"
@@ -73,6 +74,7 @@ const ItemRow = memo(function ItemRow({
 
       {!isDone && editingCategory === item.id && (
         <select
+          aria-label={`Categoria de ${item.name}`}
           value={item.category || "\u{1F4E6} Outros"}
           onChange={(e) => {
             onUpdate(item.id, { category: e.target.value });
@@ -91,6 +93,7 @@ const ItemRow = memo(function ItemRow({
       {!isDone && editingCategory !== item.id && (
         <button
           onClick={() => onEditCategory(item.id)}
+          aria-label={`Mudar categoria de ${item.name}`}
           className="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-400 hover:bg-pink-100 transition-all"
         >
           {(item.category || "\u{1F4E6}").split(" ")[0]}
@@ -100,6 +103,7 @@ const ItemRow = memo(function ItemRow({
       {!isDone && (
         <button
           onClick={() => onUpdate(item.id, { urgent: !item.urgent })}
+          aria-label={item.urgent ? `Remover urgente de ${item.name}` : `Marcar ${item.name} como urgente`}
           className={`text-xs px-2 py-1 rounded-full transition-all active:scale-95 ${
             item.urgent
               ? "bg-red-100 text-red-500"
@@ -112,6 +116,7 @@ const ItemRow = memo(function ItemRow({
 
       <button
         onClick={() => onRemove(item.id)}
+        aria-label={`Apagar ${item.name}`}
         className="text-pink-200 hover:text-red-400 transition-colors text-sm"
       >
         &#10005;
@@ -262,6 +267,7 @@ export default function ShoppingList() {
           <button
             onClick={handleAdd}
             disabled={!newItem.trim()}
+            aria-label="Adicionar item"
             className="rounded-2xl bg-gradient-to-r from-pink-400 to-rose-400 px-5 py-3 text-white font-semibold hover:from-pink-500 hover:to-rose-500 active:scale-95 transition-all disabled:opacity-30 shadow-sm shadow-pink-200/50"
           >
             +

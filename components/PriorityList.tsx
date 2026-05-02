@@ -284,6 +284,7 @@ export default function PriorityList() {
                         <div className="relative">
                           <button
                             onClick={() => handleToggleDone(item)}
+                            aria-label={item.done ? `Desmarcar ${item.name}` : `Marcar ${item.name} como feito`}
                             className={`h-7 w-7 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-xs transition-all active:scale-90 ${
                               item.done
                                 ? "bg-gradient-to-r from-pink-300 to-rose-300 border-pink-300 text-white"
@@ -340,6 +341,7 @@ export default function PriorityList() {
                         {/* Delete */}
                         <button
                           onClick={() => remove(item.id)}
+                          aria-label={`Apagar ${item.name}`}
                           className="w-8 h-8 flex items-center justify-center rounded-lg text-pink-300 hover:text-red-400 transition-all active:scale-90 text-sm"
                         >✕</button>
                       </div>

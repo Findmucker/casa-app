@@ -303,6 +303,7 @@ export default function MaintenancePanel({ onClose }: MaintenancePanelProps) {
 
       <button
         onClick={onClose}
+        aria-label="Fechar manutenção"
         className="mt-8 text-sm text-pink-400 hover:text-pink-600 transition-colors"
       >
         Fechar

@@ -42,7 +42,7 @@ export default function HistoryPanel({ onClose }: HistoryPanelProps) {
       <div className="p-4 border-b border-pink-100/40">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-rose-500">📜 Histórico</h2>
-          <button onClick={onClose} className="text-sm text-pink-400 hover:text-pink-600 transition-colors">Fechar</button>
+          <button onClick={onClose} aria-label="Fechar histórico" className="text-sm text-pink-400 hover:text-pink-600 transition-colors">Fechar</button>
         </div>
       </div>
 

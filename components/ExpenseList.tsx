@@ -94,9 +94,9 @@ export default function ExpenseList() {
 
         {/* Month nav */}
         <div className="flex items-center justify-between">
-          <button onClick={() => changeMonth(-1)} className="text-emerald-400 px-2 py-1 active:scale-90">←</button>
+          <button onClick={() => changeMonth(-1)} aria-label="Mês anterior" className="text-emerald-400 px-2 py-1 active:scale-90">←</button>
           <span className="text-sm font-semibold text-emerald-700 capitalize">{monthLabel}</span>
-          <button onClick={() => changeMonth(1)} className="text-emerald-400 px-2 py-1 active:scale-90">→</button>
+          <button onClick={() => changeMonth(1)} aria-label="Mês seguinte" className="text-emerald-400 px-2 py-1 active:scale-90">→</button>
         </div>
 
         {/* Total */}
@@ -233,6 +233,7 @@ export default function ExpenseList() {
                 <span className="text-sm font-bold text-emerald-600">{item.amount.toFixed(2)}€</span>
                 <button
                   onClick={() => remove(item.id)}
+                  aria-label={`Apagar despesa ${item.name}`}
                   className="w-7 h-7 flex items-center justify-center text-emerald-300 hover:text-red-400 transition-all active:scale-90 text-xs"
                 >
                   ✕

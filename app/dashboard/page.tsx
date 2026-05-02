@@ -137,6 +137,7 @@ export default function Dashboard() {
       }`}>
         <button
           onClick={() => setShowSearch(true)}
+          aria-label="Pesquisar"
           className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
             darkMode ? "bg-purple-900/50 text-purple-300 hover:bg-purple-800/50" : "bg-pink-50 text-pink-400 hover:bg-pink-100"
           }`}
@@ -145,6 +146,8 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setShowPanel(!showPanel)}
+          aria-label="Menu principal"
+          aria-expanded={showPanel}
           className={`text-lg font-bold tracking-wide active:scale-95 transition-all ${
             darkMode ? "text-purple-300 hover:text-purple-200" : "text-rose-400 hover:text-rose-500"
           }`}
@@ -153,6 +156,7 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setShowGamification(true)}
+          aria-label="Perfil e gamificação"
           className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
             darkMode ? "bg-purple-900/40 text-purple-300 hover:bg-purple-800/40" : "bg-purple-50 text-purple-500 hover:bg-purple-100"
           }`}
@@ -249,6 +253,7 @@ export default function Dashboard() {
             <div className="mt-5">
               <button
                 onClick={() => { logout(); }}
+                aria-label="Sair da conta"
                 className={`flex flex-col items-center gap-1.5 px-6 py-3 rounded-2xl transition-all active:scale-90 ${
                   darkMode
                     ? "bg-red-950/40 border border-red-800/40 hover:bg-red-900/50"
@@ -274,14 +279,17 @@ export default function Dashboard() {
       </CollectionDataContext.Provider>
 
       {/* Bottom tabs - scrollable */}
-      <nav className={`backdrop-blur-md border-t safe-area-bottom transition-colors duration-500 ${
+      <nav aria-label="Navegação principal" className={`backdrop-blur-md border-t safe-area-bottom transition-colors duration-500 ${
         darkMode ? "bg-slate-900/70 border-purple-800/30" : "bg-white/70 border-pink-100/50"
       }`}>
-        <div ref={navRef} className="flex overflow-x-auto scrollbar-hide">
+        <div ref={navRef} className="flex overflow-x-auto scrollbar-hide" role="tablist">
           {ALL_TABS.map((tab) => (
             <button
               key={tab.id}
               data-tab={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id && !showPanel}
+              aria-label={tab.label}
               onClick={() => switchTab(tab.id)}
               className={`flex-shrink-0 min-w-[56px] flex flex-col items-center gap-0.5 py-2.5 px-1.5 transition-all duration-300 relative ${
                 activeTab === tab.id && !showPanel

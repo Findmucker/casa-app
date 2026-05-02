@@ -145,6 +145,7 @@ export default function HabitList() {
             {!notificationsEnabled && (
               <button
                 onClick={enableNotifications}
+                aria-label="Ativar lembretes"
                 className="text-xs bg-purple-100 text-purple-500 px-3 py-1.5 rounded-full hover:bg-purple-200 transition-all active:scale-95"
               >
                 🔔 Ativar lembretes
@@ -152,6 +153,8 @@ export default function HabitList() {
             )}
             <button
               onClick={() => setShowAdd(!showAdd)}
+              aria-label={showAdd ? "Fechar formulário" : "Adicionar hábito"}
+              aria-expanded={showAdd}
               className="w-9 h-9 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 text-white flex items-center justify-center text-lg active:scale-90 transition-all shadow-sm"
             >
               +
@@ -264,6 +267,7 @@ export default function HabitList() {
                 <button
                   onClick={() => handleCheck(habit)}
                   disabled={checked}
+                  aria-label={checked ? `${habit.name} já feito` : `Marcar ${habit.name} como feito`}
                   className={`h-12 w-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-xl transition-all active:scale-90 ${
                     checked
                       ? "bg-gradient-to-r from-green-300 to-emerald-300 text-white shadow-sm"
@@ -304,6 +308,7 @@ export default function HabitList() {
                 {/* Delete */}
                 <button
                   onClick={() => remove(habit.id)}
+                  aria-label={`Apagar hábito ${habit.name}`}
                   className="w-8 h-8 flex items-center justify-center rounded-lg text-purple-300 hover:text-red-400 transition-all active:scale-90 text-sm"
                 >
                   ✕
