@@ -134,6 +134,12 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - Buscar em todas as tabs de uma vez
 - Resultados agrupados por tipo
 
+### 💌 Mensagens entre Membros
+- Enviar notificação push com mensagem ao outro membro da casa
+- 8 mensagens rápidas pré-definidas (amor, supermercado, jantar, etc.)
+- Mensagem personalizada com input livre
+- Acessível via menu central (💌 Mensagem)
+
 ### 📜 Histórico
 - Items completados com data
 - Stats por categoria
@@ -223,7 +229,8 @@ casa-app/
 │   ├── page.tsx              # Entrada: Auth → House Setup → Dashboard
 │   ├── dashboard/page.tsx    # Dashboard principal com todas as tabs
 │   ├── convite/[code]/       # Página pública para aceitar convites
-│   ├── api/alarms/check/     # Endpoint cron para verificar alarmes
+│   ├── api/send-notification/ # POST endpoint para enviar push FCM
+│   ├── api/cron/habits/      # Cron endpoint para lembretes de hábitos
 │   └── globals.css           # Animações e estilos globais
 ├── components/
 │   ├── AuthScreen.tsx        # Login/registo (email + Google)
@@ -247,6 +254,7 @@ casa-app/
 │   ├── LootBoxOpener.tsx     # Abertura animada de loot boxes
 │   ├── Tutorial.tsx          # Tutorial interativo da app
 │   ├── SearchOverlay.tsx     # Pesquisa global
+│   ├── SendMessagePanel.tsx  # Enviar mensagem push a membros
 │   ├── HistoryPanel.tsx      # Histórico de completados
 │   ├── MaintenancePanel.tsx  # Painel de manutenção/utilitários
 │   ├── Weather.tsx           # Previsão meteorológica
@@ -284,6 +292,7 @@ casa-app/
 | `houses/{houseId}/meal_plans` | Plano de refeições por dia |
 | `houses/{houseId}/gamification` | Pontos, badges, stats |
 | `gamification/{owner}` | Perfil RPG: pontos, inventário, equipped, avatar, lootBoxes |
+| `fcm_tokens/{owner}` | Tokens FCM para push notifications |
 
 ## Deploy
 
@@ -300,8 +309,13 @@ Projeto pessoal — feito com 💕
 
 ## Roadmap / TODO
 
-### UX & Interação
+### ✅ Concluído recentemente
 - ♿ Aria-labels e keyboard navigation ([#48](https://github.com/Findmucker/casa-app/issues/48))
+- 🔔 Push notifications reais — FCM ([#66](https://github.com/Findmucker/casa-app/issues/66))
+- 💬 Enviar notificação entre membros ([#23](https://github.com/Findmucker/casa-app/issues/23))
+- 🎂 Data de nascimento obrigatória no registo ([#72](https://github.com/Findmucker/casa-app/issues/72))
+
+### UX & Interação
 - 🖐️ Drag & drop nas listas ([#55](https://github.com/Findmucker/casa-app/issues/55))
 - ↩️ Undo ao apagar items ([#56](https://github.com/Findmucker/casa-app/issues/56))
 - 👆 Swipe to complete ([#57](https://github.com/Findmucker/casa-app/issues/57))
@@ -332,7 +346,6 @@ Projeto pessoal — feito com 💕
 - 💍 Tracker de aniversários e datas especiais ([#69](https://github.com/Findmucker/casa-app/issues/69))
 - 👯 Lista de casa de amigas ([#70](https://github.com/Findmucker/casa-app/issues/70))
 - 🔄 Sync de calendários de aniversários com amigos ([#71](https://github.com/Findmucker/casa-app/issues/71))
-- 🎂 Data de nascimento obrigatória no registo ([#72](https://github.com/Findmucker/casa-app/issues/72))
 - 🎂 Calcular aniversários automáticos por data de nascimento ([#73](https://github.com/Findmucker/casa-app/issues/73))
 
 ### Avatares / Customização
@@ -343,12 +356,10 @@ Projeto pessoal — feito com 💕
 
 ### Técnico / Infra
 - 📱 PWA completa ([#65](https://github.com/Findmucker/casa-app/issues/65))
-- 🔔 Push notifications reais — FCM ([#66](https://github.com/Findmucker/casa-app/issues/66))
 - 📲 Widgets para home screen ([#68](https://github.com/Findmucker/casa-app/issues/68))
 
 ### Features
 - 🏠 Título da casa customizável ([#39](https://github.com/Findmucker/casa-app/issues/39))
 - ❓ Melhorar Tutorial ([#38](https://github.com/Findmucker/casa-app/issues/38))
-- 💬 Enviar notificação entre membros ([#23](https://github.com/Findmucker/casa-app/issues/23))
 - 📍 Location-based notifications ([#18](https://github.com/Findmucker/casa-app/issues/18))
 - 🤖 Assistant Moniquinha ([#19](https://github.com/Findmucker/casa-app/issues/19))
