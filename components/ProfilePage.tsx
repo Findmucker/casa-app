@@ -181,8 +181,9 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
           boxesOpened={boxesOpened}
           user={user}
           level={level}
+          readOnly={isReadOnly}
           onUpdate={() => {
-            const owner = user?.displayName || user?.email || "user";
+            const owner = viewMember || user?.displayName || user?.email || "user";
             const ref = doc(db, "gamification", owner);
             getDoc(ref).then((snap) => {
               if (snap.exists()) {
@@ -207,7 +208,7 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
 import type { RPGStat } from "@/lib/gamification";
 import type { User } from "firebase/auth";
 
-function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate, level }: {
+function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate, level, readOnly }: {
   inventory: InventoryItem[];
   equipped: EquippedItems;
   stats: GameStats;
@@ -215,6 +216,7 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
   user: User | null;
   onUpdate: () => void;
   level: number;
+  readOnly?: boolean;
 }) {
   const owner = user?.displayName || user?.email || "user";
   const pending = getPendingBoxes(stats.points, boxesOpened);
@@ -237,10 +239,12 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
 
   return (
     <div className="mt-2 pb-8">
-      {/* Loot Box Opener */}
+      {/* Loot Box Opener — only for own profile */}
+      {!readOnly && (
       <div className="mx-4 mb-3 rounded-2xl bg-gradient-to-b from-white/70 to-purple-50/70 border border-purple-200/40 p-3 shadow-sm">
         <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
       </div>
+      )}
 
       {/* Equipment - Character Panel */}
       <div className="px-3 mb-4">
@@ -289,10 +293,12 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
         </div>
       </div>
 
-      {/* Inventory Grid — drag items to slots above */}
+      {/* Inventory Grid */}
+      {!readOnly && (
       <div className="px-4">
         <p className="text-[10px] text-purple-500 text-center mb-2">Arrasta items para os slots acima ou toca para equipar</p>
       </div>
+      )}
       <Inventory
         inventory={inventory}
         equipped={equipped}

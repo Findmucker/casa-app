@@ -29,12 +29,13 @@ import { LocaleProvider, useT } from "@/lib/i18n";
 import { useHouseContext } from "@/lib/context";
 import { getLevel, getTitle } from "@/lib/gamification";
 import { AnimeAnimalCharacter, type AvatarConfig } from "@/components/AvatarBuilder";
+import { LOOT_POOL, type EquippedItems } from "@/lib/gamification";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "meals", "calendar", "events", "weather"] as const;
 
-interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; }
+interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; equipped?: EquippedItems; }
 const TAB_EMOJIS = ["✨", "🛒", "🪴", "🏠", "🧘", "💰", "🍽️", "📅", "🎉", "🌤️"];
 const TAB_LABEL_KEYS = [
   "tabs.home", "tabs.shopping", "tabs.small", "tabs.big", "tabs.habits",
@@ -87,7 +88,7 @@ function DashboardInner() {
               const d = snap.data();
               const pts = d.points || 0;
               const { level } = getLevel(pts);
-              return { uid: m.uid, name: m.name, avatar: d.avatar || undefined, level, title: getTitle(level), points: pts };
+              return { uid: m.uid, name: m.name, avatar: d.avatar || undefined, level, title: getTitle(level), points: pts, equipped: d.equipped || undefined };
             }
           } catch { /* ignore */ }
           return { uid: m.uid, name: m.name, level: 1, title: getTitle(1), points: 0 };
@@ -375,7 +376,7 @@ function DashboardInner() {
                             }`}
                             style={{ animationDelay: `${i * 100}ms`, animationFillMode: "both" }}
                           >
-                            <div className={`transition-transform duration-300 ${memberActionTarget?.uid === m.uid ? "animate-bounce-gentle" : ""}`}>
+                            <div className={`relative transition-transform duration-300 ${memberActionTarget?.uid === m.uid ? "animate-bounce-gentle" : ""}`}>
                               {m.avatar ? (
                                 <div className={`w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center ${
                                   darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
@@ -389,6 +390,7 @@ function DashboardInner() {
                                   <span className="text-white font-bold text-base">{m.name.charAt(0).toUpperCase()}</span>
                                 </div>
                               )}
+                              {m.equipped?.helmet && (() => { const h = LOOT_POOL.find(i => i.id === m.equipped!.helmet); return h ? <span className="absolute -top-1 -right-1 text-xs leading-none">{h.emoji}</span> : null; })()}
                             </div>
                             <span className={`text-[10px] font-semibold leading-tight ${darkMode ? "text-purple-700" : "text-rose-700"}`}>{m.name}</span>
                             <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-300 ${
