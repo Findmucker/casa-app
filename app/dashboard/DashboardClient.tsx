@@ -333,68 +333,81 @@ function DashboardInner() {
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                {/* Members widget — special section at top */}
+                {/* Members widget — premium card */}
                 {memberWidgets.length > 0 && (
-                  <div className={`w-full px-4 max-w-sm mb-5 relative`}>
-                    <div className={`rounded-3xl p-4 ${
+                  <div className={`w-full px-4 max-w-sm mb-6 relative`}>
+                    <div className={`rounded-[28px] p-5 shadow-lg ${
                       darkMode
-                        ? "bg-purple-100/40 border border-purple-200/40"
-                        : "bg-gradient-to-br from-rose-50/80 to-pink-50/60 border border-pink-100/40"
+                        ? "bg-gradient-to-br from-purple-100/70 via-purple-50/50 to-indigo-100/60 border border-purple-200/50 shadow-purple-200/20"
+                        : "bg-gradient-to-br from-white/90 via-rose-50/70 to-pink-50/80 border border-pink-200/40 shadow-pink-100/30"
                     }`}>
-                      {/* Title as button */}
+                      {/* Title as elegant button */}
                       <button
                         onClick={() => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); }}
-                        className={`w-full text-center mb-3 py-1.5 rounded-2xl transition-all active:scale-[0.97] ${
+                        className={`w-full flex items-center justify-center gap-2 mb-4 py-2 rounded-2xl transition-all active:scale-[0.97] ${
                           darkMode
-                            ? "hover:bg-purple-200/40"
-                            : "hover:bg-white/50"
+                            ? "bg-purple-200/30 hover:bg-purple-200/50"
+                            : "bg-white/60 hover:bg-white/80 shadow-sm shadow-pink-100/20"
                         }`}
                       >
-                        <span className={`text-[11px] font-semibold uppercase tracking-wider ${darkMode ? "text-purple-500" : "text-rose-400"}`}>
-                          👥 {t("menu.members")}
+                        <span className="text-base">👥</span>
+                        <span className={`text-xs font-bold tracking-wide ${darkMode ? "text-purple-600" : "text-rose-500"}`}>
+                          {t("menu.members")}
                         </span>
-                        <span className={`text-[9px] ml-1.5 ${darkMode ? "text-purple-400" : "text-pink-300"}`}>→</span>
+                        <span className={`text-[10px] ${darkMode ? "text-purple-400" : "text-pink-300"}`}>›</span>
                       </button>
 
-                      {/* Member avatars */}
-                      <div className="flex gap-2.5 justify-center flex-wrap">
+                      {/* Member avatars — larger, more spacious */}
+                      <div className="flex gap-3 justify-center flex-wrap">
                         {memberWidgets.map((m) => (
                           <button
                             key={m.uid}
                             onClick={() => setMemberActionTarget(memberActionTarget?.uid === m.uid ? null : m)}
-                            className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all active:scale-90 min-w-[64px] ${
+                            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all active:scale-90 min-w-[70px] ${
                               memberActionTarget?.uid === m.uid
                                 ? darkMode
-                                  ? "bg-purple-200/70 border border-purple-300/60 shadow-md"
-                                  : "bg-white/90 border border-pink-200/60 shadow-md"
-                                : "hover:bg-white/40"
+                                  ? "bg-purple-200/80 border border-purple-300/70 shadow-lg shadow-purple-200/30 scale-105"
+                                  : "bg-white border border-pink-200/70 shadow-lg shadow-pink-100/40 scale-105"
+                                : darkMode
+                                  ? "hover:bg-purple-200/30"
+                                  : "hover:bg-white/60"
                             }`}
                           >
                             {m.avatar ? (
-                              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-rose-200/50 bg-white flex items-center justify-center">
-                                <AnimeAnimalCharacter config={m.avatar} size={34} />
+                              <div className={`w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center ${
+                                darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
+                              }`}>
+                                <AnimeAnimalCharacter config={m.avatar} size={40} />
                               </div>
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center border-2 border-rose-200/50">
-                                <span className="text-white font-bold text-sm">{m.name.charAt(0).toUpperCase()}</span>
+                              <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center ${
+                                darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
+                              }`}>
+                                <span className="text-white font-bold text-base">{m.name.charAt(0).toUpperCase()}</span>
                               </div>
                             )}
-                            <span className={`text-[9px] font-medium leading-tight ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{m.name}</span>
-                            <span className={`text-[8px] ${darkMode ? "text-purple-400" : "text-pink-400"}`}>Nv.{m.level}</span>
+                            <span className={`text-[10px] font-semibold leading-tight ${darkMode ? "text-purple-700" : "text-rose-700"}`}>{m.name}</span>
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                              darkMode ? "bg-purple-200/50" : "bg-pink-100/60"
+                            }`}>
+                              <span className={`text-[8px] font-bold ${darkMode ? "text-purple-600" : "text-pink-500"}`}>Nv.{m.level}</span>
+                            </div>
                           </button>
                         ))}
                       </div>
 
                       {/* Action popup for selected member */}
                       {memberActionTarget && (
-                        <div className={`mt-3 flex gap-2 justify-center animate-fade-in-up`}>
+                        <div className={`mt-4 pt-3 flex gap-2.5 justify-center animate-fade-in-up border-t ${
+                          darkMode ? "border-purple-200/30" : "border-pink-100/40"
+                        }`}>
                           {memberActionTarget.uid !== user?.uid && (
                             <button
                               onClick={() => { setHouseMembersMessageTo(memberActionTarget.name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowHouseMembers(true); }}
-                              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[10px] font-medium transition-all active:scale-90 ${
+                              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[11px] font-semibold transition-all active:scale-90 shadow-sm ${
                                 darkMode
-                                  ? "bg-purple-200/60 text-purple-700 hover:bg-purple-200"
-                                  : "bg-white/70 text-rose-600 border border-pink-100/40 hover:bg-white"
+                                  ? "bg-purple-200/70 text-purple-700 hover:bg-purple-200 shadow-purple-200/20"
+                                  : "bg-white text-rose-600 border border-pink-100/50 hover:shadow-md shadow-pink-100/20"
                               }`}
                             >
                               <span>💌</span> {t("menu.message")}
@@ -402,10 +415,10 @@ function DashboardInner() {
                           )}
                           <button
                             onClick={() => { setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowGamification(true); }}
-                            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[10px] font-medium transition-all active:scale-90 ${
+                            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[11px] font-semibold transition-all active:scale-90 shadow-sm ${
                               darkMode
-                                ? "bg-purple-200/60 text-purple-700 hover:bg-purple-200"
-                                : "bg-white/70 text-rose-600 border border-pink-100/40 hover:bg-white"
+                                ? "bg-purple-200/70 text-purple-700 hover:bg-purple-200 shadow-purple-200/20"
+                                : "bg-white text-rose-600 border border-pink-100/50 hover:shadow-md shadow-pink-100/20"
                             }`}
                           >
                             <span>👤</span> {t("menu.profile")}
