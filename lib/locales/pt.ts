@@ -110,6 +110,7 @@ export const pt = {
   "expenses.addExpense": "Adicionar gasto",
   "expenses.byCategory": "Por categoria",
   "expenses.whoPaid": "Quem pagou",
+  "expenses.charts.monthly": "Evolução mensal",
 
   // Meals
   "meals.title": "Receitinhas",

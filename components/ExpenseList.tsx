@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useCollection, type ExpenseItem, type IncomeItem, type SavingsGoal } from "@/lib/hooks";
 import { useMemberNames } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
+import ExpenseCharts from "./ExpenseCharts";
 import { useT } from "@/lib/i18n";
 
 const EXPENSE_CATEGORIES = [
@@ -63,19 +64,6 @@ export default function ExpenseList() {
   const totalExpenses = useMemo(() => monthExpenses.reduce((s, i) => s + i.amount, 0), [monthExpenses]);
   const totalIncome = useMemo(() => monthIncomes.reduce((s, i) => s + i.amount, 0), [monthIncomes]);
   const balance = totalIncome - totalExpenses;
-
-  const byCategory = useMemo(() => {
-    const map: Record<string, number> = {};
-    monthExpenses.forEach((i) => { map[i.category] = (map[i.category] || 0) + i.amount; });
-    return map;
-  }, [monthExpenses]);
-
-  const byPayer = useMemo(() => {
-    const map: Record<string, number> = {};
-    memberNames.forEach((m) => { map[m.key] = 0; });
-    monthExpenses.forEach((i) => { map[i.paidBy] = (map[i.paidBy] || 0) + i.amount; });
-    return map;
-  }, [monthExpenses, memberNames]);
 
   const changeMonth = (delta: number) => {
     const [y, m] = viewMonth.split("-").map(Number);
@@ -267,44 +255,15 @@ export default function ExpenseList() {
         {/* EXPENSES TAB */}
         {!loading && subTab === "expenses" && (
           <>
-            {monthExpenses.length > 0 && (
-              <>
-                {/* By category */}
-                <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
-                  <p className="text-xs font-semibold text-emerald-600 mb-3">{t("expenses.byCategory")}</p>
-                  <div className="space-y-2">
-                    {EXPENSE_CATEGORIES.filter((c) => byCategory[c.id]).map((cat) => {
-                      const amount = byCategory[cat.id] || 0;
-                      const pct = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
-                      return (
-                        <div key={cat.id} className="flex items-center gap-2">
-                          <span className="text-sm w-6">{cat.emoji}</span>
-                          <span className="text-xs text-emerald-700 w-24 truncate">{cat.label}</span>
-                          <div className="flex-1 h-2 bg-emerald-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-emerald-300 to-teal-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
-                          </div>
-                          <span className="text-xs font-medium text-emerald-600 w-16 text-right">{amount.toFixed(0)}€</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* By payer */}
-                <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
-                  <p className="text-xs font-semibold text-emerald-600 mb-3">{t("expenses.whoPaid")}</p>
-                  <div className="flex gap-3">
-                    {memberNames.map((m) => (
-                      <div key={m.key} className="flex-1 text-center">
-                        <div className="text-lg">{m.emoji}</div>
-                        <p className="text-sm font-bold text-emerald-700">{(byPayer[m.key] || 0).toFixed(0)}€</p>
-                        <p className="text-[10px] text-emerald-400">{m.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+            {/* Charts */}
+            <ExpenseCharts
+              monthExpenses={monthExpenses}
+              allExpenses={expenses}
+              allIncomes={incomes}
+              categories={EXPENSE_CATEGORIES}
+              memberNames={memberNames}
+              viewMonth={viewMonth}
+            />
 
             {/* Expense list */}
             <div className="space-y-2">

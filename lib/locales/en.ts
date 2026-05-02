@@ -112,6 +112,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "expenses.addExpense": "Add expense",
   "expenses.byCategory": "By category",
   "expenses.whoPaid": "Who paid",
+  "expenses.charts.monthly": "Monthly overview",
 
   // Meals
   "meals.title": "Meals",
