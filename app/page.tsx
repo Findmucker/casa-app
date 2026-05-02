@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useAuth, useHouse, createHouse, joinHouse } from "@/lib/auth";
+import { useAuth, useHouse, createHouse, joinHouse, checkNeedsBirthDate, saveBirthDate } from "@/lib/auth";
 import { HouseIdContext } from "@/lib/hooks";
 import { HouseProvider } from "@/lib/context";
 import AuthScreen from "@/components/AuthScreen";
+import BirthDatePrompt from "@/components/BirthDatePrompt";
 import HouseSetup from "@/components/HouseSetup";
 import Greeting from "@/components/Greeting";
 import Dashboard from "./dashboard/page";
@@ -16,13 +17,21 @@ export default function Home() {
   const { houseId, house, loading: houseLoading } = useHouse(user?.uid || null);
   const [showGreeting, setShowGreeting] = useState(true);
   const [userName, setUserName] = useState("");
+  const [needsBirthDate, setNeedsBirthDate] = useState(false);
+  const [checkingBirthDate, setCheckingBirthDate] = useState(false);
 
-  // Load user name
+  // Load user name + check if birthDate is missing
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists()) setUserName(snap.data().name || user.displayName || "");
+      if (snap.exists()) {
+        setUserName(snap.data().name || user.displayName || "");
+      }
+      setCheckingBirthDate(true);
+      const missing = await checkNeedsBirthDate(user.uid);
+      setNeedsBirthDate(missing);
+      setCheckingBirthDate(false);
     };
     load();
   }, [user]);
@@ -32,7 +41,7 @@ export default function Home() {
   }, []);
 
   // Loading
-  if (authLoading || (user && houseLoading)) {
+  if (authLoading || (user && houseLoading) || checkingBirthDate) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50">
         <div className="text-5xl animate-float">🏡</div>
@@ -45,8 +54,21 @@ export default function Home() {
     return (
       <AuthScreen
         onLogin={async (email, pw) => { await login(email, pw); }}
-        onRegister={async (name, email, pw) => { await register(name, email, pw); setUserName(name); }}
+        onRegister={async (name, email, pw, birthDate) => { await register(name, email, pw, birthDate); setUserName(name); }}
         onGoogle={async () => { await loginWithGoogle(); }}
+      />
+    );
+  }
+
+  // Missing birth date — prompt before continuing
+  if (needsBirthDate) {
+    return (
+      <BirthDatePrompt
+        userName={userName || user.displayName || "Amigo"}
+        onSave={async (birthDate) => {
+          await saveBirthDate(user.uid, birthDate);
+          setNeedsBirthDate(false);
+        }}
       />
     );
   }

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 interface AuthScreenProps {
   onLogin: (email: string, password: string) => Promise<void>;
-  onRegister: (name: string, email: string, password: string) => Promise<void>;
+  onRegister: (name: string, email: string, password: string, birthDate: string) => Promise<void>;
   onGoogle: () => Promise<void>;
 }
 
@@ -13,6 +13,7 @@ export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreen
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +25,8 @@ export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreen
         await onLogin(email, password);
       } else {
         if (!name.trim()) { setError("Nome é obrigatório"); setLoading(false); return; }
-        await onRegister(name.trim(), email, password);
+        if (!birthDate) { setError("Data de nascimento é obrigatória"); setLoading(false); return; }
+        await onRegister(name.trim(), email, password, birthDate);
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erro desconhecido";
@@ -75,13 +77,29 @@ export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreen
         {/* Form */}
         <div className="w-full space-y-3">
           {mode === "register" && (
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="O teu nome..."
-              className="w-full rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50"
-            />
+            <>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="O teu nome..."
+                className="w-full rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50"
+              />
+              <div className="relative">
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  className="w-full rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50"
+                />
+                {!birthDate && (
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-pink-300 pointer-events-none">
+                    🎂 Data de nascimento
+                  </span>
+                )}
+              </div>
+            </>
           )}
           <input
             type="email"

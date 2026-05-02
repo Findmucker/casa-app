@@ -29,12 +29,13 @@ export function useAuth() {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string, birthDate?: string) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     // Create user doc
     await setDoc(doc(db, "users", cred.user.uid), {
       name,
       email,
+      birthDate: birthDate || null,
       avatar: "👤",
       houseId: null,
       createdAt: serverTimestamp(),
@@ -61,6 +62,17 @@ export function useAuth() {
   const logout = () => signOut(auth);
 
   return { user, loading, login, register, loginWithGoogle, logout };
+}
+
+// ─── Birth date migration for existing users ────────────────────
+export async function checkNeedsBirthDate(uid: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, "users", uid));
+  if (!snap.exists()) return false;
+  return !snap.data().birthDate;
+}
+
+export async function saveBirthDate(uid: string, birthDate: string): Promise<void> {
+  await updateDoc(doc(db, "users", uid), { birthDate });
 }
 
 // ─── useHouse ────────────────────────────────────────────────────
