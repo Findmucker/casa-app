@@ -12,6 +12,7 @@ import AutocompleteInput from "./AutocompleteInput";
 import MiniAvatar from "./MiniAvatar";
 import SwipeableRow from "./SwipeableRow";
 import { useUndo } from "@/lib/useUndoStack";
+import { useT } from "@/lib/i18n";
 
 const COMMON_COISINHAS = [
   "Aspirador", "Toalhas", "Cortinas", "Almofadas", "Velas", "Plantas",
@@ -21,6 +22,7 @@ const COMMON_COISINHAS = [
 ];
 
 export default function PriorityList() {
+  const { t } = useT();
   const memberNames = useMemberNames();
   const { items, loading, add, update, remove } = useCollection<SmallPriorityItem>(
     "priorities_small",
@@ -153,7 +155,7 @@ export default function PriorityList() {
             value={newName}
             onChange={setNewName}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            placeholder="Coisinha nova..."
+            placeholder={t("priority.placeholder")}
             suggestions={nameSuggestions}
             className="flex-1 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
           />
@@ -169,7 +171,7 @@ export default function PriorityList() {
           type="number"
           value={newPrice}
           onChange={(e) => setNewPrice(e.target.value)}
-          placeholder="Preço estimado (opcional)"
+          placeholder={t("priority.price")}
           className="w-full rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-2 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
         />
       </div>
@@ -179,15 +181,15 @@ export default function PriorityList() {
         {loading && (
           <div className="text-center text-pink-300 py-12 animate-pulse-soft">
             <div className="text-3xl mb-2">🪴</div>
-            <p className="text-sm">A carregar...</p>
+            <p className="text-sm">{t("common.loading")}</p>
           </div>
         )}
 
         {!loading && items.length === 0 && (
           <div className="text-center text-pink-300 py-12">
             <div className="text-5xl mb-3 animate-float">🪴</div>
-            <p className="text-sm">Nenhuma coisinha por agora!</p>
-            <p className="text-xs text-pink-200 mt-1">Adiciona algo em cima</p>
+            <p className="text-sm">{t("priority.empty")}</p>
+            <p className="text-xs text-pink-200 mt-1">{t("priority.emptyHint")}</p>
           </div>
         )}
 
@@ -235,7 +237,7 @@ export default function PriorityList() {
             }}
             className="text-[11px] text-pink-400 hover:text-pink-600 transition-colors mb-2 self-end"
           >
-            {COISINHAS_CATEGORY_ORDER.filter((c) => items.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c)).every((c) => collapsedCategories.has(c)) ? "▼ Expandir tudo" : "▲ Minimizar tudo"}
+            {COISINHAS_CATEGORY_ORDER.filter((c) => items.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c)).every((c) => collapsedCategories.has(c)) ? "▼ " + t("priority.expandAll") : "▲ " + t("priority.collapseAll")}
           </button>
         )}
         {!loading && items.length > 0 && COISINHAS_CATEGORY_ORDER.map((cat) => {
@@ -392,8 +394,8 @@ export default function PriorityList() {
                             className="rounded-xl border border-pink-200/60 bg-white px-3 py-1.5 text-xs text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
                           />
                           <div className="flex gap-1.5">
-                            <button onClick={() => saveEdit(item)} className="text-xs bg-gradient-to-r from-pink-400 to-rose-400 text-white px-3 py-1 rounded-lg active:scale-95 transition-all">Guardar</button>
-                            <button onClick={() => setEditingId(null)} className="text-xs text-pink-400 px-2 py-1 hover:text-pink-600 transition-colors">Cancelar</button>
+                            <button onClick={() => saveEdit(item)} className="text-xs bg-gradient-to-r from-pink-400 to-rose-400 text-white px-3 py-1 rounded-lg active:scale-95 transition-all">{t("common.save")}</button>
+                            <button onClick={() => setEditingId(null)} className="text-xs text-pink-400 px-2 py-1 hover:text-pink-600 transition-colors">{t("common.cancel")}</button>
                           </div>
                         </div>
                       )}
@@ -410,8 +412,8 @@ export default function PriorityList() {
                             autoFocus
                           />
                           <div className="flex gap-2 mt-2">
-                            <button onClick={() => { update(item.id, { notes: notesText }); setEditingNotes(null); }} className="text-xs bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 py-1.5 rounded-xl shadow-sm active:scale-95 transition-all">Guardar</button>
-                            <button onClick={() => setEditingNotes(null)} className="text-xs text-pink-400 px-3 py-1.5 hover:text-pink-600 transition-colors">Cancelar</button>
+                            <button onClick={() => { update(item.id, { notes: notesText }); setEditingNotes(null); }} className="text-xs bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 py-1.5 rounded-xl shadow-sm active:scale-95 transition-all">{t("common.save")}</button>
+                            <button onClick={() => setEditingNotes(null)} className="text-xs text-pink-400 px-3 py-1.5 hover:text-pink-600 transition-colors">{t("common.cancel")}</button>
                           </div>
                         </div>
                       )}

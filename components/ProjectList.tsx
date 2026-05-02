@@ -12,6 +12,7 @@ import {
 } from "@/lib/categories";
 import SwipeableRow from "./SwipeableRow";
 import { useUndo } from "@/lib/useUndoStack";
+import { useT } from "@/lib/i18n";
 
 const STATUS_LABELS = {
   pendente: { label: "Pendente", color: "bg-purple-100/80 text-purple-500", emoji: "💜" },
@@ -20,6 +21,7 @@ const STATUS_LABELS = {
 };
 
 export default function ProjectList() {
+  const { t } = useT();
   const { items, loading, add, update, remove } = useCollection<BigPriorityItem>(
     "priorities_big",
     "order"
@@ -359,11 +361,11 @@ export default function ProjectList() {
                     <button
                       onClick={() => saveField(item)}
                       className="text-xs bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 py-1.5 rounded-xl shadow-sm active:scale-95 transition-all"
-                    >Guardar</button>
+                    >{t("common.save")}</button>
                     <button
                       onClick={() => setEditingField(null)}
                       className="text-xs text-pink-400 px-3 py-1.5 hover:text-pink-600 transition-colors"
-                    >Cancelar</button>
+                    >{t("common.cancel")}</button>
                   </div>
                 </div>
               ) : (
@@ -395,7 +397,7 @@ export default function ProjectList() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            placeholder="Novo projetinho..."
+            placeholder={t("projects.placeholder")}
             className="flex-1 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
           />
           <button
@@ -413,14 +415,14 @@ export default function ProjectList() {
         {loading && (
           <div className="text-center text-pink-300 py-12 animate-pulse-soft">
             <div className="text-3xl mb-2">🏠</div>
-            <p className="text-sm">A carregar...</p>
+            <p className="text-sm">{t("common.loading")}</p>
           </div>
         )}
 
         {!loading && items.length === 0 && (
           <div className="text-center text-pink-300 py-12">
             <div className="text-5xl mb-3 animate-float">🏠</div>
-            <p className="text-sm">Nenhum projetinho ainda!</p>
+            <p className="text-sm">{t("projects.empty")}</p>
             <p className="text-xs text-pink-200 mt-1">Adiciona algo em cima</p>
           </div>
         )}
@@ -434,7 +436,7 @@ export default function ProjectList() {
             }}
             className="text-[11px] text-pink-400 hover:text-pink-600 transition-colors mb-2 self-end"
           >
-            {Object.keys(groupedByCategory).every((c) => collapsedCategories.has(c)) ? "▼ Expandir tudo" : "▲ Minimizar tudo"}
+            {Object.keys(groupedByCategory).every((c) => collapsedCategories.has(c)) ? "▼ " + t("priority.expandAll") : "▲ " + t("priority.collapseAll")}
           </button>
         )}
 

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useCollection, type ExpenseItem } from "@/lib/hooks";
 import { useMemberNames } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
+import { useT } from "@/lib/i18n";
 
 const EXPENSE_CATEGORIES = [
   { id: "casa", emoji: "🏠", label: "Casa" },
@@ -16,6 +17,7 @@ const EXPENSE_CATEGORIES = [
 ];
 
 export default function ExpenseList() {
+  const { t } = useT();
   const memberNames = useMemberNames();
   const { items, loading, add, remove } = useCollection<ExpenseItem>("expenses", "createdAt");
   const [newName, setNewName] = useState("");
@@ -83,7 +85,7 @@ export default function ExpenseList() {
       {/* Header */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-emerald-100/40">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-emerald-600">💰 Gastinhos</h2>
+          <h2 className="text-lg font-bold text-emerald-600">💰 {t("expenses.title")}</h2>
           <button
             onClick={() => setShowAdd(!showAdd)}
             className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 text-white flex items-center justify-center text-lg active:scale-90 transition-all shadow-sm"
@@ -102,7 +104,7 @@ export default function ExpenseList() {
         {/* Total */}
         <div className="mt-2 text-center">
           <span className="text-2xl font-bold text-emerald-600">{totalMonth.toFixed(2)}€</span>
-          <p className="text-[11px] text-emerald-400">total este mês</p>
+          <p className="text-[11px] text-emerald-400">{t("expenses.total")} este mês</p>
         </div>
 
         {/* Add form */}
@@ -167,7 +169,7 @@ export default function ExpenseList() {
         {loading && (
           <div className="text-center text-emerald-300 py-12 animate-pulse-soft">
             <div className="text-3xl mb-2">💰</div>
-            <p className="text-sm">A carregar...</p>
+            <p className="text-sm">{t("common.loading")}</p>
           </div>
         )}
 
@@ -246,7 +248,7 @@ export default function ExpenseList() {
         {!loading && monthItems.length === 0 && (
           <div className="text-center text-emerald-300 py-12">
             <div className="text-5xl mb-3 animate-float">💰</div>
-            <p className="text-sm">Nenhum gasto este mês!</p>
+            <p className="text-sm">{t("expenses.empty")}</p>
           </div>
         )}
       </div>

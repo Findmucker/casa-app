@@ -25,23 +25,28 @@ import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem
 import { useAuth } from "@/lib/auth";
 import { useTimeTheme } from "@/lib/themes";
 import { registerPushToken } from "@/lib/notifications";
+import { LocaleProvider, useT } from "@/lib/i18n";
 
-const ALL_TABS = [
-  { id: "home", label: "Início", emoji: "✨" },
-  { id: "shopping", label: "Comprinhas", emoji: "🛒" },
-  { id: "small", label: "Coisinhas", emoji: "🪴" },
-  { id: "big", label: "Projetinhos", emoji: "🏠" },
-  { id: "habits", label: "Rotinazinhas", emoji: "💊" },
-  { id: "expenses", label: "Gastinhos", emoji: "💰" },
-  { id: "meals", label: "Receitinhas", emoji: "🍽️" },
-  { id: "calendar", label: "Calendarzinho", emoji: "📅" },
-  { id: "events", label: "Eventinhos", emoji: "🎉" },
-  { id: "weather", label: "Tempinho", emoji: "🌤️" },
+const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "meals", "calendar", "events", "weather"] as const;
+const TAB_EMOJIS = ["✨", "🛒", "🪴", "🏠", "💊", "💰", "🍽️", "📅", "🎉", "🌤️"];
+const TAB_LABEL_KEYS = [
+  "tabs.home", "tabs.shopping", "tabs.small", "tabs.big", "tabs.habits",
+  "tabs.expenses", "tabs.meals", "tabs.calendar", "tabs.events", "tabs.weather",
 ] as const;
 
-type TabId = (typeof ALL_TABS)[number]["id"];
+type TabId = (typeof TAB_IDS)[number];
 
 export default function Dashboard() {
+  return (
+    <LocaleProvider>
+      <DashboardInner />
+    </LocaleProvider>
+  );
+}
+
+function DashboardInner() {
+  const { t, locale, setLocale } = useT();
+  const ALL_TABS = TAB_IDS.map((id, i) => ({ id, label: t(TAB_LABEL_KEYS[i]), emoji: TAB_EMOJIS[i] }));
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
   const [showPanel, setShowPanel] = useState(false);
@@ -100,8 +105,8 @@ export default function Dashboard() {
 
   const switchTab = useCallback((id: TabId) => {
     if (id === activeTab && !showPanel) return;
-    const currentIdx = ALL_TABS.findIndex((t) => t.id === activeTab);
-    const nextIdx = ALL_TABS.findIndex((t) => t.id === id);
+    const currentIdx = TAB_IDS.indexOf(activeTab);
+    const nextIdx = TAB_IDS.indexOf(id);
     setSlideDir(nextIdx > currentIdx ? "left" : "right");
     setActiveTab(id);
     setShowPanel(false);
@@ -126,11 +131,11 @@ export default function Dashboard() {
     // Only swipe if horizontal movement > 80px and > vertical
     if (Math.abs(dx) < 80 || Math.abs(dx) < Math.abs(dy)) return;
 
-    const currentIdx = ALL_TABS.findIndex((t) => t.id === activeTab);
-    if (dx < 0 && currentIdx < ALL_TABS.length - 1) {
-      switchTab(ALL_TABS[currentIdx + 1].id);
+    const currentIdx = TAB_IDS.indexOf(activeTab);
+    if (dx < 0 && currentIdx < TAB_IDS.length - 1) {
+      switchTab(TAB_IDS[currentIdx + 1]);
     } else if (dx > 0 && currentIdx > 0) {
-      switchTab(ALL_TABS[currentIdx - 1].id);
+      switchTab(TAB_IDS[currentIdx - 1]);
     }
   };
 
@@ -164,7 +169,7 @@ export default function Dashboard() {
             darkMode ? "text-purple-300 hover:text-purple-200" : "text-rose-400 hover:text-rose-500"
           }`}
         >
-          🏡 A Nossa Casinha
+          🏡 {t("header.title")}
         </button>
         <button
           onClick={() => setShowGamification(true)}
@@ -212,7 +217,7 @@ export default function Dashboard() {
                   : "from-pink-50/98 via-rose-50/98 to-purple-50/98"
           }`}>
             {/* Navigation section */}
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>Navegar</p>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.navigate")}</p>
             <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
               {ALL_TABS.map((section) => (
                 <button
@@ -238,15 +243,11 @@ export default function Dashboard() {
             <div className={`w-32 h-px my-6 ${darkMode ? "bg-purple-700/50" : "bg-pink-200/60"}`} />
 
             {/* Options section */}
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>Gestão</p>
-            <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.communication")}</p>
+            <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
               {[
-                { emoji: "💌", label: "Mensagem", action: () => { setShowPanel(false); setShowSendMessage(true); } },
-                { emoji: "📜", label: "Histórico", action: () => { setShowPanel(false); setShowHistory(true); } },
-                { emoji: "🔗", label: "Convidar", action: () => { setShowPanel(false); setShowInvite(true); } },
-                { emoji: "👥", label: "Membros", action: () => { setShowPanel(false); setShowHouseMembers(true); } },
-                { emoji: "⚙️", label: "Manutenção", action: () => { setShowPanel(false); setShowMaintenance(true); } },
-                { emoji: "❓", label: "Tutorial", action: () => { setShowPanel(false); setShowTutorial(true); } },
+                { emoji: "💌", label: t("menu.message"), action: () => { setShowPanel(false); setShowSendMessage(true); } },
+                { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setShowHistory(true); } },
               ].map((item) => (
                 <button
                   key={item.label}
@@ -263,6 +264,78 @@ export default function Dashboard() {
               ))}
             </div>
 
+            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-700/30" : "bg-pink-200/40"}`} />
+
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.house")}</p>
+            <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
+              {[
+                { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setShowInvite(true); } },
+                { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setShowHouseMembers(true); } },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
+                    darkMode
+                      ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                      : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                  }`}
+                >
+                  <span className="text-xl">{item.emoji}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{item.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-700/30" : "bg-pink-200/40"}`} />
+
+            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>{t("menu.settings")}</p>
+            <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
+              {[
+                { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setShowMaintenance(true); } },
+                { emoji: "❓", label: t("menu.tutorial"), action: () => { setShowPanel(false); setShowTutorial(true); } },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
+                    darkMode
+                      ? "bg-slate-800/60 border border-purple-800/30 hover:bg-purple-900/40"
+                      : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                  }`}
+                >
+                  <span className="text-xl">{item.emoji}</span>
+                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-200" : "text-rose-600"}`}>{item.label}</span>
+                </button>
+              ))}
+              {/* Language toggle */}
+              <div className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl ${
+                darkMode
+                  ? "bg-slate-800/60 border border-purple-800/30"
+                  : "bg-white/60 border border-pink-100/30"
+              }`}>
+                <span className="text-xl">🌐</span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setLocale("pt")}
+                    className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
+                      locale === "pt"
+                        ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
+                        : darkMode ? "text-purple-400" : "text-pink-400"
+                    }`}
+                  >PT</button>
+                  <button
+                    onClick={() => setLocale("en")}
+                    className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
+                      locale === "en"
+                        ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
+                        : darkMode ? "text-purple-400" : "text-pink-400"
+                    }`}
+                  >EN</button>
+                </div>
+              </div>
+            </div>
+
             {/* Sair — isolated */}
             <div className="mt-5">
               <button
@@ -275,7 +348,7 @@ export default function Dashboard() {
                 }`}
               >
                 <span className="text-xl">🚪</span>
-                <span className={`text-[10px] font-medium ${darkMode ? "text-red-400" : "text-red-500"}`}>Sair</span>
+                <span className={`text-[10px] font-medium ${darkMode ? "text-red-400" : "text-red-500"}`}>{t("menu.logout")}</span>
               </button>
             </div>
           </div>

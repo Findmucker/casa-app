@@ -11,6 +11,7 @@ import {
 import AutocompleteInput from "./AutocompleteInput";
 import SwipeableRow from "./SwipeableRow";
 import { useUndo } from "@/lib/useUndoStack";
+import { useT } from "@/lib/i18n";
 
 const COMMON_SHOPPING = [
   "Leite", "Ovos", "Pão", "Manteiga", "Queijo", "Fiambre", "Iogurtes",
@@ -128,6 +129,7 @@ const ItemRow = memo(function ItemRow({
 });
 
 export default function ShoppingList() {
+  const { t } = useT();
   const { items, loading, add, update, remove } =
     useCollection<ShoppingItem>("shopping");
   const [newItem, setNewItem] = useState("");
@@ -250,7 +252,7 @@ export default function ShoppingList() {
         {totalAll > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-rose-400">
-              🛒 {totalDone}/{totalAll} comprinhas feitas!
+              🛒 {totalDone}/{totalAll} {t("shopping.progress")}
             </span>
             <div className="flex-1 h-2 bg-pink-100/60 rounded-full overflow-hidden">
               <div
@@ -270,7 +272,7 @@ export default function ShoppingList() {
             value={newItem}
             onChange={setNewItem}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            placeholder="O que falta comprar?"
+            placeholder={t("shopping.placeholder")}
             suggestions={suggestions}
             className="flex-1 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
           />
@@ -292,7 +294,7 @@ export default function ShoppingList() {
           }`}
         >
           <span>{newUrgent ? "🔥" : "🕊️"}</span>
-          <span>{newUrgent ? "Urgente — comprar hoje!" : "Normal — pode esperar"}</span>
+          <span>{newUrgent ? t("shopping.urgent") : t("shopping.normal")}</span>
         </button>
       </div>
 
@@ -301,15 +303,15 @@ export default function ShoppingList() {
         {loading && (
           <div className="text-center text-pink-300 py-12 animate-pulse-soft">
             <div className="text-3xl mb-2">🛒</div>
-            <p className="text-sm">A carregar...</p>
+            <p className="text-sm">{t("common.loading")}</p>
           </div>
         )}
 
         {!loading && undone.length === 0 && done.length === 0 && (
           <div className="text-center text-pink-300 py-12">
             <div className="text-5xl mb-3 animate-float">🛒</div>
-            <p className="text-sm">Nada para comprar!</p>
-            <p className="text-xs text-pink-200 mt-1">Adiciona algo em cima</p>
+            <p className="text-sm">{t("shopping.empty")}</p>
+            <p className="text-xs text-pink-200 mt-1">{t("shopping.emptyHint")}</p>
           </div>
         )}
 
@@ -336,7 +338,7 @@ export default function ShoppingList() {
             onClick={toggleAll}
             className="text-[11px] text-pink-400 hover:text-pink-600 transition-colors self-end"
           >
-            {allCollapsed ? "▼ Expandir tudo" : "▲ Minimizar tudo"}
+            {allCollapsed ? "▼ " + t("priority.expandAll") : "▲ " + t("priority.collapseAll")}
           </button>
         )}
         {Object.entries(groupedByCategory).map(([category, catItems]) => {
@@ -393,7 +395,7 @@ export default function ShoppingList() {
         {done.length > 0 && (
           <>
             <div className="text-xs font-semibold text-pink-300 uppercase tracking-wider pt-4 pb-1 flex items-center gap-2">
-              <span>✓ Compradinho</span>
+              <span>✓ {t("shopping.done")}</span>
               <span className="bg-pink-100 text-pink-400 px-2 py-0.5 rounded-full text-[10px]">
                 {done.length}
               </span>

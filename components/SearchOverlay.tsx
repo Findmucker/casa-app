@@ -9,6 +9,7 @@ import {
   type HabitItem,
   type ExpenseItem,
 } from "@/lib/hooks";
+import { useT } from "@/lib/i18n";
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -24,6 +25,7 @@ interface SearchResult {
 }
 
 export default function SearchOverlay({ onClose, onNavigate }: SearchOverlayProps) {
+  const { t } = useT();
   const [query, setQuery] = useState("");
 
   // Only open listeners when user has typed 2+ chars
@@ -79,7 +81,7 @@ export default function SearchOverlay({ onClose, onNavigate }: SearchOverlayProp
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Procurar em tudo..."
+            placeholder={t("search.placeholder")}
             className="flex-1 text-base text-rose-800 placeholder-pink-300 focus:outline-none bg-transparent"
             autoFocus
           />
@@ -88,7 +90,7 @@ export default function SearchOverlay({ onClose, onNavigate }: SearchOverlayProp
             aria-label="Fechar pesquisa"
             className="text-sm text-pink-400 hover:text-pink-600 px-2 py-1 transition-colors"
           >
-            Cancelar
+            {t("common.cancel")}
           </button>
         </div>
       </div>

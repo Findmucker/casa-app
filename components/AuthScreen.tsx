@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useT } from "@/lib/i18n";
 
 interface AuthScreenProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -9,6 +10,7 @@ interface AuthScreenProps {
 }
 
 export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreenProps) {
+  const { locale, setLocale } = useT();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -42,6 +44,17 @@ export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreen
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 p-4">
+      {/* Language toggle */}
+      <div className="absolute top-4 right-4 flex gap-1">
+        <button
+          onClick={() => setLocale("pt")}
+          className={`text-xs px-2.5 py-1 rounded-full font-bold transition-all ${locale === "pt" ? "bg-rose-400 text-white" : "bg-white/60 text-rose-400"}`}
+        >🇵🇹 PT</button>
+        <button
+          onClick={() => setLocale("en")}
+          className={`text-xs px-2.5 py-1 rounded-full font-bold transition-all ${locale === "en" ? "bg-rose-400 text-white" : "bg-white/60 text-rose-400"}`}
+        >🇬🇧 EN</button>
+      </div>
       <div className="w-full max-w-sm flex flex-col items-center gap-6 animate-fade-in-up">
         {/* Logo */}
         <div className="animate-float">

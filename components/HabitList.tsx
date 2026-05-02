@@ -6,6 +6,7 @@ import { getToday, scheduleRepeatingNotification, cancelNotification, registerPu
 import { awardPoints, updateStreak } from "@/lib/gamification";
 import { useMemberNames, useHouseContext } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
+import { useT } from "@/lib/i18n";
 
 const DEFAULT_HABITS: { name: string; emoji: string; reminderTime?: string }[] = [];
 
@@ -27,6 +28,7 @@ function isActiveToday(days?: number[]): boolean {
 }
 
 export default function HabitList() {
+  const { t } = useT();
   const memberNames = useMemberNames();
   const { userName } = useHouseContext();
   const { items: habits, loading, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
@@ -159,16 +161,16 @@ export default function HabitList() {
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-purple-100/40">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-purple-600">
-            {allChecked ? "✨ Tudo feito hoje!" : "💊 Rotinazinhas"}
+            {allChecked ? "✨ " + t("habits.allDone") : "💊 " + t("habits.title")}
           </h2>
           <div className="flex gap-2">
             {!notificationsEnabled && (
               <button
                 onClick={enableNotifications}
-                aria-label="Ativar lembretes"
+                aria-label={t("habits.enableReminders")}
                 className="text-xs bg-purple-100 text-purple-500 px-3 py-1.5 rounded-full hover:bg-purple-200 transition-all active:scale-95"
               >
-                🔔 Ativar lembretes
+                🔔 {t("habits.enableReminders")}
               </button>
             )}
             <button
@@ -206,7 +208,7 @@ export default function HabitList() {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                placeholder="Nome do hábito..."
+                placeholder={t("habits.placeholder")}
                 className="flex-1 rounded-2xl border border-purple-200/60 bg-white/80 px-4 py-2.5 text-sm text-purple-800 placeholder-purple-300 focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100/50"
                 autoFocus
               />
@@ -233,12 +235,12 @@ export default function HabitList() {
             {/* Days selector */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-purple-500 font-medium">Dias da semana</span>
+                <span className="text-xs text-purple-500 font-medium">{t("common.weekdays")}</span>
                 <button
                   onClick={() => setNewDays(newDays.length === 7 ? [] : [0,1,2,3,4,5,6])}
                   className="text-[10px] text-purple-400 hover:text-purple-600 transition-colors"
                 >
-                  {newDays.length === 0 || newDays.length === 7 ? "Todos os dias ✓" : "Selecionar todos"}
+                  {newDays.length === 0 || newDays.length === 7 ? t("common.allDays") + " ✓" : t("common.selectAll")}
                 </button>
               </div>
               <div className="flex gap-1">
@@ -268,7 +270,7 @@ export default function HabitList() {
               disabled={!newName.trim()}
               className="w-full rounded-2xl bg-gradient-to-r from-purple-400 to-pink-400 py-2.5 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-30 shadow-sm"
             >
-              Adicionar hábito
+              {t("habits.addButton")}
             </button>
           </div>
         )}
@@ -279,15 +281,15 @@ export default function HabitList() {
         {loading && (
           <div className="text-center text-purple-300 py-12 animate-pulse-soft">
             <div className="text-3xl mb-2">💊</div>
-            <p className="text-sm">A carregar...</p>
+            <p className="text-sm">{t("common.loading")}</p>
           </div>
         )}
 
         {!loading && habits.length === 0 && (
           <div className="text-center text-purple-300 py-12">
             <div className="text-5xl mb-3 animate-float">💊</div>
-            <p className="text-sm">Nenhuma rotina ainda!</p>
-            <p className="text-xs text-purple-200 mt-1">Adiciona o teu primeiro hábito</p>
+            <p className="text-sm">{t("habits.empty")}</p>
+            <p className="text-xs text-purple-200 mt-1">{t("habits.emptyHint")}</p>
             <button
               onClick={async () => {
                 for (const h of DEFAULT_HABITS) {
@@ -296,7 +298,7 @@ export default function HabitList() {
               }}
               className="mt-4 text-xs bg-purple-100 text-purple-500 px-4 py-2 rounded-full hover:bg-purple-200 transition-all"
             >
-              ✨ Começar com pílula
+              ✨ {t("habits.startDefault")}
             </button>
           </div>
         )}
@@ -341,7 +343,7 @@ export default function HabitList() {
                   <div className="flex items-center gap-2 mt-0.5">
                     {streak > 0 && (
                       <span className="text-xs font-bold text-orange-500 flex items-center gap-0.5">
-                        🔥 {streak} {streak === 1 ? "dia" : "dias"}
+                        🔥 {streak} {streak === 1 ? t("habits.streak") : t("habits.streakPlural")}
                       </span>
                     )}
                     {habit.reminderTime && (

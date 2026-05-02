@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useAuth, useHouse, createHouse, joinHouse, checkNeedsBirthDate, saveBirthDate } from "@/lib/auth";
 import { HouseIdContext } from "@/lib/hooks";
 import { HouseProvider } from "@/lib/context";
+import { LocaleProvider } from "@/lib/i18n";
 import AuthScreen from "@/components/AuthScreen";
 import BirthDatePrompt from "@/components/BirthDatePrompt";
 import HouseSetup from "@/components/HouseSetup";
@@ -13,6 +14,14 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function Home() {
+  return (
+    <LocaleProvider>
+      <HomeInner />
+    </LocaleProvider>
+  );
+}
+
+function HomeInner() {
   const { user, loading: authLoading, login, register, loginWithGoogle } = useAuth();
   const { houseId, house, loading: houseLoading } = useHouse(user?.uid || null);
   const [showGreeting, setShowGreeting] = useState(true);
