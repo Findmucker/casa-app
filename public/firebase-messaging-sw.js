@@ -34,7 +34,7 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 // Force activate new service worker immediately (skip waiting)
-self.addEventListener("install", (event) => {
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 

@@ -129,16 +129,6 @@ export default function PriorityList() {
     });
   }, [remove, add, pushUndo]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleDragReorder = useCallback((fromIndex: number, toIndex: number, catItems: SmallPriorityItem[]) => {
-    const item = catItems[fromIndex];
-    const target = catItems[toIndex];
-    if (item && target) {
-      update(item.id, { order: target.order });
-      update(target.id, { order: item.order });
-    }
-  }, [update]);
-
   return (
     <div className="flex flex-col h-full">
       {/* Add form */}

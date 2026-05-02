@@ -8,8 +8,6 @@ import { useMemberNames, useHouseContext } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
 import { useT } from "@/lib/i18n";
 
-const DEFAULT_HABITS: { name: string; emoji: string; reminderTime?: string }[] = [];
-
 const HABIT_EMOJIS = ["💊", "💧", "🏃", "📖", "🧘", "🪴", "🧹", "💤", "🍎", "✍️"];
 
 const WEEKDAYS = [
@@ -122,13 +120,6 @@ export default function HabitList() {
     await update(habit.id, { streak: newStreak, lastChecked: today });
     await awardPoints("shared", 2, "habit_check");
     await updateStreak("shared", newStreak);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleUncheck = async (habit: HabitItem) => {
-    const check = checks.find((c) => c.habitId === habit.id && c.date === today);
-    if (!check) return;
-    // We can't easily delete from useCollection by query, so we'll just skip uncheck for now
   };
 
   const handleAdd = async () => {

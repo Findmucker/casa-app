@@ -53,7 +53,6 @@ export async function registerPushToken(owner: string): Promise<boolean> {
       updatedAt: new Date().toISOString(),
     });
 
-    console.log("FCM token registered for", owner);
     return true;
   } catch (e) {
     console.error("Push registration error:", e);
