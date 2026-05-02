@@ -23,7 +23,7 @@ const WEEKDAYS = [
 ];
 
 function isActiveToday(days?: number[]): boolean {
-  if (!days || days.length === 0) return true; // undefined/empty = todos os dias
+  if (!days || !Array.isArray(days) || days.length === 0) return true;
   return days.includes(new Date().getDay());
 }
 
@@ -367,7 +367,7 @@ export default function HabitList() {
                     {habit.reminderTime && (
                       <span className="text-[11px] text-purple-400">⏰ {habit.reminderTime}</span>
                     )}
-                    {habit.days && habit.days.length > 0 && habit.days.length < 7 && (
+                    {habit.days && Array.isArray(habit.days) && habit.days.length > 0 && habit.days.length < 7 && (
                       <span className="text-[10px] text-purple-300 flex gap-0.5">
                         {WEEKDAYS.map((d) => (
                           <span key={d.value} className={habit.days!.includes(d.value) ? "text-purple-500 font-bold" : "text-purple-200"}>
