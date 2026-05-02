@@ -149,7 +149,7 @@ export default function HabitList() {
 
   const filteredHabits = filter === "all"
     ? habits
-    : habits.filter((h) => h.assignee === filter || (!h.assignee && filter === "ambos"));
+    : habits.filter((h) => h.assignee === filter || h.assignee === "ambos" || (!h.assignee && filter === "ambos"));
 
   return (
     <div className="flex flex-col h-full">
@@ -190,7 +190,7 @@ export default function HabitList() {
           >
             {t("common.all")}
           </button>
-          {memberNames.map((m) => (
+          {memberNames.filter((m) => m.key !== "ambos").map((m) => (
             <button
               key={m.key}
               onClick={() => setFilter(m.key)}
