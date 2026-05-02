@@ -124,6 +124,32 @@ Menu (click title) → Main panel:
 - Vercel uses `force-dynamic` on Firebase pages to avoid prerender
 - Service worker: force update with `skipWaiting` + cache purge on every load
 - Git on this machine uses CRLF (Windows) — warnings are normal
+- **Firestore doc names are case-sensitive** — `gamification/{name}` uses display name (capitalized), but `useMemberNames()` returns lowercase keys. Always handle both cases.
+- **MiniAvatar** generates a deterministic default avatar from the name when none is configured — never shows bare initials
+- **AnimeAnimalCharacter** needs minimum ~16px to render pixel grid visibly (each pixel = size/16)
+- **Two avatar systems**: `AvatarConfig` (animal pixel art, shown everywhere) vs `EquippedItems` (RPG loot, shown only in ProfilePage inventory). They are independent.
+- **Always show issue URL to user before starting work** — let them review/edit scope first
+
+## Avatar System Reference
+
+### AvatarConfig (AnimeAnimalCharacter)
+- Stored in: `gamification/{name}.avatar`
+- Used in: MiniAvatar, HouseMembers, members widget, ProfilePage header
+- Fields: animal, eyes, mouth, top, bottom, accessory, background, effect (all number indices)
+- If not configured: MiniAvatar generates deterministic default from name
+
+### EquippedItems (CharacterModel / RPG Loot)
+- Stored in: `gamification/{name}.equipped`
+- Used in: ProfilePage inventory tab, helmet badge on MiniAvatar
+- Fields: helmet?, weapon?, shield?, armor?, boots?, accessory? (all item ID strings)
+- LootSlot types and LOOT_POOL defined in `lib/gamification.ts`
+
+### MiniAvatar Component (`components/MiniAvatar.tsx`)
+- Props: `name` (member key, lowercase OK), `size` (px), `showEquipBadge` (default true)
+- Tries Firestore lookup: capitalized name first, then lowercase
+- Caches results per session (Map)
+- Shows helmet emoji badge when size >= 28 and equipment exists
+- Always renders pixel art (real or deterministic default) — never bare initials
 
 ## CI/CD & Deploy
 
@@ -222,4 +248,14 @@ After any feature/fix, update these files as needed:
 - `components/Tutorial.tsx` — in-app tutorial steps (+ i18n keys)
 - `CONTRIBUTING.md` — if workflow changes
 - `docs/BRANCHING_STRATEGY.md` — if git flow changes
+
+## Issue Workflow
+
+**IMPORTANT**: Before starting work on any issue, ALWAYS show the issue URL to the user first so they can review/edit it. Only begin implementation after they confirm.
+
+```
+Issue URL: https://github.com/Findmucker/casa-app/issues/{NUMBER}
+```
+
+Wait for user approval before coding.
 
