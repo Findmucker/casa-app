@@ -165,63 +165,132 @@ input:focus, textarea:focus, select:focus {
   --font-sans: var(--font-geist);
 }
 
-/* Cyberpunk theme — dark, neon, aggressive */
+/* Cyberpunk 2077 theme — angular, neon, aggressive, scan lines */
 .theme-cyberpunk {
-  --background: #0a0a1a;
-  --foreground: #00f0ff;
+  --background: #0d0d15;
+  --foreground: #00f6ff;
+  font-family: 'Courier New', 'Consolas', monospace !important;
 }
 
+/* Angular corners — override all rounded */
+.theme-cyberpunk .rounded-2xl,
+.theme-cyberpunk .rounded-xl,
+.theme-cyberpunk .rounded-3xl {
+  border-radius: 2px !important;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)) !important;
+}
+
+.theme-cyberpunk .rounded-full {
+  border-radius: 2px !important;
+}
+
+.theme-cyberpunk .rounded-lg {
+  border-radius: 1px !important;
+}
+
+/* Cards / panels — dark with cyan border + scan line overlay */
 .theme-cyberpunk .bg-white\/60,
 .theme-cyberpunk .bg-white\/70,
 .theme-cyberpunk .bg-white\/80 {
-  background-color: rgba(10, 15, 30, 0.85) !important;
-  border-color: rgba(0, 240, 255, 0.2) !important;
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.08), inset 0 1px 0 rgba(0, 240, 255, 0.1) !important;
+  background: linear-gradient(180deg, rgba(13, 13, 25, 0.95) 0%, rgba(20, 20, 40, 0.9) 100%) !important;
+  border: 1px solid rgba(0, 246, 255, 0.3) !important;
+  box-shadow: 0 0 8px rgba(0, 246, 255, 0.15), inset 0 0 30px rgba(0, 246, 255, 0.03) !important;
 }
 
 .theme-cyberpunk .bg-white {
-  background-color: rgba(15, 15, 35, 0.95) !important;
+  background-color: #0d0d18 !important;
 }
 
+/* Scan line effect on main container */
+.theme-cyberpunk::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 246, 255, 0.015) 2px,
+    rgba(0, 246, 255, 0.015) 4px
+  );
+}
+
+/* Inputs */
 .theme-cyberpunk input,
 .theme-cyberpunk textarea,
 .theme-cyberpunk select {
-  background-color: rgba(10, 15, 40, 0.9) !important;
-  border-color: rgba(0, 240, 255, 0.3) !important;
-  color: #e0f7ff !important;
+  background-color: rgba(13, 13, 25, 0.95) !important;
+  border: 1px solid rgba(0, 246, 255, 0.4) !important;
+  color: #e8f4f8 !important;
+  font-family: 'Courier New', monospace !important;
+  text-transform: none;
+  letter-spacing: 0.5px;
 }
 
 .theme-cyberpunk input::placeholder,
 .theme-cyberpunk textarea::placeholder {
-  color: rgba(0, 240, 255, 0.4) !important;
+  color: rgba(0, 246, 255, 0.35) !important;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 1px;
 }
 
-/* Text overrides */
+.theme-cyberpunk input:focus,
+.theme-cyberpunk textarea:focus,
+.theme-cyberpunk select:focus {
+  border-color: #00f6ff !important;
+  box-shadow: 0 0 12px rgba(0, 246, 255, 0.4), inset 0 0 6px rgba(0, 246, 255, 0.1) !important;
+}
+
+/* === TEXT COLORS === */
+/* Primary text — Cyan (main HUD color) */
 .theme-cyberpunk .text-rose-800,
 .theme-cyberpunk .text-rose-700,
 .theme-cyberpunk .text-rose-600,
 .theme-cyberpunk .text-purple-800,
 .theme-cyberpunk .text-purple-700,
 .theme-cyberpunk .text-purple-600 {
-  color: #00f0ff !important;
+  color: #00f6ff !important;
+  text-shadow: 0 0 8px rgba(0, 246, 255, 0.5);
 }
 
+/* Secondary text — Yellow (quest markers, highlights) */
 .theme-cyberpunk .text-pink-300,
 .theme-cyberpunk .text-pink-400,
 .theme-cyberpunk .text-pink-500,
-.theme-cyberpunk .text-purple-300,
-.theme-cyberpunk .text-purple-400,
-.theme-cyberpunk .text-purple-500 {
-  color: #ff00ff !important;
-}
-
 .theme-cyberpunk .text-rose-300,
 .theme-cyberpunk .text-rose-400,
 .theme-cyberpunk .text-rose-500 {
-  color: #ffdd00 !important;
+  color: #fcee0a !important;
+  text-shadow: 0 0 6px rgba(252, 238, 10, 0.4);
 }
 
-/* Borders */
+/* Tertiary text — muted cyan */
+.theme-cyberpunk .text-purple-300,
+.theme-cyberpunk .text-purple-400,
+.theme-cyberpunk .text-purple-500 {
+  color: rgba(0, 246, 255, 0.6) !important;
+}
+
+/* Body text */
+.theme-cyberpunk .text-gray-400,
+.theme-cyberpunk .text-gray-500,
+.theme-cyberpunk .text-gray-600 {
+  color: rgba(200, 220, 230, 0.6) !important;
+}
+
+/* Headers — uppercase with tracking */
+.theme-cyberpunk h1, .theme-cyberpunk h2, .theme-cyberpunk h3,
+.theme-cyberpunk .font-bold,
+.theme-cyberpunk .font-semibold {
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* === BORDERS === */
 .theme-cyberpunk .border-pink-100\/40,
 .theme-cyberpunk .border-pink-100\/30,
 .theme-cyberpunk .border-pink-100\/50,
@@ -229,55 +298,181 @@ input:focus, textarea:focus, select:focus {
 .theme-cyberpunk .border-purple-100\/30,
 .theme-cyberpunk .border-purple-100\/40,
 .theme-cyberpunk .border-purple-200\/50,
+.theme-cyberpunk .border-purple-200\/30,
 .theme-cyberpunk .border-rose-200\/50 {
-  border-color: rgba(0, 240, 255, 0.2) !important;
+  border-color: rgba(0, 246, 255, 0.25) !important;
 }
 
-/* Backgrounds */
+/* === BACKGROUNDS === */
 .theme-cyberpunk .bg-pink-50,
 .theme-cyberpunk .bg-pink-100,
 .theme-cyberpunk .bg-purple-50,
 .theme-cyberpunk .bg-purple-100,
 .theme-cyberpunk .bg-rose-50 {
-  background-color: rgba(0, 240, 255, 0.08) !important;
+  background-color: rgba(0, 246, 255, 0.06) !important;
+  border: 1px solid rgba(0, 246, 255, 0.15) !important;
 }
 
 .theme-cyberpunk .bg-purple-200,
 .theme-cyberpunk .bg-pink-200 {
-  background-color: rgba(255, 0, 255, 0.15) !important;
+  background-color: rgba(252, 238, 10, 0.1) !important;
+  border: 1px solid rgba(252, 238, 10, 0.25) !important;
 }
 
-/* Gradient buttons */
+/* Header/Nav glass */
+.theme-cyberpunk .backdrop-blur-xl {
+  background: rgba(13, 13, 21, 0.92) !important;
+  backdrop-filter: none !important;
+  border-color: rgba(0, 246, 255, 0.2) !important;
+}
+
+/* === BUTTONS === */
+/* Primary gradient buttons — cyan with hard edge look */
 .theme-cyberpunk .bg-gradient-to-r.from-pink-400,
 .theme-cyberpunk .bg-gradient-to-r.from-pink-300,
 .theme-cyberpunk .bg-gradient-to-r.from-purple-400,
 .theme-cyberpunk .bg-gradient-to-r.from-rose-400 {
-  background: linear-gradient(to right, #00f0ff, #ff00ff) !important;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), 0 0 30px rgba(255, 0, 255, 0.2) !important;
+  background: linear-gradient(135deg, #00f6ff 0%, #0080ff 100%) !important;
+  box-shadow: 0 0 15px rgba(0, 246, 255, 0.5), 0 2px 20px rgba(0, 246, 255, 0.3) !important;
+  color: #0d0d15 !important;
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
-/* Green states (checked) stay neon green */
+.theme-cyberpunk .bg-gradient-to-r.from-pink-400:hover,
+.theme-cyberpunk .bg-gradient-to-r.from-pink-300:hover,
+.theme-cyberpunk .bg-gradient-to-r.from-purple-400:hover {
+  box-shadow: 0 0 25px rgba(0, 246, 255, 0.8), 0 0 50px rgba(0, 246, 255, 0.3) !important;
+}
+
+/* Active/pressed state — glitch flash */
+.theme-cyberpunk button:active {
+  box-shadow: 0 0 30px rgba(252, 238, 10, 0.8), 0 0 5px rgba(255, 0, 60, 0.5) !important;
+  transform: scale(0.97) translateX(1px) !important;
+}
+
+/* Green/success states — neon green */
 .theme-cyberpunk .bg-gradient-to-r.from-green-300 {
-  background: linear-gradient(to right, #00ff88, #00ffcc) !important;
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.4) !important;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%) !important;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.5) !important;
+  color: #0d0d15 !important;
 }
 
 .theme-cyberpunk .text-green-600 {
   color: #00ff88 !important;
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.5);
 }
 
-/* Scrollbar */
+/* Danger states — red alert */
+.theme-cyberpunk .text-red-400,
+.theme-cyberpunk .text-red-500,
+.theme-cyberpunk .hover\:text-red-400:hover {
+  color: #ff003c !important;
+  text-shadow: 0 0 8px rgba(255, 0, 60, 0.6);
+}
+
+/* Orange/streaks — yellow neon */
+.theme-cyberpunk .text-orange-500,
+.theme-cyberpunk .text-orange-400 {
+  color: #fcee0a !important;
+  text-shadow: 0 0 6px rgba(252, 238, 10, 0.5);
+}
+
+.theme-cyberpunk .bg-gradient-to-r.from-orange-300 {
+  background: linear-gradient(to right, #fcee0a, #ff6b00) !important;
+  box-shadow: 0 0 6px rgba(252, 238, 10, 0.4) !important;
+}
+
+/* === SCROLLBAR === */
 .theme-cyberpunk ::-webkit-scrollbar-thumb {
-  background: #ff00ff;
+  background: linear-gradient(180deg, #00f6ff, #0080ff);
+  border: 1px solid rgba(0, 246, 255, 0.3);
 }
 
 .theme-cyberpunk ::-webkit-scrollbar-track {
-  background: #0a0a1a;
+  background: #0d0d15;
 }
 
-/* Neon glow animation for active elements */
-.theme-cyberpunk button:active {
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6) !important;
+.theme-cyberpunk ::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* === ANIMATIONS === */
+/* Glitch flicker on hover for cards */
+@keyframes cyberpunk-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; transform: translateX(-1px); }
+  94% { opacity: 1; transform: translateX(1px); }
+  95% { opacity: 0.9; }
+  96% { opacity: 1; transform: translateX(0); }
+}
+
+.theme-cyberpunk .animate-fade-in-up {
+  animation: cyberpunk-glitch-in 0.3s cubic-bezier(0.2, 0, 0, 1) forwards !important;
+}
+
+@keyframes cyberpunk-glitch-in {
+  0% { opacity: 0; transform: translateY(10px) translateX(-2px); clip-path: inset(0 0 100% 0); }
+  40% { opacity: 0.8; transform: translateY(3px) translateX(1px); clip-path: inset(0 0 20% 0); }
+  60% { opacity: 0.9; transform: translateY(-1px) translateX(-1px); }
+  100% { opacity: 1; transform: translateY(0) translateX(0); clip-path: inset(0 0 0 0); }
+}
+
+/* Pulse becomes neon pulse */
+.theme-cyberpunk .animate-pulse,
+.theme-cyberpunk .animate-pulse-soft {
+  animation: cyberpunk-neon-pulse 2s ease-in-out infinite !important;
+}
+
+@keyframes cyberpunk-neon-pulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(0, 246, 255, 0.5); }
+  50% { opacity: 0.7; text-shadow: 0 0 20px rgba(0, 246, 255, 0.9), 0 0 40px rgba(0, 246, 255, 0.3); }
+}
+
+/* Float becomes subtle glitch float */
+.theme-cyberpunk .animate-float {
+  animation: cyberpunk-hover 3s ease-in-out infinite !important;
+}
+
+@keyframes cyberpunk-hover {
+  0%, 100% { transform: translateY(0); }
+  48% { transform: translateY(-4px); }
+  50% { transform: translateY(-4px) translateX(1px); }
+  52% { transform: translateY(-4px) translateX(-1px); }
+  54% { transform: translateY(-4px) translateX(0); }
+}
+
+/* === SPECIAL ELEMENTS === */
+/* Streak fire emoji gets electric look */
+.theme-cyberpunk .animate-pulse-heart {
+  animation: cyberpunk-neon-pulse 1.5s ease-in-out infinite !important;
+  filter: hue-rotate(160deg) saturate(2) !important;
+}
+
+/* White text in buttons stays dark on bright bg */
+.theme-cyberpunk .text-white {
+  color: #0d0d15 !important;
+  text-shadow: none !important;
+}
+
+/* But keep emoji visible */
+.theme-cyberpunk button .text-white {
+  color: #0d0d15 !important;
+}
+
+/* Glassmorphism override — no blur, hard edges */
+.theme-cyberpunk .backdrop-blur-sm {
+  backdrop-filter: none !important;
+  background: rgba(13, 13, 21, 0.9) !important;
+}
+
+/* Tab indicators */
+.theme-cyberpunk .bg-gradient-to-r.from-pink-400.to-rose-400,
+.theme-cyberpunk .bg-gradient-to-r.from-purple-400.to-pink-400 {
+  background: linear-gradient(to right, #00f6ff, #fcee0a) !important;
+  box-shadow: 0 0 8px rgba(0, 246, 255, 0.6) !important;
 }
 
 /* Safe area for mobile */
