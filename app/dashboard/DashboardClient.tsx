@@ -50,6 +50,7 @@ function DashboardInner() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
   const [showPanel, setShowPanel] = useState(false);
+  const [menuSubPanel, setMenuSubPanel] = useState<"communication" | "house" | "settings" | null>(null);
   const [showMaintenance, setShowMaintenance] = useState(false);
   const [showGamification, setShowGamification] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -162,7 +163,7 @@ function DashboardInner() {
           🔍
         </button>
         <button
-          onClick={() => setShowPanel(!showPanel)}
+          onClick={() => { setShowPanel(!showPanel); setMenuSubPanel(null); }}
           aria-label="Menu principal"
           aria-expanded={showPanel}
           className={`text-lg font-bold tracking-wide active:scale-95 transition-all ${
@@ -216,141 +217,139 @@ function DashboardInner() {
                   ? "from-orange-50/98 via-rose-100/98 to-purple-100/98"
                   : "from-rose-50/98 via-pink-50/98 to-fuchsia-50/98"
           }`}>
-            {/* Navigation section */}
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.navigate")}</p>
-            <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
-              {ALL_TABS.map((section) => (
+            {/* Sub-panel for categories */}
+            {menuSubPanel ? (
+              <div className="animate-fade-in-up flex flex-col items-center">
                 <button
-                  key={section.id}
-                  onClick={() => switchTab(section.id)}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
-                    activeTab === section.id
-                      ? darkMode
-                        ? "bg-purple-200/70 shadow-md shadow-purple-200/30 border border-purple-300/60 scale-105"
-                        : "bg-white shadow-md shadow-pink-100/50 border border-pink-200/60 scale-105"
-                      : darkMode
-                        ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
-                        : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                  onClick={() => setMenuSubPanel(null)}
+                  className={`mb-4 text-xs font-medium px-3 py-1.5 rounded-full transition-all active:scale-95 ${
+                    darkMode ? "bg-purple-100 text-purple-600" : "bg-pink-100 text-rose-500"
                   }`}
                 >
-                  <span className="text-xl">{section.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{section.label}</span>
+                  ← {t("common.close")}
                 </button>
-              ))}
-            </div>
+                <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>
+                  {menuSubPanel === "communication" ? t("menu.communication") : menuSubPanel === "house" ? t("menu.house") : t("menu.settings")}
+                </p>
+                <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
+                  {(menuSubPanel === "communication" ? [
+                    { emoji: "💌", label: t("menu.message"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowSendMessage(true); } },
+                    { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
+                  ] : menuSubPanel === "house" ? [
+                    { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
+                    { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); } },
+                  ] : [
+                    { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowMaintenance(true); } },
+                    { emoji: "❓", label: t("menu.tutorial"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowTutorial(true); } },
+                  ]).map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={item.action}
+                      className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl transition-all active:scale-90 ${
+                        darkMode
+                          ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
+                          : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                      }`}
+                    >
+                      <span className="text-2xl">{item.emoji}</span>
+                      <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
+                    </button>
+                  ))}
+                  {menuSubPanel === "settings" && (
+                    <div className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl ${
+                      darkMode ? "bg-purple-100/60 border border-purple-200/30" : "bg-white/60 border border-pink-100/30"
+                    }`}>
+                      <span className="text-2xl">🌐</span>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setLocale("pt")}
+                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
+                            locale === "pt"
+                              ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
+                              : darkMode ? "text-purple-400" : "text-pink-400"
+                          }`}
+                        >PT</button>
+                        <button
+                          onClick={() => setLocale("en")}
+                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
+                            locale === "en"
+                              ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
+                              : darkMode ? "text-purple-400" : "text-pink-400"
+                          }`}
+                        >EN</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Logout in settings sub-panel */}
+                {menuSubPanel === "settings" && (
+                  <div className="mt-5">
+                    <button
+                      onClick={() => { logout(); }}
+                      aria-label="Sair da conta"
+                      className={`flex flex-col items-center gap-1.5 px-6 py-3 rounded-2xl transition-all active:scale-90 ${
+                        darkMode
+                          ? "bg-red-100/60 border border-red-200/40 hover:bg-red-100"
+                          : "bg-red-50/60 border border-red-200/50 hover:bg-red-100/80"
+                      }`}
+                    >
+                      <span className="text-xl">🚪</span>
+                      <span className={`text-[10px] font-medium ${darkMode ? "text-red-500" : "text-red-500"}`}>{t("menu.logout")}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                {/* All tabs grid */}
+                <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.navigate")}</p>
+                <div className="grid grid-cols-5 gap-2.5 px-4 max-w-sm mb-6">
+                  {ALL_TABS.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => { switchTab(section.id); setShowPanel(false); }}
+                      className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl transition-all active:scale-90 ${
+                        activeTab === section.id
+                          ? darkMode
+                            ? "bg-purple-200/70 shadow-md shadow-purple-200/30 border border-purple-300/60 scale-105"
+                            : "bg-white shadow-md shadow-pink-100/50 border border-pink-200/60 scale-105"
+                          : darkMode
+                            ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
+                            : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                      }`}
+                    >
+                      <span className="text-lg">{section.emoji}</span>
+                      <span className={`text-[9px] font-medium leading-tight ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{section.label}</span>
+                    </button>
+                  ))}
+                </div>
 
-            {/* Divider */}
-            <div className={`w-32 h-px my-6 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
+                {/* Divider */}
+                <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
 
-            {/* Options section */}
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.communication")}</p>
-            <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
-              {[
-                { emoji: "💌", label: t("menu.message"), action: () => { setShowPanel(false); setShowSendMessage(true); } },
-                { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setShowHistory(true); } },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={item.action}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
-                    darkMode
-                      ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
-                      : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
-                  }`}
-                >
-                  <span className="text-xl">{item.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-200/30" : "bg-pink-200/40"}`} />
-
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.house")}</p>
-            <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
-              {[
-                { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setShowInvite(true); } },
-                { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setShowHouseMembers(true); } },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={item.action}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
-                    darkMode
-                      ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
-                      : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
-                  }`}
-                >
-                  <span className="text-xl">{item.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className={`w-24 h-px my-4 mx-auto ${darkMode ? "bg-purple-200/30" : "bg-pink-200/40"}`} />
-
-            <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.settings")}</p>
-            <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
-              {[
-                { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setShowMaintenance(true); } },
-                { emoji: "❓", label: t("menu.tutorial"), action: () => { setShowPanel(false); setShowTutorial(true); } },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={item.action}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-90 ${
-                    darkMode
-                      ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
-                      : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
-                  }`}
-                >
-                  <span className="text-xl">{item.emoji}</span>
-                  <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
-                </button>
-              ))}
-              {/* Language toggle */}
-              <div className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl ${
-                darkMode
-                  ? "bg-purple-100/60 border border-purple-200/30"
-                  : "bg-white/60 border border-pink-100/30"
-              }`}>
-                <span className="text-xl">🌐</span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => setLocale("pt")}
-                    className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
-                      locale === "pt"
-                        ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
-                        : darkMode ? "text-purple-400" : "text-pink-400"
-                    }`}
-                  >PT</button>
-                  <button
-                    onClick={() => setLocale("en")}
-                    className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
-                      locale === "en"
-                        ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
-                        : darkMode ? "text-purple-400" : "text-pink-400"
-                    }`}
-                  >EN</button>
+                {/* Category buttons */}
+                <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
+                  {[
+                    { key: "communication" as const, emoji: "💬", label: t("menu.communication") },
+                    { key: "house" as const, emoji: "🏠", label: t("menu.house") },
+                    { key: "settings" as const, emoji: "⚙️", label: t("menu.settings") },
+                  ].map((cat) => (
+                    <button
+                      key={cat.key}
+                      onClick={() => setMenuSubPanel(cat.key)}
+                      className={`flex flex-col items-center gap-1.5 p-3.5 rounded-2xl transition-all active:scale-90 ${
+                        darkMode
+                          ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-200/60"
+                          : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                      }`}
+                    >
+                      <span className="text-xl">{cat.emoji}</span>
+                      <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{cat.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
-
-            {/* Sair — isolated */}
-            <div className="mt-5">
-              <button
-                onClick={() => { logout(); }}
-                aria-label="Sair da conta"
-                className={`flex flex-col items-center gap-1.5 px-6 py-3 rounded-2xl transition-all active:scale-90 ${
-                  darkMode
-                    ? "bg-red-950/40 border border-red-800/40 hover:bg-red-900/50"
-                    : "bg-red-50/60 border border-red-200/50 hover:bg-red-100/80"
-                }`}
-              >
-                <span className="text-xl">🚪</span>
-                <span className={`text-[10px] font-medium ${darkMode ? "text-red-400" : "text-red-500"}`}>{t("menu.logout")}</span>
-              </button>
-            </div>
+            )}
           </div>
         )}
 
