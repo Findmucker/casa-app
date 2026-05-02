@@ -144,6 +144,7 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
           >
             🎒 Inventário
           </button>
+          {!isReadOnly && (
           <button
             onClick={() => setActiveTab("avatar")}
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
@@ -154,6 +155,7 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
           >
             🐼 Avatar
           </button>
+          )}
           {!isReadOnly && (
           <button
             onClick={() => setActiveTab("settings")}
