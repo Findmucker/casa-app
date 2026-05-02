@@ -109,11 +109,17 @@ A household management PWA for couples and families — organize shopping, tasks
 ### Member Management
 - Invite system with 6-char codes and shareable links
 - **Flat hierarchy** — all members are equal (no admin roles)
-- View members with avatar, level, and stats
+- **Members widget in menu** — shows member avatars with level, clickable for actions
+- Action buttons: 💌 Message (opens direct message panel) and 👤 Profile (view profile)
+- Viewing another member's profile shows read-only view (no settings tab)
+- Viewing your own profile shows full editable profile
+- Members can only leave themselves (no removing others)
+- **Animations** — staggered entrance, bounce on selected, hover scale
 - Dynamic member names throughout the app
 
 ### Send Message Panel
 - Send push notification with message to other house members
+- Message accessible via Members widget (click member → 💌 Message)
 - 8 predefined quick messages
 - Custom message input
 

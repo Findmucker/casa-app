@@ -267,6 +267,13 @@ export const pt = {
   "tutorial.messages.tip2": "Escreve mensagens personalizadas",
   "tutorial.messages.tip3": "Push notification mesmo com app fechada",
 
+  "tutorial.members.title": "Membros",
+  "tutorial.members.text": "Widget interativo no menu com os membros da casa. Vê stats, perfis e envia mensagens diretamente.",
+  "tutorial.members.tip1": "👥 Clica no título para ver lista completa",
+  "tutorial.members.tip2": "Clica num membro para ver opções (mensagem/perfil)",
+  "tutorial.members.tip3": "💌 Mensagem abre diretamente o painel de envio",
+  "tutorial.members.tip4": "👤 Perfil mostra stats e inventário do membro",
+
   "tutorial.rpg.title": "Perfil RPG & Gamificação",
   "tutorial.rpg.text": "Cada tarefa dá XP! Sobe de nível, desbloqueia equipamentos, coleciona badges e recebe loot.",
   "tutorial.rpg.tip1": "+1 XP comprinhas  +2 coisinhas  +5 projetos  +2 hábitos",

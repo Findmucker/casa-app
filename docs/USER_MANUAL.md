@@ -194,9 +194,10 @@ A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 
 ### Enviar mensagem a outro membro
 1. Tap no titulo "A Nossa Casinha" no header
-2. Tap em **💌 Mensagem**
-3. Escolhe uma mensagem rapida ou escreve a tua
-4. O outro membro recebe uma notificacao push com a tua mensagem
+2. Na seccao **👥 Membros**, tap no membro a quem queres enviar
+3. Tap em **💌 Mensagem** (aparece para todos os membros exceto tu proprio)
+4. Escolhe uma mensagem rapida ou escreve a tua
+5. O outro membro recebe uma notificacao push com a tua mensagem
 
 ### Mensagens rapidas disponiveis
 - ❤️ Amo-te!
@@ -227,12 +228,15 @@ Ao tocar no titulo "A Nossa Casinha" no header, abre um menu organizado em secco
 Grid com todas as 10 tabs — tap para ir directamente.
 
 ### Comunicacao
-- **💌 Mensagem** — envia notificacao push com mensagem a outro membro
 - **📜 Historico** — registo de items completados com data e stats
 
 ### Casa
 - **🔗 Convidar** — gerar codigo de convite para novos membros
-- **👥 Membros** — ver todos os membros com avatar, nivel e stats
+- **👥 Membros** — widget com avatares de todos os membros, nivel e acoes rapidas:
+  - Tap num membro para ver botoes de acao: 💌 Mensagem e 👤 Perfil
+  - **💌 Mensagem** — abre diretamente o painel de mensagem para esse membro (nao aparece para ti proprio)
+  - **👤 Perfil** — mostra o perfil do membro em modo leitura (sem tab de definicoes); no teu proprio perfil, abre o perfil editavel completo
+  - Animacoes: entrada staggered, bounce no membro selecionado, hover scale
 
 ### Definicoes
 - **⚙️ Manutencao** — reorganizar categorias, limpar items feitos, seed de teste
@@ -313,11 +317,13 @@ Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Ce
 
 Todos os membros sao **iguais** — nao existe hierarquia de administrador.
 
-Na seccao Membros podes ver:
-- Avatar pixel art de cada membro
-- Nivel e titulo RPG
-- Pontos totais
-- Melhor streak
+O widget de Membros no menu central mostra:
+- Avatar pixel art de cada membro com nivel
+- Tap num membro revela botoes de acao:
+  - **💌 Mensagem** — abre o painel de mensagem diretamente para esse membro (nao aparece no teu proprio)
+  - **👤 Perfil** — mostra o perfil em modo leitura (sem definicoes); no teu perfil, abre o perfil editavel completo
+- Animacoes suaves: entrada staggered, bounce na selecao, hover scale
+- Cada membro so pode sair a si proprio (nao e possivel remover outros)
 
 ### Convidar novos membros
 1. Menu central → 🔗 Convidar

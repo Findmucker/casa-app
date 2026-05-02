@@ -269,6 +269,13 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.messages.tip2": "Write custom messages",
   "tutorial.messages.tip3": "Push notification even with app closed",
 
+  "tutorial.members.title": "Members",
+  "tutorial.members.text": "Interactive widget in the menu showing house members. View stats, profiles and send messages directly.",
+  "tutorial.members.tip1": "👥 Click the title to see the full list",
+  "tutorial.members.tip2": "Click a member to see options (message/profile)",
+  "tutorial.members.tip3": "💌 Message opens the send panel directly",
+  "tutorial.members.tip4": "👤 Profile shows member's stats and inventory",
+
   "tutorial.rpg.title": "RPG Profile & Gamification",
   "tutorial.rpg.text": "Every task gives XP! Level up, unlock equipment, collect badges and receive loot.",
   "tutorial.rpg.tip1": "+1 XP shopping  +2 tasks  +5 projects  +2 habits",

@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-05-02
+
+### Added
+- **Members widget in menu panel** — shows member avatars with level, clickable for actions (💌 Message / 👤 Profile)
+- **Direct message from member** — clicking 💌 Message on a member opens their message panel directly
+- **Read-only profile view** — clicking 👤 Profile on another member shows their profile without settings tab
+- **Self profile shortcut** — clicking 👤 Profile on yourself opens your full editable profile
+- **Members widget animations** — staggered entrance, bounce on selected member, hover scale
+
+### Changed
+- **💌 Message removed from Communication sub-panel** — only 📜 History remains; messaging now accessed via Members widget
+- **Members can only leave themselves** — removed ability to remove other members
+
 ## [0.8.0] - 2026-05-02
 
 ### Added

@@ -79,6 +79,12 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tipsKeys: ["tutorial.weather.tip1", "tutorial.weather.tip2"],
   },
   {
+    emoji: "👥",
+    titleKey: "tutorial.members.title",
+    textKey: "tutorial.members.text",
+    tipsKeys: ["tutorial.members.tip1", "tutorial.members.tip2", "tutorial.members.tip3", "tutorial.members.tip4"],
+  },
+  {
     emoji: "💌",
     titleKey: "tutorial.messages.title",
     textKey: "tutorial.messages.text",
