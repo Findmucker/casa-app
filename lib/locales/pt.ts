@@ -82,7 +82,7 @@ export const pt = {
   "habits.reminder": "Não te esqueças!",
   "habits.streak": "dia",
   "habits.streakPlural": "dias",
-  "habits.startDefault": "Começar com pílula",
+  "habits.startDefault": "Começar com uma rotina",
 
   // Expenses
   "expenses.title": "Gastinhos",
