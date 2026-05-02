@@ -41,7 +41,8 @@ export default function ProjectList() {
       const cat = guessCategory(item.name, PROJECTS_CATEGORIES);
       update(item.id, { category: cat });
     });
-  }, [items.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- migration runs once per session via hasMigrated ref
+  }, [items.length, update]);
 
   const handleAdd = async () => {
     const name = newName.trim();

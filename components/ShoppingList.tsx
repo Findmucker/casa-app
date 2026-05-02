@@ -149,7 +149,8 @@ export default function ShoppingList() {
       const cat = guessCategory(item.name, SHOPPING_CATEGORIES);
       update(item.id, { category: cat });
     });
-  }, [items.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- migration runs once per session via hasMigrated ref
+  }, [items.length, update]);
 
   // Assign categories to items that don't have one
   const categorizedItems = useMemo(() => {

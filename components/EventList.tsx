@@ -5,6 +5,7 @@ import { useCollection } from "@/lib/hooks";
 import { getOrCreateShareId } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getWeatherInfo } from "@/lib/weather";
 
 // ─── Weather for event dates ────────────────────────────────
 
@@ -13,31 +14,6 @@ interface DateWeather {
   tempMin: number;
   weathercode: number;
   precipProb: number;
-}
-
-const WMO_CODES: Record<number, { emoji: string; label: string }> = {
-  0: { emoji: "☀️", label: "Céu limpo" },
-  1: { emoji: "🌤️", label: "Quase limpo" },
-  2: { emoji: "⛅", label: "Parcialmente nublado" },
-  3: { emoji: "☁️", label: "Nublado" },
-  45: { emoji: "🌫️", label: "Nevoeiro" },
-  48: { emoji: "🌫️", label: "Nevoeiro" },
-  51: { emoji: "🌦️", label: "Chuvisco" },
-  53: { emoji: "🌦️", label: "Chuvisco" },
-  55: { emoji: "🌦️", label: "Chuvisco forte" },
-  61: { emoji: "🌧️", label: "Chuva leve" },
-  63: { emoji: "🌧️", label: "Chuva" },
-  65: { emoji: "🌧️", label: "Chuva forte" },
-  80: { emoji: "🌦️", label: "Aguaceiros" },
-  81: { emoji: "🌦️", label: "Aguaceiros" },
-  82: { emoji: "⛈️", label: "Aguaceiros fortes" },
-  95: { emoji: "⛈️", label: "Trovoada" },
-  96: { emoji: "⛈️", label: "Trovoada" },
-  99: { emoji: "⛈️", label: "Trovoada forte" },
-};
-
-function getWeatherInfo(code: number) {
-  return WMO_CODES[code] || { emoji: "🌡️", label: "Desconhecido" };
 }
 
 // Cache weather data in memory

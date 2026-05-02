@@ -51,7 +51,8 @@ export default function PriorityList() {
     uncategorized.forEach((item) => {
       update(item.id, { category: guessCategory(item.name, COISINHAS_CATEGORIES) });
     });
-  }, [items.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- migration runs once per session via hasMigrated ref
+  }, [items.length, update]);
 
   const cycleAssignee = (current: string): string => {
     const keys = memberNames.map((m) => m.key);

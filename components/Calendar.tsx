@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useCollection, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck } from "@/lib/hooks";
+import { useSharedCollections, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck } from "@/lib/hooks";
 
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -73,10 +73,7 @@ export default function Calendar() {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const { items: habits } = useCollection<HabitItem>("habits", "createdAt");
-  const { items: checks } = useCollection<HabitCheck>("habit_checks", "createdAt");
-  const { items: coisinhas } = useCollection<SmallPriorityItem>("priorities_small", "order");
-  const { items: projects } = useCollection<BigPriorityItem>("priorities_big", "order");
+  const { habits, checks, coisinhas, projects } = useSharedCollections();
 
   const today = new Date().toISOString().split("T")[0];
 
