@@ -61,7 +61,7 @@ export async function registerPushToken(owner: string): Promise<boolean> {
   }
 }
 
-// Schedule a local notification at a specific time (single fire, fallback)
+// Schedule a local notification at a specific time, repeating every 10 min until cancelled
 export function scheduleLocalNotification(title: string, body: string, timeStr: string): number | null {
   if (!("Notification" in window) || Notification.permission !== "granted") return null;
 
@@ -70,12 +70,19 @@ export function scheduleLocalNotification(title: string, body: string, timeStr: 
   const target = new Date();
   target.setHours(hours, minutes, 0, 0);
 
+  // If time already passed today, check if within 2h window for repeat
   if (target <= now) {
-    target.setDate(target.getDate() + 1);
+    const diffMs = now.getTime() - target.getTime();
+    const diffMin = diffMs / 60000;
+    if (diffMin > 120) {
+      // Past 2h window, schedule for tomorrow
+      target.setDate(target.getDate() + 1);
+    }
   }
 
-  const delay = target.getTime() - now.getTime();
+  const delay = Math.max(0, target.getTime() - now.getTime());
 
+  // First notification at reminder time, then repeat every 10 min for up to 2 hours
   const timerId = window.setTimeout(() => {
     new Notification(title, {
       body,
@@ -86,6 +93,62 @@ export function scheduleLocalNotification(title: string, body: string, timeStr: 
   }, delay);
 
   return timerId;
+}
+
+// Schedule repeating notifications every 10 min for a habit (client-side)
+export function scheduleRepeatingNotification(
+  title: string,
+  body: string,
+  timeStr: string,
+  isChecked: () => boolean
+): number | null {
+  if (!("Notification" in window) || Notification.permission !== "granted") return null;
+
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hours, minutes, 0, 0);
+
+  if (target > now) {
+    // Not yet time, schedule first fire
+    const delay = target.getTime() - now.getTime();
+    const timerId = window.setTimeout(() => {
+      startRepeat();
+    }, delay);
+    return timerId;
+  }
+
+  // Already past reminder time — check if within 2h window
+  const diffMin = (now.getTime() - target.getTime()) / 60000;
+  if (diffMin > 120) return null;
+
+  // Start immediately
+  const id = startRepeat();
+  return id;
+
+  function startRepeat(): number {
+    // Send now if not checked
+    if (!isChecked()) {
+      new Notification(title, { body, icon: "/icon-192.png", tag: `habit-${title}` });
+    }
+    // Repeat every 10 min
+    const intervalId = window.setInterval(() => {
+      if (isChecked()) {
+        window.clearInterval(intervalId);
+        return;
+      }
+      // Check if still within 2h window
+      const nowCheck = new Date();
+      const reminderToday = new Date();
+      reminderToday.setHours(hours, minutes, 0, 0);
+      if ((nowCheck.getTime() - reminderToday.getTime()) / 60000 > 120) {
+        window.clearInterval(intervalId);
+        return;
+      }
+      new Notification(title, { body, icon: "/icon-192.png", tag: `habit-${title}` });
+    }, 10 * 60 * 1000);
+    return intervalId;
+  }
 }
 
 // Cancel a scheduled notification

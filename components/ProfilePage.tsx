@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
-import { HouseIdContext } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
+import { useHouseContext } from "@/lib/context";
 import {
   getStats,
   getLevel,
@@ -41,7 +41,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"stats" | "inventory" | "avatar" | "settings">("stats");
   const { user } = useAuth();
-  const houseId = useContext(HouseIdContext);
+  const { houseId } = useHouseContext();
 
   useEffect(() => {
     if (!user) return;
@@ -190,7 +190,7 @@ export default function ProfilePage({ onClose }: ProfilePageProps) {
       ) : activeTab === "avatar" ? (
         <AvatarBuilder owner={user?.displayName || user?.email || "user"} onSave={(config) => setAvatarConfig(config)} />
       ) : (
-        <SettingsTab user={user} />
+        <SettingsTab user={user} houseId={houseId} />
       )}
     </div>
   );
@@ -299,7 +299,7 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
 
 // ─── Stats Tab ─────────────────────────────────────────────────
 
-function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats; rpgStats: RPGStat[]; level: number; currentBadges: string[] }) {
+function StatsTab({ stats, rpgStats, currentBadges }: { stats: GameStats; rpgStats: RPGStat[]; level: number; currentBadges: string[] }) {
   return (
     <>
       {/* Stats */}
@@ -360,7 +360,7 @@ function StatsTab({ stats, rpgStats, level, currentBadges }: { stats: GameStats;
 
 // ─── Settings Tab ──────────────────────────────────────────────
 
-function SettingsTab({ user }: { user: User | null }) {
+function SettingsTab({ user, houseId }: { user: User | null; houseId: string }) {
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [newPassword, setNewPassword] = useState("");
@@ -372,8 +372,42 @@ function SettingsTab({ user }: { user: User | null }) {
     if (!user) return;
     setSaving(true);
     try {
+      const oldName = user.displayName || "";
       await updateProfile(user, { displayName });
       await updateDoc(doc(db, "users", user.uid), { name: displayName });
+
+      // Update name in house members array
+      if (houseId) {
+        const houseRef = doc(db, "houses", houseId);
+        const houseSnap = await getDoc(houseRef);
+        if (houseSnap.exists()) {
+          const members = houseSnap.data().members || [];
+          const updated = members.map((m: { uid: string; name: string; avatar?: string; role: string }) =>
+            m.uid === user.uid ? { ...m, name: displayName } : m
+          );
+          await updateDoc(houseRef, { members: updated });
+        }
+      }
+
+      // Update gamification doc key if name changed
+      if (oldName && oldName !== displayName) {
+        const oldRef = doc(db, "gamification", oldName);
+        const oldSnap = await getDoc(oldRef);
+        if (oldSnap.exists()) {
+          const { setDoc } = await import("firebase/firestore");
+          const newRef = doc(db, "gamification", displayName);
+          await setDoc(newRef, oldSnap.data());
+        }
+        // Update FCM token key
+        const oldTokenRef = doc(db, "fcm_tokens", oldName.toLowerCase());
+        const oldTokenSnap = await getDoc(oldTokenRef);
+        if (oldTokenSnap.exists()) {
+          const { setDoc } = await import("firebase/firestore");
+          const newTokenRef = doc(db, "fcm_tokens", displayName.toLowerCase());
+          await setDoc(newTokenRef, oldTokenSnap.data());
+        }
+      }
+
       setStatus("✨ Perfil atualizado!");
       setTimeout(() => setStatus(null), 3000);
     } catch (e) {

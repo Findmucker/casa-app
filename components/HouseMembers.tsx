@@ -23,7 +23,7 @@ interface MemberData {
 }
 
 export default function HouseMembers({ onClose }: HouseMembersProps) {
-  const { members, houseId } = useHouseContext();
+  const { members } = useHouseContext();
   const [memberData, setMemberData] = useState<MemberData[]>([]);
   const [loading, setLoading] = useState(true);
 

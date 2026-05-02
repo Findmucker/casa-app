@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc, increment, runTransaction } from "firebase/firestore";
+import { doc, getDoc, runTransaction } from "firebase/firestore";
 import { db } from "./firebase";
 
 export const POINTS = {

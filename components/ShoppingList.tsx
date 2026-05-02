@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable react-hooks/preserve-manual-memoization */
 import { useState, useRef, useCallback, useMemo, useEffect, memo } from "react";
 import { useCollection, type ShoppingItem } from "@/lib/hooks";
 import {
@@ -184,7 +184,6 @@ export default function ShoppingList() {
   }, [normalItems]);
 
   // Progress stats
-  const totalUndone = undone.length;
   const totalAll = items.length;
   const totalDone = done.length;
 

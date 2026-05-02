@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import {
   useCollection,
   type BigPriorityItem,
-  type Subtask,
 } from "@/lib/hooks";
 import {
   PROJECTS_CATEGORIES,

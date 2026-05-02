@@ -12,7 +12,6 @@ import AutocompleteInput from "./AutocompleteInput";
 import MiniAvatar from "./MiniAvatar";
 import SwipeableRow from "./SwipeableRow";
 import { useUndo } from "@/lib/useUndoStack";
-import { useDragReorder } from "@/lib/useDragReorder";
 
 const COMMON_COISINHAS = [
   "Aspirador", "Toalhas", "Cortinas", "Almofadas", "Velas", "Plantas",
@@ -128,6 +127,7 @@ export default function PriorityList() {
     });
   }, [remove, add, pushUndo]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDragReorder = useCallback((fromIndex: number, toIndex: number, catItems: SmallPriorityItem[]) => {
     const item = catItems[fromIndex];
     const target = catItems[toIndex];

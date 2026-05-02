@@ -20,7 +20,7 @@ export default function HouseSetup({ onCreateHouse, onJoinHouse, userName }: Hou
     setLoading(true);
     try {
       await onCreateHouse(houseName.trim());
-    } catch (e) {
+    } catch {
       setError("Erro ao criar casa");
     }
     setLoading(false);

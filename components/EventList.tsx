@@ -139,7 +139,7 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
 
   const handleClone = async (event: CasaEvent) => {
     // Create new event with same details
-    const newEvent = await add({
+    await add({
       title: `${event.title} (cópia)`,
       date: "",
       guests: event.guests,

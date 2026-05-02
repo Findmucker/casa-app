@@ -95,7 +95,7 @@ export function useHouse(uid: string | null) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!uid) { setLoading(false); return; }
+    if (!uid) { setLoading(false); return; } // eslint-disable-line react-hooks/set-state-in-effect
 
     const load = async () => {
       try {

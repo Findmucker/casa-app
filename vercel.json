@@ -1,4 +1,7 @@
 {
+  "crons": [
+    { "path": "/api/cron/habits", "schedule": "0 8 * * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

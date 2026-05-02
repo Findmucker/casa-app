@@ -15,7 +15,7 @@ export default function PublicEventsPage() {
   useEffect(() => {
     validateShareId(shareId).then(setValid);
     const saved = localStorage.getItem("casa-guest-name");
-    if (saved) setGuestName(saved);
+    if (saved) setGuestName(saved); // eslint-disable-line react-hooks/set-state-in-effect
   }, [shareId]);
 
   const handleSetName = () => {

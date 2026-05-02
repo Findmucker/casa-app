@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useSharedCollections, useCollection, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck } from "@/lib/hooks";
+import { useSharedCollections, useCollection } from "@/lib/hooks";
 import { getWeatherInfo } from "@/lib/weather";
 import type { CasaEvent } from "./EventList";
 

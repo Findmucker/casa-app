@@ -24,6 +24,7 @@ import { UndoProvider } from "@/lib/useUndoStack";
 import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 import { useTimeTheme } from "@/lib/themes";
+import { registerPushToken } from "@/lib/notifications";
 
 const ALL_TABS = [
   { id: "home", label: "Início", emoji: "✨" },
@@ -72,10 +73,17 @@ export default function Dashboard() {
   // Tutorial on first visit
   useEffect(() => {
     if (!localStorage.getItem("casa-tutorial-done")) {
-      setShowTutorial(true);
+      setShowTutorial(true); // eslint-disable-line react-hooks/set-state-in-effect
       localStorage.setItem("casa-tutorial-done", "true");
     }
   }, []);
+
+  // Auto-register push token if permission already granted
+  useEffect(() => {
+    if (user?.displayName && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      registerPushToken(user.displayName.toLowerCase());
+    }
+  }, [user?.displayName]);
 
   // Swipe detection
   const touchStart = useRef<{ x: number; y: number } | null>(null);

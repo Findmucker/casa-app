@@ -36,7 +36,7 @@ export default function AutocompleteInput({
   }, [value, suggestions]);
 
   useEffect(() => {
-    setSelectedIdx(-1);
+    setSelectedIdx(-1); // eslint-disable-line react-hooks/set-state-in-effect
   }, [value]);
 
   useEffect(() => {

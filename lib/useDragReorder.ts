@@ -13,7 +13,7 @@ interface UseDragReorderOptions<T> {
   onReorder: (fromIndex: number, toIndex: number) => void;
 }
 
-export function useDragReorder<T>({ items, onReorder }: UseDragReorderOptions<T>) {
+export function useDragReorder<T>({ onReorder }: UseDragReorderOptions<T>) {
   const [state, setState] = useState<DragState>({
     dragging: false,
     dragIndex: null,

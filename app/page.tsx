@@ -13,7 +13,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function Home() {
-  const { user, loading: authLoading, login, register, loginWithGoogle, logout } = useAuth();
+  const { user, loading: authLoading, login, register, loginWithGoogle } = useAuth();
   const { houseId, house, loading: houseLoading } = useHouse(user?.uid || null);
   const [showGreeting, setShowGreeting] = useState(true);
   const [userName, setUserName] = useState("");

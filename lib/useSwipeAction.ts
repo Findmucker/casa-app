@@ -61,7 +61,7 @@ export function useSwipeAction({
   const onTouchEnd = useCallback(() => {
     if (!startRef.current) return;
 
-    const { offsetX } = state;
+    const offsetX = state.offsetX;
 
     if (offsetX > threshold && onSwipeRight) {
       // Animate out to the right

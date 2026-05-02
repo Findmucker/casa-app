@@ -69,6 +69,7 @@ export interface HabitItem {
   emoji: string;
   reminderTime?: string; // "HH:MM"
   assignee?: string;
+  days?: number[]; // [0=dom,1=seg,...6=sáb] — undefined = todos os dias
   streak: number;
   lastChecked?: string; // ISO date "YYYY-MM-DD"
   createdAt: unknown;
@@ -169,6 +170,7 @@ export function useCollection<T extends { id: string }>(
     });
 
     return () => unsub();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionName, orderField, houseId]);
 
   const add = async (data: Omit<T, "id" | "createdAt">) => {
@@ -219,7 +221,7 @@ export function useLazyCollection<T extends { id: string }>(
 
   useEffect(() => {
     if (!enabled) {
-      setItems([]);
+      setItems([]); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 
@@ -262,13 +264,8 @@ export const CollectionDataContext = createContext<CollectionData | null>(null);
 
 export function useSharedCollections(): CollectionData {
   const ctx = useContext(CollectionDataContext);
-  if (ctx) return ctx;
-  // Fallback: if no context, open own listeners (shouldn't happen)
-  const { items: shopping } = useCollection<ShoppingItem>("shopping", "createdAt");
-  const { items: coisinhas } = useCollection<SmallPriorityItem>("priorities_small", "order");
-  const { items: projects } = useCollection<BigPriorityItem>("priorities_big", "order");
-  const { items: habits } = useCollection<HabitItem>("habits", "createdAt");
-  const { items: checks } = useCollection<HabitCheck>("habit_checks", "createdAt");
-  const { items: expenses } = useCollection<ExpenseItem>("expenses", "createdAt");
-  return { shopping, coisinhas, projects, habits, checks, expenses };
+  if (!ctx) {
+    throw new Error("useSharedCollections must be used within a CollectionDataContext.Provider");
+  }
+  return ctx;
 }

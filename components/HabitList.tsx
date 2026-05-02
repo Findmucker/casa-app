@@ -2,25 +2,40 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useCollection, type HabitItem, type HabitCheck } from "@/lib/hooks";
-import { getToday, scheduleLocalNotification, cancelNotification, registerPushToken } from "@/lib/notifications";
+import { getToday, scheduleRepeatingNotification, cancelNotification, registerPushToken } from "@/lib/notifications";
 import { awardPoints, updateStreak } from "@/lib/gamification";
-import { useMemberNames } from "@/lib/context";
+import { useMemberNames, useHouseContext } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
 
-const DEFAULT_HABITS = [
-  { name: "Pílula", emoji: "💊", reminderTime: "22:00" },
-];
+const DEFAULT_HABITS: { name: string; emoji: string; reminderTime?: string }[] = [];
 
 const HABIT_EMOJIS = ["💊", "💧", "🏃", "📖", "🧘", "🪴", "🧹", "💤", "🍎", "✍️"];
 
+const WEEKDAYS = [
+  { label: "D", value: 0 },
+  { label: "S", value: 1 },
+  { label: "T", value: 2 },
+  { label: "Q", value: 3 },
+  { label: "Q", value: 4 },
+  { label: "S", value: 5 },
+  { label: "S", value: 6 },
+];
+
+function isActiveToday(days?: number[]): boolean {
+  if (!days || days.length === 0) return true; // undefined/empty = todos os dias
+  return days.includes(new Date().getDay());
+}
+
 export default function HabitList() {
   const memberNames = useMemberNames();
+  const { userName } = useHouseContext();
   const { items: habits, loading, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
   const { items: checks, add: addCheck } = useCollection<HabitCheck>("habit_checks", "createdAt");
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState("💊");
   const [newTime, setNewTime] = useState("");
   const [newAssignee, setNewAssignee] = useState("ambos");
+  const [newDays, setNewDays] = useState<number[]>([]); // empty = todos os dias
   const [showAdd, setShowAdd] = useState(false);
   const [celebrating, setCelebrating] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -30,9 +45,13 @@ export default function HabitList() {
   // Check notification permission
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "granted") {
-      setNotificationsEnabled(true);
+      setNotificationsEnabled(true); // eslint-disable-line react-hooks/set-state-in-effect
     }
   }, []);
+
+  const todayChecks = useMemo(() => {
+    return new Set(checks.filter((c) => c.date === today).map((c) => c.habitId));
+  }, [checks, today]);
 
   // Schedule notifications for habits with reminder times
   const timerIds = useRef<number[]>([]);
@@ -43,25 +62,23 @@ export default function HabitList() {
 
     if (!notificationsEnabled) return;
     habits.forEach((h) => {
-      if (h.reminderTime) {
-        const id = scheduleLocalNotification(
-          `${h.emoji} ${h.name}`,
-          "Não te esqueças!",
-          h.reminderTime
-        );
-        if (id !== null) timerIds.current.push(id);
-      }
+      if (!h.reminderTime) return;
+      if (!isActiveToday(h.days)) return;
+
+      const id = scheduleRepeatingNotification(
+        `${h.emoji} ${h.name}`,
+        "Não te esqueças!",
+        h.reminderTime,
+        () => todayChecks.has(h.id)
+      );
+      if (id !== null) timerIds.current.push(id);
     });
 
     return () => {
       timerIds.current.forEach((id) => cancelNotification(id));
       timerIds.current = [];
     };
-  }, [habits, notificationsEnabled]);
-
-  const todayChecks = useMemo(() => {
-    return new Set(checks.filter((c) => c.date === today).map((c) => c.habitId));
-  }, [checks, today]);
+  }, [habits, notificationsEnabled, todayChecks]);
 
   const getStreak = useCallback((habitId: string) => {
     const habitChecks = checks
@@ -104,6 +121,7 @@ export default function HabitList() {
     await updateStreak("shared", newStreak);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUncheck = async (habit: HabitItem) => {
     const check = checks.find((c) => c.habitId === habit.id && c.date === today);
     if (!check) return;
@@ -118,16 +136,18 @@ export default function HabitList() {
       emoji: newEmoji,
       reminderTime: newTime || undefined,
       assignee: newAssignee,
+      days: newDays.length > 0 ? newDays : undefined,
       streak: 0,
     });
     setNewName("");
     setNewTime("");
     setNewAssignee("ambos");
+    setNewDays([]);
     setShowAdd(false);
   };
 
   const enableNotifications = async () => {
-    const ok = await registerPushToken("shared");
+    const ok = await registerPushToken(userName.toLowerCase());
     setNotificationsEnabled(ok);
   };
 
@@ -210,6 +230,39 @@ export default function HabitList() {
                 </button>
               ))}
             </div>
+            {/* Days selector */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-purple-500 font-medium">Dias da semana</span>
+                <button
+                  onClick={() => setNewDays(newDays.length === 7 ? [] : [0,1,2,3,4,5,6])}
+                  className="text-[10px] text-purple-400 hover:text-purple-600 transition-colors"
+                >
+                  {newDays.length === 0 || newDays.length === 7 ? "Todos os dias ✓" : "Selecionar todos"}
+                </button>
+              </div>
+              <div className="flex gap-1">
+                {WEEKDAYS.map((d) => (
+                  <button
+                    key={d.value}
+                    onClick={() => {
+                      setNewDays((prev) =>
+                        prev.includes(d.value)
+                          ? prev.filter((v) => v !== d.value)
+                          : [...prev, d.value]
+                      );
+                    }}
+                    className={`flex-1 h-8 rounded-lg text-xs font-bold transition-all active:scale-90 ${
+                      newDays.length === 0 || newDays.includes(d.value)
+                        ? "bg-purple-200 text-purple-700"
+                        : "bg-purple-50 text-purple-300"
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <button
               onClick={handleAdd}
               disabled={!newName.trim()}
@@ -252,12 +305,15 @@ export default function HabitList() {
           const checked = todayChecks.has(habit.id);
           const streak = getStreak(habit.id);
           const isCelebrating = celebrating === habit.id;
+          const activeToday = isActiveToday(habit.days);
 
           return (
             <div
               key={habit.id}
               className={`bg-white/70 backdrop-blur-sm rounded-2xl p-4 shadow-sm border transition-all ${
-                checked
+                !activeToday
+                  ? "border-gray-200/40 opacity-40"
+                  : checked
                   ? "border-green-200/60 bg-green-50/30"
                   : "border-purple-100/30 shadow-purple-100/30"
               } ${isCelebrating ? "animate-celebrate" : ""}`}
@@ -266,7 +322,7 @@ export default function HabitList() {
                 {/* Check button */}
                 <button
                   onClick={() => handleCheck(habit)}
-                  disabled={checked}
+                  disabled={checked || !activeToday}
                   aria-label={checked ? `${habit.name} já feito` : `Marcar ${habit.name} como feito`}
                   className={`h-12 w-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-xl transition-all active:scale-90 ${
                     checked
@@ -290,6 +346,15 @@ export default function HabitList() {
                     )}
                     {habit.reminderTime && (
                       <span className="text-[11px] text-purple-400">⏰ {habit.reminderTime}</span>
+                    )}
+                    {habit.days && habit.days.length > 0 && habit.days.length < 7 && (
+                      <span className="text-[10px] text-purple-300 flex gap-0.5">
+                        {WEEKDAYS.map((d) => (
+                          <span key={d.value} className={habit.days!.includes(d.value) ? "text-purple-500 font-bold" : "text-purple-200"}>
+                            {d.label}
+                          </span>
+                        ))}
+                      </span>
                     )}
                     {habit.assignee && habit.assignee !== "ambos" && (
                       <span className="text-[11px] text-purple-400 flex items-center gap-1">

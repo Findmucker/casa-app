@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getStats, checkNewBadges, BADGES, type GameStats } from "@/lib/gamification";
+import { BADGES, type GameStats } from "@/lib/gamification";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 

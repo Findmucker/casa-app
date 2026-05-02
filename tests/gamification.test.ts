@@ -1,4 +1,4 @@
-import { getLevel, getTitle, calculateStats, checkNewBadges, rollLoot, checkLevelUp, BADGES, EQUIPMENT, POINTS, GameStats } from "@/lib/gamification";
+import { getLevel, getTitle, calculateStats, checkNewBadges, rollLoot, checkLevelUp, EQUIPMENT, POINTS, GameStats } from "@/lib/gamification";
 
 describe("Gamification - Levels", () => {
   it("should start at level 1 with 0 points", () => {

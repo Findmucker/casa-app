@@ -422,7 +422,7 @@ function getPixelGrid(animalId: number): { pixels: (string | null)[][]; palette:
       return {
         palette: {},
         pixels: (() => {
-          const [B, W, D, N, E, S, C, O, _] = ["#263238", "#ffffff", "#37474f", "#ff6f00", "#111118", "#ffffff", "#ffccdd", "#ff6f00", null];
+          const [B, W, D, N, E, S, C, O, _] = ["#263238", "#ffffff", "#37474f", "#ff6f00", "#111118", "#ffffff", "#ffccdd", "#ff6f00", null]; // eslint-disable-line @typescript-eslint/no-unused-vars
           return [
             [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
             [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
@@ -563,7 +563,7 @@ function getPixelGrid(animalId: number): { pixels: (string | null)[][]; palette:
   }
 }
 
-function PixelAnimal({ size, animalId, idle, eyes, mouth, top, bottom, accessory }: { size: number; animalId: number; idle: string; eyes: typeof EYE_STYLES[0]; mouth: typeof MOUTH_STYLES[0]; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) {
+function PixelAnimal({ size, animalId, idle, eyes, mouth, top, bottom: _bottom, accessory }: { size: number; animalId: number; idle: string; eyes: typeof EYE_STYLES[0]; mouth: typeof MOUTH_STYLES[0]; top: typeof TOP_STYLES[0]; bottom: typeof BOTTOM_STYLES[0]; accessory: typeof ACCESSORY_STYLES[0] }) { // eslint-disable-line @typescript-eslint/no-unused-vars
   const p = size / 16;
   const { pixels } = getPixelGrid(animalId);
   const idleClass = `avatar-idle-${idle}`;
@@ -1016,6 +1016,7 @@ function AnimalEarsEnhanced({ animal, scale: s, furTexture, rimLight }: { animal
 
 // ─── Tail (legacy, kept for reference) ───────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Tail({ type, color, scale: s }: { type: string; color: string; scale: number }) {
   // Now delegated to TailEnhanced — this is unused but kept for compat
   if (type === "none") return null;
@@ -1024,6 +1025,7 @@ function Tail({ type, color, scale: s }: { type: string; color: string; scale: n
 
 // ─── 3D Accessory ─────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Accessory3D({ type, scale: s, animalColor }: { type: string; scale: number; animalColor: string }) {
   switch (type) {
     case "bow":
@@ -1072,6 +1074,7 @@ function Accessory3D({ type, scale: s, animalColor }: { type: string; scale: num
 
 // ─── Small previews for selector ──────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function EyePreviewSmall({ style }: { style: typeof EYE_STYLES[0] }) {
   return <EyePreview8bit style={style} />;
 }

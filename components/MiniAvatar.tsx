@@ -20,7 +20,7 @@ export default function MiniAvatar({ name, size = 24 }: MiniAvatarProps) {
 
   useEffect(() => {
     if (avatarCache.has(name)) {
-      setAvatar(avatarCache.get(name) ?? null);
+      setAvatar(avatarCache.get(name) ?? null); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 
