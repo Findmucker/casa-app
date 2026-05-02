@@ -165,6 +165,121 @@ input:focus, textarea:focus, select:focus {
   --font-sans: var(--font-geist);
 }
 
+/* Cyberpunk theme — dark, neon, aggressive */
+.theme-cyberpunk {
+  --background: #0a0a1a;
+  --foreground: #00f0ff;
+}
+
+.theme-cyberpunk .bg-white\/60,
+.theme-cyberpunk .bg-white\/70,
+.theme-cyberpunk .bg-white\/80 {
+  background-color: rgba(10, 15, 30, 0.85) !important;
+  border-color: rgba(0, 240, 255, 0.2) !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.08), inset 0 1px 0 rgba(0, 240, 255, 0.1) !important;
+}
+
+.theme-cyberpunk .bg-white {
+  background-color: rgba(15, 15, 35, 0.95) !important;
+}
+
+.theme-cyberpunk input,
+.theme-cyberpunk textarea,
+.theme-cyberpunk select {
+  background-color: rgba(10, 15, 40, 0.9) !important;
+  border-color: rgba(0, 240, 255, 0.3) !important;
+  color: #e0f7ff !important;
+}
+
+.theme-cyberpunk input::placeholder,
+.theme-cyberpunk textarea::placeholder {
+  color: rgba(0, 240, 255, 0.4) !important;
+}
+
+/* Text overrides */
+.theme-cyberpunk .text-rose-800,
+.theme-cyberpunk .text-rose-700,
+.theme-cyberpunk .text-rose-600,
+.theme-cyberpunk .text-purple-800,
+.theme-cyberpunk .text-purple-700,
+.theme-cyberpunk .text-purple-600 {
+  color: #00f0ff !important;
+}
+
+.theme-cyberpunk .text-pink-300,
+.theme-cyberpunk .text-pink-400,
+.theme-cyberpunk .text-pink-500,
+.theme-cyberpunk .text-purple-300,
+.theme-cyberpunk .text-purple-400,
+.theme-cyberpunk .text-purple-500 {
+  color: #ff00ff !important;
+}
+
+.theme-cyberpunk .text-rose-300,
+.theme-cyberpunk .text-rose-400,
+.theme-cyberpunk .text-rose-500 {
+  color: #ffdd00 !important;
+}
+
+/* Borders */
+.theme-cyberpunk .border-pink-100\/40,
+.theme-cyberpunk .border-pink-100\/30,
+.theme-cyberpunk .border-pink-100\/50,
+.theme-cyberpunk .border-pink-200\/60,
+.theme-cyberpunk .border-purple-100\/30,
+.theme-cyberpunk .border-purple-100\/40,
+.theme-cyberpunk .border-purple-200\/50,
+.theme-cyberpunk .border-rose-200\/50 {
+  border-color: rgba(0, 240, 255, 0.2) !important;
+}
+
+/* Backgrounds */
+.theme-cyberpunk .bg-pink-50,
+.theme-cyberpunk .bg-pink-100,
+.theme-cyberpunk .bg-purple-50,
+.theme-cyberpunk .bg-purple-100,
+.theme-cyberpunk .bg-rose-50 {
+  background-color: rgba(0, 240, 255, 0.08) !important;
+}
+
+.theme-cyberpunk .bg-purple-200,
+.theme-cyberpunk .bg-pink-200 {
+  background-color: rgba(255, 0, 255, 0.15) !important;
+}
+
+/* Gradient buttons */
+.theme-cyberpunk .bg-gradient-to-r.from-pink-400,
+.theme-cyberpunk .bg-gradient-to-r.from-pink-300,
+.theme-cyberpunk .bg-gradient-to-r.from-purple-400,
+.theme-cyberpunk .bg-gradient-to-r.from-rose-400 {
+  background: linear-gradient(to right, #00f0ff, #ff00ff) !important;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), 0 0 30px rgba(255, 0, 255, 0.2) !important;
+}
+
+/* Green states (checked) stay neon green */
+.theme-cyberpunk .bg-gradient-to-r.from-green-300 {
+  background: linear-gradient(to right, #00ff88, #00ffcc) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.4) !important;
+}
+
+.theme-cyberpunk .text-green-600 {
+  color: #00ff88 !important;
+}
+
+/* Scrollbar */
+.theme-cyberpunk ::-webkit-scrollbar-thumb {
+  background: #ff00ff;
+}
+
+.theme-cyberpunk ::-webkit-scrollbar-track {
+  background: #0a0a1a;
+}
+
+/* Neon glow animation for active elements */
+.theme-cyberpunk button:active {
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6) !important;
+}
+
 /* Safe area for mobile */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
