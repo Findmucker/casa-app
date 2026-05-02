@@ -18,6 +18,7 @@ import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
 import HouseMembers from "@/components/HouseMembers";
+import SendMessagePanel from "@/components/SendMessagePanel";
 import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 import { useTimeTheme } from "@/lib/themes";
@@ -48,6 +49,7 @@ export default function Dashboard() {
   const [showInvite, setShowInvite] = useState(false);
   const [showHouseMembers, setShowHouseMembers] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showSendMessage, setShowSendMessage] = useState(false);
   const theme = useTimeTheme();
   const darkMode = theme.isDark;
   const { user, logout } = useAuth();
@@ -228,6 +230,7 @@ export default function Dashboard() {
             <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-400" : "text-rose-300"}`}>Gestão</p>
             <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
               {[
+                { emoji: "💌", label: "Mensagem", action: () => { setShowPanel(false); setShowSendMessage(true); } },
                 { emoji: "📜", label: "Histórico", action: () => { setShowPanel(false); setShowHistory(true); } },
                 { emoji: "🔗", label: "Convidar", action: () => { setShowPanel(false); setShowInvite(true); } },
                 { emoji: "👥", label: "Membros", action: () => { setShowPanel(false); setShowHouseMembers(true); } },
@@ -275,6 +278,7 @@ export default function Dashboard() {
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
         {showHouseMembers && <HouseMembers onClose={() => setShowHouseMembers(false)} />}
         {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
+        {showSendMessage && <SendMessagePanel onClose={() => setShowSendMessage(false)} />}
       </main>
       </CollectionDataContext.Provider>
 
