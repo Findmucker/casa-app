@@ -16,16 +16,19 @@ interface MiniAvatarProps {
 }
 
 export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: MiniAvatarProps) {
+  // Gamification docs use display name (capitalized), but assignees may be lowercase keys
+  const docName = name.charAt(0).toUpperCase() + name.slice(1);
+
   const [avatar, setAvatar] = useState<AvatarConfig | null | undefined>(
-    avatarCache.has(name) ? avatarCache.get(name)!.avatar : undefined
+    avatarCache.has(docName) ? avatarCache.get(docName)!.avatar : undefined
   );
   const [equipped, setEquipped] = useState<EquippedItems>(
-    avatarCache.has(name) ? avatarCache.get(name)!.equipped : {}
+    avatarCache.has(docName) ? avatarCache.get(docName)!.equipped : {}
   );
 
   useEffect(() => {
-    if (avatarCache.has(name)) {
-      const cached = avatarCache.get(name)!;
+    if (avatarCache.has(docName)) {
+      const cached = avatarCache.get(docName)!;
       setAvatar(cached.avatar);
       setEquipped(cached.equipped);
       return;
@@ -34,19 +37,19 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
     let cancelled = false;
     const load = async () => {
       try {
-        const snap = await getDoc(doc(db, "gamification", name));
+        const snap = await getDoc(doc(db, "gamification", docName));
         const config = snap.exists() ? snap.data()?.avatar || null : null;
         const eq = snap.exists() ? snap.data()?.equipped || {} : {};
-        avatarCache.set(name, { avatar: config, equipped: eq });
+        avatarCache.set(docName, { avatar: config, equipped: eq });
         if (!cancelled) { setAvatar(config); setEquipped(eq); }
       } catch {
-        avatarCache.set(name, { avatar: null, equipped: {} });
+        avatarCache.set(docName, { avatar: null, equipped: {} });
         if (!cancelled) { setAvatar(null); setEquipped({}); }
       }
     };
     load();
     return () => { cancelled = true; };
-  }, [name]);
+  }, [docName]);
 
   // Get helmet emoji for badge
   const helmetItem = equipped.helmet ? LOOT_POOL.find((i) => i.id === equipped.helmet) : null;
@@ -80,7 +83,23 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
     );
   }
 
-  // Render pixel art avatar
+  // Render pixel art avatar (only if size is large enough for pixels to be visible)
+  if (size < 20) {
+    // Too small for pixel art — show colored initial with avatar's animal color hint
+    return (
+      <div className="relative" style={{ width: size, height: size }}>
+        <div
+          className="rounded-full bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center border border-rose-200/50"
+          style={{ width: size, height: size }}
+        >
+          <span className="text-white font-bold" style={{ fontSize: size * 0.5 }}>
+            {name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <div
