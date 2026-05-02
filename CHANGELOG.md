@@ -2,10 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.8.0] - 2026-05-02
+
+### Added
+- **Calendar emoji indicators** — replaced colored dots with emojis for better visual clarity (#86)
+- **Member management** — view all house members with avatar, level, and stats
+- **Tutorial rewritten** — fully updated content with complete i18n support (PT/EN)
+- **GitHub Issues #88–#97** — created tracking issues for upcoming improvements
+
+### Changed
+- **Member hierarchy removed** — all house members are now equal (no admin roles)
+- **Rotinazinhas emoji** — changed section icon from 💊 to 🧘 (better represents daily routines/well-being)
+- **Next.js upgraded to 16** — App Router with `force-dynamic` for Firebase pages
+- **Branching strategy** — standardized `feature/* → develop → master` flow
+- **Vercel deployment** now uses Firebase backend with force-dynamic rendering
+
+### Fixed
+- **Habits filter** — removed redundant "Ambos" button from person filter (#93)
+
 ## [0.7.0] - 2026-05-02
 
 ### Added
-- **Gastinhos restructured with 3 sub-tabs:** Despesas, Rendimentos, Poupanças (#36)
+- **Gastinhos restructured with 3 sub-tabs:** Despesas, Rendimentos, Poupancas (#36)
 - **Visual charts** — pure SVG, no external dependencies (#37):
   - Donut chart for category breakdown
   - Bar chart for 6-month spending history
@@ -23,7 +44,7 @@ All notable changes to this project will be documented in this file.
   - Branch naming validation
   - Auto-labeling
   - PR stats comment
-- **Branching strategy** — develop → main flow with feature branches
+- **Branching strategy** — develop → master flow with feature branches
 - **CONTRIBUTING.md** guide for contributors
 - **Issue templates** — bug report and feature request
 - **PR template** for consistent pull requests
@@ -32,7 +53,6 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Dashboard forced to dynamic rendering to fix Vercel prerender Firebase error
 - Environment variables added to Vercel Preview environment
-- Deploy target changed from `master` to `main` branch
 
 ### Fixed
 - Vercel prerender error caused by Firebase client SDK in static page
@@ -57,8 +77,8 @@ All notable changes to this project will be documented in this file.
 - **Profile name sync** — changing name propagates to house members, gamification, and FCM tokens
 
 ### Changed
-- Removed "Pílula" from default habits and all references
-- Empty habits page shows generic ✨ instead of pill emoji
+- Removed "Pilula" from default habits and all references
+- Empty habits page shows generic sparkle instead of pill emoji
 - Dashboard wrapped in `LocaleProvider` for standalone route support
 - Tabs built dynamically from locale keys
 
@@ -83,7 +103,7 @@ All notable changes to this project will be documented in this file.
 - **Interactive Tutorial** shown on first visit, accessible from menu
 - **Portuguese Holidays** in Calendar (fixed + Easter-based calculations)
 - **Expand/Collapse All** button on category lists (Shopping, Coisinhas, Projects)
-- **Habit assignee** - assign habits to specific house members
+- **Habit assignee** — assign habits to specific house members
 - **Test suite** with Jest (gamification + categories coverage)
 
 ### Changed
@@ -100,9 +120,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Multi-user Firebase Auth** (email/password + Google sign-in)
-- **Multi-tenant architecture** - each house has isolated data
-- **Invite system** - generate 6-char codes, share via link
-- **House setup flow** - create house or join existing via invite
+- **Multi-tenant architecture** — each house has isolated data
+- **Invite system** — generate 6-char codes, share via link
+- **House setup flow** — create house or join existing via invite
 - **Data migration** button in Maintenance panel
 - **Dark mode** with auto sunrise/sunset detection (Open-Meteo API)
 - Dark mode animation variants (purple/orange glows)
@@ -120,14 +140,14 @@ All notable changes to this project will be documented in this file.
 ## [0.3.0] - 2026-04-29
 
 ### Added
-- **Rotinazinhas** (Habits) - daily check with streak, push notifications
-- **Gastinhos** (Expenses) - monthly tracking by person and category
-- **Receitinhas** (Meal Planner) - weekly view, send ingredients to shopping
-- **Calendarzinho** - monthly grid with dots from all collections
-- **Dashboard Summary** - overview cards + weekly progress
-- **Gamification** - points, levels, 9 badges
-- **Search Overlay** - global search across all tabs
-- **History Panel** - completed items with dates
+- **Rotinazinhas** (Habits) — daily check with streak, push notifications
+- **Gastinhos** (Expenses) — monthly tracking by person and category
+- **Receitinhas** (Meal Planner) — weekly view, send ingredients to shopping
+- **Calendarzinho** — monthly grid with dots from all collections
+- **Dashboard Summary** — overview cards + weekly progress
+- **Gamification** — points, levels, 9 badges
+- **Search Overlay** — global search across all tabs
+- **History Panel** — completed items with dates
 - **Swipe navigation** between tabs
 - **Micro-animations** (celebrate, spring-in, fade-out, streak-fire)
 - Tab carousel auto-scrolls to active tab
