@@ -55,16 +55,14 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - Autocomplete com refeições passadas
 
 ### 📅 Calendarzinho
-- Vista mensal com grid
-- Dots coloridos por tipo (hábitos, coisinhas, projetos)
-- Tap num dia para ver detalhes
-
-### 📅 Calendarzinho
-- Vista mensal com grid
-- Dots coloridos por tipo (hábitos, coisinhas, projetos, feriados)
+- Vista mensal com grid interativo
+- Dots coloridos por tipo: 🟢 hábitos, 🩷 coisinhas, 🟣 projetos, 🔴 eventos, 🟡 feriados
 - **Feriados portugueses** automáticos (fixos + Páscoa/Carnaval)
 - Datas especiais (Dia dos Namorados, Natal, etc.)
-- Tap num dia para ver detalhes
+- **Integração meteorológica** — emoji do tempo nos próximos 7 dias diretamente no grid
+- **Integração de eventos** — eventos aparecem como dots vermelhos no dia correspondente
+- Tap num dia para ver detalhes: tempo, eventos, hábitos, coisinhas, projetos, feriados
+- Card de meteorologia com temperatura min/max e probabilidade de precipitação
 
 ### ✨ Dashboard Resumo
 - Cards com status de todas as áreas
@@ -155,6 +153,8 @@ App de gestão de casa para casais — organiza compras, tarefas, projetos, even
 - Previsão a 7 dias (Open-Meteo API)
 - Temperatura, vento, precipitação
 - Vista horária expandível por dia
+- **Integrada no Calendário** — emoji do tempo visível no grid
+- **Integrada nos Eventos** — previsão automática para eventos próximos
 
 ## Tech Stack
 
@@ -261,6 +261,7 @@ casa-app/
 │   ├── gamification.ts       # Sistema de pontos + badges + loot boxes + inventário
 │   ├── seed.ts               # Dados de teste (seed/reset modo teste)
 │   ├── notifications.ts      # Push notifications + lembretes
+│   ├── weather.ts            # WMO weather codes + getWeatherInfo (shared)
 │   └── share.ts              # Gerar/validar shareId para eventos
 └── public/
     └── manifest.json         # PWA manifest
