@@ -1,3 +1,6 @@
+// v0.6.0 — force cache update
+const CACHE_VERSION = "v0.6.0";
+
 importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-messaging-compat.js");
 
@@ -28,4 +31,17 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   event.waitUntil(clients.openWindow("/dashboard"));
+});
+
+// Force activate new service worker immediately (skip waiting)
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
 });
