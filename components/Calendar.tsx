@@ -134,7 +134,7 @@ export default function Calendar() {
     // Habit checks (green)
     checks.forEach((c) => {
       const habit = habits.find((h) => h.id === c.habitId);
-      addDot(c.date, { color: "bg-green-400", emoji: "💊", label: `${habit?.emoji || "✓"} ${habit?.name || "Hábito"}`, type: "habit" });
+      addDot(c.date, { color: "bg-green-400", emoji: "🧘", label: `${habit?.emoji || "✓"} ${habit?.name || "Hábito"}`, type: "habit" });
     });
 
     // Completed coisinhas (pink) - use completedAt
@@ -307,7 +307,7 @@ export default function Calendar() {
             <p className="text-xs">Tap num dia para ver detalhes</p>
             <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
               <div className="flex items-center gap-1">
-                <span className="text-[10px]">💊</span>
+                <span className="text-[10px]">🧘</span>
                 <span className="text-[10px]">Hábitos</span>
               </div>
               <div className="flex items-center gap-1">

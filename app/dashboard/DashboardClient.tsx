@@ -28,7 +28,7 @@ import { registerPushToken } from "@/lib/notifications";
 import { LocaleProvider, useT } from "@/lib/i18n";
 
 const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "meals", "calendar", "events", "weather"] as const;
-const TAB_EMOJIS = ["✨", "🛒", "🪴", "🏠", "💊", "💰", "🍽️", "📅", "🎉", "🌤️"];
+const TAB_EMOJIS = ["✨", "🛒", "🪴", "🏠", "🧘", "💰", "🍽️", "📅", "🎉", "🌤️"];
 const TAB_LABEL_KEYS = [
   "tabs.home", "tabs.shopping", "tabs.small", "tabs.big", "tabs.habits",
   "tabs.expenses", "tabs.meals", "tabs.calendar", "tabs.events", "tabs.weather",

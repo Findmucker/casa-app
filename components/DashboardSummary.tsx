@@ -126,7 +126,7 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xl">{habitsComplete ? "✅" : "💊"}</span>
+              <span className="text-xl">{habitsComplete ? "✅" : "🧘"}</span>
               <div className="text-left">
                 <p className={`text-xs font-bold ${habitsComplete ? "text-emerald-600" : "text-purple-600"}`}>
                   {habitsComplete ? "Hábitos completos!" : "Rotinazinhas de hoje"}

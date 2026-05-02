@@ -32,7 +32,7 @@ export default function HabitList() {
   const { items: habits, loading, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
   const { items: checks, add: addCheck } = useCollection<HabitCheck>("habit_checks", "createdAt");
   const [newName, setNewName] = useState("");
-  const [newEmoji, setNewEmoji] = useState("💊");
+  const [newEmoji, setNewEmoji] = useState("🧘");
   const [newTime, setNewTime] = useState("");
   const [newAssignee, setNewAssignee] = useState("ambos");
   const [newDays, setNewDays] = useState<number[]>([]); // empty = todos os dias
@@ -157,7 +157,7 @@ export default function HabitList() {
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-purple-100/40">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-purple-600">
-            {allChecked ? "✨ " + t("habits.allDone") : "💊 " + t("habits.title")}
+            {allChecked ? "✨ " + t("habits.allDone") : "🧘 " + t("habits.title")}
           </h2>
           <div className="flex gap-2">
             {!notificationsEnabled && (
