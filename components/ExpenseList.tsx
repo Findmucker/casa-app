@@ -179,8 +179,8 @@ export default function ExpenseList() {
             <div className="flex gap-2">
               {memberNames.map((m) => (
                 <button key={m.key} onClick={() => setNewPayer(m.key)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all active:scale-95 ${newPayer === m.key ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-500"}`}>
-                  {m.emoji} {m.label}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all active:scale-95 flex items-center justify-center gap-1.5 ${newPayer === m.key ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-500"}`}>
+                  {m.key === "ambos" ? <span>👫</span> : <MiniAvatar name={m.key} size={18} showEquipBadge={false} />} {m.label}
                 </button>
               ))}
             </div>
@@ -202,8 +202,8 @@ export default function ExpenseList() {
             <div className="flex gap-2">
               {memberNames.map((m) => (
                 <button key={m.key} onClick={() => setNewIncomeOwner(m.key)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all active:scale-95 ${newIncomeOwner === m.key ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-500"}`}>
-                  {m.emoji} {m.label}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all active:scale-95 flex items-center justify-center gap-1.5 ${newIncomeOwner === m.key ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-500"}`}>
+                  {m.key === "ambos" ? <span>👫</span> : <MiniAvatar name={m.key} size={18} showEquipBadge={false} />} {m.label}
                 </button>
               ))}
             </div>

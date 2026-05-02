@@ -136,10 +136,10 @@ export default function PriorityList() {
         <div className="flex gap-2">
           <button
             onClick={() => setNewAssignee(cycleAssignee(newAssignee))}
-            className="w-12 h-12 flex-shrink-0 rounded-2xl bg-pink-50 border border-pink-200/60 flex items-center justify-center text-xl transition-all active:scale-90 hover:bg-pink-100"
+            className="w-12 h-12 flex-shrink-0 rounded-2xl bg-pink-50 border border-pink-200/60 flex items-center justify-center transition-all active:scale-90 hover:bg-pink-100"
             title={memberNames.find((m) => m.key === newAssignee)?.label || "Ambos"}
           >
-            {memberNames.find((m) => m.key === newAssignee)?.emoji || "👫"}
+            {newAssignee !== "ambos" ? <MiniAvatar name={newAssignee} size={28} showEquipBadge={false} /> : <span className="text-xl">👫</span>}
           </button>
           <AutocompleteInput
             value={newName}

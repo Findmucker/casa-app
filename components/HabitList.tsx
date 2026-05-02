@@ -194,11 +194,11 @@ export default function HabitList() {
             <button
               key={m.key}
               onClick={() => setFilter(m.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 ${
                 filter === m.key ? "bg-purple-200 text-purple-700" : "bg-purple-50 text-purple-400"
               }`}
             >
-              {m.emoji} {m.label}
+              <MiniAvatar name={m.key} size={18} showEquipBadge={false} /> {m.label}
             </button>
           ))}
         </div>
@@ -243,11 +243,11 @@ export default function HabitList() {
                 <button
                   key={m.key}
                   onClick={() => setNewAssignee(m.key)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all active:scale-95 ${
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
                     newAssignee === m.key ? "bg-purple-200 text-purple-700" : "bg-purple-50 text-purple-400"
                   }`}
                 >
-                  {m.emoji} {m.label}
+                  {m.key === "ambos" ? <span>👫</span> : <MiniAvatar name={m.key} size={18} showEquipBadge={false} />} {m.label}
                 </button>
               ))}
             </div>
