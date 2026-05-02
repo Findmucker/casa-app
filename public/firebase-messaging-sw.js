@@ -1,22 +1,32 @@
-// Firebase Cloud Messaging Service Worker
-// Handles background push notifications
+/* eslint-disable no-undef */
+importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-messaging-compat.js");
 
-self.addEventListener("push", (event) => {
-  const data = event.data?.json() || {};
-  const title = data.title || "🏡 A Nossa Casinha";
-  const options = {
-    body: data.body || "Tens algo para verificar!",
+firebase.initializeApp({
+  apiKey: "AIzaSyDFijQyeFuPj4L2sjrojXaMf4yBoMvApho",
+  authDomain: "casa-66668.firebaseapp.com",
+  projectId: "casa-66668",
+  storageBucket: "casa-66668.firebasestorage.app",
+  messagingSenderId: "776757654663",
+  appId: "1:776757654663:web:15c0fa42ae1815d43ff422",
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  const { title, body } = payload.notification || {};
+  if (!title) return;
+
+  self.registration.showNotification(title, {
+    body: body || "",
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    tag: data.tag || "default",
     vibrate: [200, 100, 200],
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
+    tag: payload.data?.tag || "casinha-" + Date.now(),
+  });
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  event.waitUntil(
-    clients.openWindow("/dashboard")
-  );
+  event.waitUntil(clients.openWindow("/dashboard"));
 });

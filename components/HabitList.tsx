@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useCollection, type HabitItem, type HabitCheck } from "@/lib/hooks";
-import { getToday, scheduleLocalNotification, cancelNotification, requestNotificationPermission } from "@/lib/notifications";
+import { getToday, scheduleLocalNotification, cancelNotification, registerPushToken } from "@/lib/notifications";
 import { awardPoints, updateStreak } from "@/lib/gamification";
 import { useMemberNames } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
@@ -127,7 +127,7 @@ export default function HabitList() {
   };
 
   const enableNotifications = async () => {
-    const ok = await requestNotificationPermission("shared");
+    const ok = await registerPushToken("shared");
     setNotificationsEnabled(ok);
   };
 

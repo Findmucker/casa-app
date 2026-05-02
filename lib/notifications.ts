@@ -1,35 +1,67 @@
 "use client";
 
+import { getFCMToken } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
-// Request notification permission and save token
-export async function requestNotificationPermission(owner: string): Promise<boolean> {
-  if (!("Notification" in window)) return false;
-
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") return false;
-
-  // Register service worker for background notifications
-  if ("serviceWorker" in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-      console.info("SW registered:", registration.scope);
-    } catch (e) {
-      console.warn("SW registration failed:", e);
-    }
+// Request notification permission (basic browser API)
+export function requestNotificationPermission() {
+  if (typeof window === "undefined") return;
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    Notification.requestPermission();
   }
-
-  // Save that this user has notifications enabled
-  await setDoc(doc(db, "notification_settings", owner), {
-    enabled: true,
-    updatedAt: new Date().toISOString(),
-  }, { merge: true });
-
-  return true;
 }
 
-// Schedule a local notification at a specific time (non-recursive, single fire)
+// Show a local notification immediately
+export function notify(title: string, body: string) {
+  if (typeof window === "undefined") return;
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  new Notification(title, {
+    body,
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+  });
+}
+
+/**
+ * Register the Service Worker and save the FCM token to Firestore.
+ * This enables real push notifications even when the app is closed.
+ */
+export async function registerPushToken(owner: string): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  if (!("serviceWorker" in navigator)) return false;
+
+  try {
+    // Register the FCM service worker
+    await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    await navigator.serviceWorker.ready;
+
+    // Get permission
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return false;
+
+    // Get FCM token
+    const token = await getFCMToken();
+    if (!token) return false;
+
+    // Save token to Firestore (keyed by owner so each person has their token)
+    await setDoc(doc(db, "fcm_tokens", owner), {
+      token,
+      updatedAt: new Date().toISOString(),
+    });
+
+    console.log("FCM token registered for", owner);
+    return true;
+  } catch (e) {
+    console.error("Push registration error:", e);
+    return false;
+  }
+}
+
+// Schedule a local notification at a specific time (single fire, fallback)
 export function scheduleLocalNotification(title: string, body: string, timeStr: string): number | null {
   if (!("Notification" in window) || Notification.permission !== "granted") return null;
 
@@ -38,7 +70,6 @@ export function scheduleLocalNotification(title: string, body: string, timeStr: 
   const target = new Date();
   target.setHours(hours, minutes, 0, 0);
 
-  // If time already passed today, schedule for tomorrow
   if (target <= now) {
     target.setDate(target.getDate() + 1);
   }
@@ -52,8 +83,6 @@ export function scheduleLocalNotification(title: string, body: string, timeStr: 
       badge: "/icon-192.png",
       tag: `habit-${title}`,
     });
-    // No recursive reschedule — the HabitList useEffect handles rescheduling
-    // when habits array changes or on next render cycle
   }, delay);
 
   return timerId;
