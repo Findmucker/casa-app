@@ -7,7 +7,6 @@ import { useHouseContext } from "@/lib/context";
 import { getLevel, getTitle } from "@/lib/gamification";
 import { AnimeAnimalCharacter, type AvatarConfig } from "./AvatarBuilder";
 import { useT } from "@/lib/i18n";
-import type { HouseMember } from "@/lib/auth";
 
 interface HouseMembersProps {
   onClose: () => void;
@@ -16,13 +15,12 @@ interface HouseMembersProps {
 interface MemberData {
   uid: string;
   name: string;
-  role: "admin" | "member";
+  role: string;
   avatar?: AvatarConfig;
   points: number;
   level: number;
   title: string;
   maxStreak: number;
-  joinedAt?: string;
 }
 
 export default function HouseMembers({ onClose }: HouseMembersProps) {
@@ -31,10 +29,6 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
   const [memberData, setMemberData] = useState<MemberData[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
-  const [confirmRole, setConfirmRole] = useState<string | null>(null);
-
-  const currentUser = members.find((m) => m.uid === userId);
-  const isAdmin = currentUser?.role === "admin";
 
   useEffect(() => {
     const load = async () => {
@@ -56,7 +50,6 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
                 level,
                 title: getTitle(level),
                 maxStreak: d.maxStreak || 0,
-                joinedAt: d.joinedAt,
               };
             }
           } catch { /* ignore */ }
@@ -78,7 +71,7 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
   }, [members]);
 
   const handleRemoveMember = async (member: MemberData) => {
-    if (!isAdmin || member.uid === userId) return;
+    if (member.uid === userId) return;
     try {
       const houseRef = doc(db, "houses", houseId);
       const memberObj = members.find((m) => m.uid === member.uid);
@@ -89,33 +82,6 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
       setConfirmRemove(null);
     } catch (e) {
       console.error("Error removing member:", e);
-    }
-  };
-
-  const handleToggleRole = async (member: MemberData) => {
-    if (!isAdmin || member.uid === userId) return;
-    try {
-      const houseRef = doc(db, "houses", houseId);
-      const houseSnap = await getDoc(houseRef);
-      if (!houseSnap.exists()) return;
-      const houseData = houseSnap.data();
-      const updatedMembers = (houseData.members as HouseMember[]).map((m) => {
-        if (m.uid === member.uid) {
-          return { ...m, role: member.role === "admin" ? "member" : "admin" };
-        }
-        return m;
-      });
-      await updateDoc(houseRef, { members: updatedMembers });
-      setMemberData((prev) =>
-        prev.map((m) =>
-          m.uid === member.uid
-            ? { ...m, role: member.role === "admin" ? "member" : "admin" }
-            : m
-        )
-      );
-      setConfirmRole(null);
-    } catch (e) {
-      console.error("Error changing role:", e);
     }
   };
 
@@ -169,11 +135,6 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
                     {m.uid === userId && (
                       <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-medium">{t("members.management.you")}</span>
                     )}
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                      m.role === "admin" ? "bg-purple-100 text-purple-600" : "bg-gray-100 text-gray-500"
-                    }`}>
-                      {m.role === "admin" ? "Admin" : t("members.management.member")}
-                    </span>
                   </div>
                   <p className="text-[11px] text-purple-500">{m.title}</p>
                 </div>
@@ -188,28 +149,10 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
                 </div>
               </div>
 
-              {/* Admin actions */}
-              {isAdmin && m.uid !== userId && (
+              {/* Remove action (can't remove yourself) */}
+              {m.uid !== userId && (
                 <div className="flex gap-2 mt-2 ml-15">
-                  {confirmRole === m.uid ? (
-                    <div className="flex gap-1.5 items-center">
-                      <span className="text-[10px] text-purple-500">
-                        {m.role === "admin" ? t("members.management.demoteConfirm") : t("members.management.promoteConfirm")}
-                      </span>
-                      <button
-                        onClick={() => handleToggleRole(m)}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-purple-400 text-white font-medium active:scale-95"
-                      >
-                        ✓
-                      </button>
-                      <button
-                        onClick={() => setConfirmRole(null)}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 font-medium active:scale-95"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : confirmRemove === m.uid ? (
+                  {confirmRemove === m.uid ? (
                     <div className="flex gap-1.5 items-center">
                       <span className="text-[10px] text-red-500">{t("members.management.removeConfirm")}</span>
                       <button
@@ -226,20 +169,12 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
                       </button>
                     </div>
                   ) : (
-                    <>
-                      <button
-                        onClick={() => setConfirmRole(m.uid)}
-                        className="text-[10px] px-2.5 py-1 rounded-full bg-purple-50 text-purple-500 font-medium hover:bg-purple-100 active:scale-95 transition-all"
-                      >
-                        {m.role === "admin" ? "👤 " + t("members.management.demote") : "⭐ " + t("members.management.promote")}
-                      </button>
-                      <button
-                        onClick={() => setConfirmRemove(m.uid)}
-                        className="text-[10px] px-2.5 py-1 rounded-full bg-red-50 text-red-400 font-medium hover:bg-red-100 active:scale-95 transition-all"
-                      >
-                        🚪 {t("members.management.remove")}
-                      </button>
-                    </>
+                    <button
+                      onClick={() => setConfirmRemove(m.uid)}
+                      className="text-[10px] px-2.5 py-1 rounded-full bg-red-50 text-red-400 font-medium hover:bg-red-100 active:scale-95 transition-all"
+                    >
+                      🚪 {t("members.management.remove")}
+                    </button>
                   )}
                 </div>
               )}
@@ -247,17 +182,7 @@ export default function HouseMembers({ onClose }: HouseMembersProps) {
           ))
         )}
       </div>
-
-      {/* Info footer */}
-      {isAdmin && (
-        <div className="px-4 pb-6">
-          <div className="bg-purple-50/80 rounded-xl p-3 border border-purple-100/50">
-            <p className="text-[10px] text-purple-500 text-center">
-              ⭐ {t("members.management.adminNote")}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+
