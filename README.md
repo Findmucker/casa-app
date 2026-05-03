@@ -4,7 +4,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.8.2
+**Version:** 0.8.3
 
 ## Features
 

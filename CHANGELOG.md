@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2026-05-03
+
+### Added
+- **Push notifications cron** — Vercel cron job runs 6x/day (7h, 9h, 12h, 15h, 18h, 21h) to send real FCM push notifications for unchecked habits
+- **Error state in HabitList** — shows actual Firestore error message when data fails to load
+- **Error state in useCollection** — generic hook now exposes `error` field
+
+### Changed
+- **Menu layout** — Communication button removed, History moved into Settings sub-panel
+- **Holiday icons** — each holiday now shows its own emoji (🔴 Liberty Day, 📜 Republic, 🛡️ Independence) instead of all using 🇵🇹
+- **Category buttons** — 2 columns: House | Settings
+
+### Fixed
+- **Calendar holidays** — correct per-holiday emojis, 🇵🇹 only for Dia de Portugal
+
 ## [0.8.2] - 2026-05-02
 
 ### Added

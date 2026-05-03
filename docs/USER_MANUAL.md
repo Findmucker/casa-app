@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Ultima atualizacao: 2 de Maio de 2026 | Versao 0.8.2
+> Ultima atualizacao: 3 de Maio de 2026 | Versao 0.8.3
 
 ## O que e a app?
 
@@ -227,9 +227,6 @@ Ao tocar no titulo "A Nossa Casinha" no header, abre um menu organizado em secco
 ### Navegar
 Grid com todas as 10 tabs — tap para ir directamente.
 
-### Comunicacao
-- **📜 Historico** — registo de items completados com data e stats
-
 ### Casa
 - **🔗 Convidar** — gerar codigo de convite para novos membros
 - **👥 Membros** — widget com avatares de todos os membros, nivel e acoes rapidas:
@@ -239,6 +236,7 @@ Grid com todas as 10 tabs — tap para ir directamente.
   - Animacoes: entrada staggered, bounce no membro selecionado, hover scale
 
 ### Definicoes
+- **📜 Historico** — registo de items completados com data e stats
 - **⚙️ Manutencao** — reorganizar categorias, limpar items feitos, seed de teste
 - **🌐 Idioma** — toggle inline PT 🇵🇹 / EN 🇬🇧
 - **❓ Tutorial** — rever o tutorial interativo da app

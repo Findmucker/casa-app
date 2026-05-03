@@ -1,6 +1,6 @@
 {
   "crons": [
-    { "path": "/api/cron/habits", "schedule": "0 8 * * *" }
+    { "path": "/api/cron/habits", "schedule": "0 7,9,12,15,18,21 * * *" }
   ],
   "headers": [
     {
