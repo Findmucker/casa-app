@@ -4,7 +4,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.8.3
+**Version:** 0.8.2
 
 ## Features
 
@@ -98,12 +98,6 @@ A household management PWA for couples and families — organize shopping, tasks
 - Locale dictionaries in `lib/locales/pt.ts` and `lib/locales/en.ts`
 - Language toggle on login screen and dashboard menu
 - **Tutorial fully localized** with i18n support
-
-### Theme System
-- **Time-based themes** — automatic: morning (amber), afternoon (rose/pink), dusk (orange/purple), night (pastel purple)
-- **Selectable themes** — override time-based with custom themes via menu
-- **Cyberpunk 2077** — dark neon theme with angular UI, scan lines, cyan/yellow/red palette, glitch animations, monospace font
-- **Persistence** — selected theme saved in localStorage, survives sessions
 - Persists in localStorage
 
 ### PWA & Push Notifications

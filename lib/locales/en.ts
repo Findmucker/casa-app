@@ -32,12 +32,6 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "menu.language": "Language",
   "menu.logout": "Logout",
   "menu.profile": "Profile",
-  "menu.themes": "Themes",
-  "themes.auto": "Automatic",
-  "themes.autoDesc": "Changes with time of day",
-  "themes.cyberpunk": "Cyberpunk",
-  "themes.cyberpunkDesc": "Neon, dark, futuristic",
-  "themes.active": "Active",
 
   // Common
   "common.add": "Add",

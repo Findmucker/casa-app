@@ -23,7 +23,7 @@ import UndoToast from "@/components/UndoToast";
 import { UndoProvider } from "@/lib/useUndoStack";
 import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
-import { useTimeTheme, SELECTABLE_THEMES } from "@/lib/themes";
+import { useTimeTheme } from "@/lib/themes";
 import { registerPushToken } from "@/lib/notifications";
 import { LocaleProvider, useT } from "@/lib/i18n";
 import { useHouseContext } from "@/lib/context";
@@ -58,7 +58,7 @@ function DashboardInner() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
   const [showPanel, setShowPanel] = useState(false);
-  const [menuSubPanel, setMenuSubPanel] = useState<"themes" | "house" | "settings" | null>(null);
+  const [menuSubPanel, setMenuSubPanel] = useState<"house" | "settings" | null>(null);
   const [showMaintenance, setShowMaintenance] = useState(false);
   const [showGamification, setShowGamification] = useState(false);
   const [profileViewMember, setProfileViewMember] = useState<string | undefined>(undefined);
@@ -72,7 +72,6 @@ function DashboardInner() {
   const [memberActionTarget, setMemberActionTarget] = useState<MemberWidget | null>(null);
   const theme = useTimeTheme();
   const darkMode = theme.isDark;
-  const { themeId, setThemeId } = theme;
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
   const { members, userName } = useHouseContext();
@@ -265,33 +264,8 @@ function DashboardInner() {
                   ← {t("common.close")}
                 </button>
                 <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>
-                  {menuSubPanel === "themes" ? t("menu.themes") : menuSubPanel === "house" ? t("menu.house") : t("menu.settings")}
+                  {menuSubPanel === "house" ? t("menu.house") : t("menu.settings")}
                 </p>
-                  {menuSubPanel === "themes" ? (
-                    <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
-                      {SELECTABLE_THEMES.map((st) => (
-                        <button
-                          key={st.id}
-                          onClick={() => { setThemeId(st.id); }}
-                          className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 border-2 ${
-                            themeId === st.id
-                              ? "border-cyan-400 shadow-lg shadow-cyan-400/20"
-                              : darkMode
-                                ? "border-purple-200/30 hover:border-purple-300/50"
-                                : "border-pink-100/30 hover:border-pink-200/60"
-                          } ${darkMode ? "bg-purple-100/40" : "bg-white/60"}`}
-                        >
-                          <div className={`w-full h-10 rounded-xl bg-gradient-to-r ${st.preview}`} />
-                          <span className="text-lg">{st.emoji}</span>
-                          <span className={`text-xs font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{t(st.nameKey as any)}</span>
-                          <span className={`text-[10px] ${darkMode ? "text-purple-400" : "text-rose-400"}`}>{t(st.descKey as any)}</span>
-                          {themeId === st.id && (
-                            <span className="absolute top-2 right-2 text-xs bg-cyan-400 text-black px-1.5 py-0.5 rounded-full font-bold">{t("themes.active")}</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
                 <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
                   {(menuSubPanel === "house" ? [
                     { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
@@ -340,7 +314,6 @@ function DashboardInner() {
                     </div>
                   )}
                 </div>
-                  )}
                 {/* Logout in settings sub-panel */}
                 {menuSubPanel === "settings" && (
                   <div className="mt-5">
@@ -490,9 +463,8 @@ function DashboardInner() {
                 <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
 
                 {/* Category buttons */}
-                <div className="grid grid-cols-3 gap-3 px-6 max-w-sm">
+                <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
                   {[
-                    { key: "themes" as const, emoji: "🎨", label: t("menu.themes") },
                     { key: "house" as const, emoji: "🏠", label: t("menu.house") },
                     { key: "settings" as const, emoji: "⚙️", label: t("menu.settings") },
                   ].map((cat) => (

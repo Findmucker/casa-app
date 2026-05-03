@@ -30,12 +30,6 @@ export const pt = {
   "menu.language": "Idioma",
   "menu.logout": "Sair",
   "menu.profile": "Perfil",
-  "menu.themes": "Temas",
-  "themes.auto": "Automático",
-  "themes.autoDesc": "Muda com a hora do dia",
-  "themes.cyberpunk": "Cyberpunk",
-  "themes.cyberpunkDesc": "Neon, escuro, futurista",
-  "themes.active": "Ativo",
 
   // Common
   "common.add": "Adicionar",
