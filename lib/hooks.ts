@@ -196,14 +196,16 @@ export function useCollection<T extends { id: string }>(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionName, orderField, houseId]);
 
-  const add = async (data: Omit<T, "id" | "createdAt">) => {
+  const add = async (data: Omit<T, "id" | "createdAt">): Promise<string | null> => {
     try {
-      await addDoc(getCollectionRef(), {
+      const docRef = await addDoc(getCollectionRef(), {
         ...data,
         createdAt: serverTimestamp(),
       });
+      return docRef.id;
     } catch (e) {
       console.error("Add error:", e);
+      return null;
     }
   };
 

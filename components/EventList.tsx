@@ -99,7 +99,7 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     // Creator is auto-included
     const creator = currentUser || (typeof window !== "undefined" ? localStorage.getItem("casa-owner") : null);
     const participants = creator ? [creator] : [];
-    await add({
+    const newId = await add({
       title: title.trim(),
       date,
       guests: Math.max(parseInt(guests) || 0, participants.length),
@@ -110,6 +110,8 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     setDate("");
     setGuests("");
     setShowCreate(false);
+    // Auto-expand the new event so user can add items immediately
+    if (newId) setExpandedId(newId);
   };
 
   const handleJoin = async (event: CasaEvent) => {
@@ -786,16 +788,16 @@ function EventCard({
           )}
 
           {/* Actions */}
-          <div className="flex gap-2 pt-1">
+          <div className="flex justify-center gap-3 pt-4 mt-4 border-t border-purple-100/40">
             <button
               onClick={onMarkDone}
-              className="text-[11px] bg-green-100 text-green-600 px-3 py-1.5 rounded-xl hover:bg-green-200 active:scale-95 transition-all"
+              className="text-[11px] bg-green-100 text-green-600 px-4 py-2 rounded-xl hover:bg-green-200 active:scale-95 transition-all font-medium"
             >
               ✓ Concluir evento
             </button>
             <button
               onClick={onDelete}
-              className="text-[11px] text-pink-300 px-3 py-1.5 hover:text-red-400 transition-colors"
+              className="text-[11px] text-pink-400 px-4 py-2 rounded-xl hover:text-red-500 hover:bg-red-50 transition-all"
             >
               Apagar
             </button>
