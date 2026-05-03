@@ -532,7 +532,16 @@ function EventCard({
   const [newType, setNewType] = useState<"compra" | "todo">("compra");
   const [newAssignee, setNewAssignee] = useState("");
   const [newParticipant, setNewParticipant] = useState("");
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState(event.title);
   const weather = useEventWeather(event.date);
+
+  const handleSaveTitle = () => {
+    if (editTitle.trim() && editTitle.trim() !== event.title) {
+      onUpdateEvent({ title: editTitle.trim() });
+    }
+    setEditingTitle(false);
+  };
 
   const handleAdd = async () => {
     if (!newItem.trim()) return;
@@ -587,15 +596,28 @@ function EventCard({
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-purple-100/40 overflow-hidden transition-all">
       {/* Header */}
-      <button
-        onClick={onToggleExpand}
-        className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-purple-50/30 transition-colors"
-      >
-        <span className="text-lg">🎉</span>
+      <div className="flex items-center gap-3 p-3.5">
+        <button onClick={onToggleExpand} className="text-lg">🎉</button>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-rose-700 truncate">
-            {event.title}
-          </p>
+          {editingTitle ? (
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onBlur={handleSaveTitle}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") { setEditTitle(event.title); setEditingTitle(false); } }}
+              className="w-full text-sm font-semibold text-rose-700 bg-transparent border-b border-purple-300 focus:outline-none focus:border-purple-500 py-0.5"
+              autoFocus
+            />
+          ) : (
+            <p
+              className="text-sm font-semibold text-rose-700 truncate cursor-pointer hover:text-rose-500 transition-colors"
+              onClick={(e) => { if (expanded) { e.stopPropagation(); setEditingTitle(true); } else { onToggleExpand(); } }}
+            >
+              {event.title}
+              {expanded && <span className="text-[9px] text-purple-300 ml-1.5">✏️</span>}
+            </p>
+          )}
           <div className="flex items-center gap-2 mt-0.5">
             {event.date && (
               <span className="text-[11px] text-purple-400">
@@ -620,14 +642,15 @@ function EventCard({
             )}
           </div>
         </div>
-        <span
+        <button
+          onClick={onToggleExpand}
           className={`text-pink-300 text-xs transition-transform ${
             expanded ? "rotate-90" : ""
           }`}
         >
           ▶
-        </span>
-      </button>
+        </button>
+      </div>
 
       {/* Progress bar */}
       {items.length > 0 && (
