@@ -29,7 +29,7 @@ export default function HabitList() {
   const { t } = useT();
   const memberNames = useMemberNames();
   const { userName } = useHouseContext();
-  const { items: habits, loading, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
+  const { items: habits, loading, error, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
   const { items: checks, add: addCheck } = useCollection<HabitCheck>("habit_checks", "createdAt");
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState("🧘");
@@ -301,6 +301,14 @@ export default function HabitList() {
           <div className="text-center text-purple-300 py-12 animate-pulse-soft">
             <div className="text-3xl mb-2">✨</div>
             <p className="text-sm">{t("common.loading")}</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center text-red-400 py-12">
+            <div className="text-3xl mb-2">⚠️</div>
+            <p className="text-sm font-medium">Erro ao carregar rotinas</p>
+            <p className="text-xs text-red-300 mt-1 px-4 break-all">{error}</p>
           </div>
         )}
 

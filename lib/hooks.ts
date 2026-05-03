@@ -136,6 +136,7 @@ export function useCollection<T extends { id: string }>(
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const houseId = useContext(HouseIdContext);
 
   // Build collection path: houses/{houseId}/{name} or root {name}
@@ -183,9 +184,11 @@ export function useCollection<T extends { id: string }>(
       })) as T[];
 
       setItems(data);
+      setError(null);
       setLoading(false);
     }, (error) => {
       console.error("Firestore snapshot error:", error);
+      setError(error.message);
       setLoading(false);
     });
 
@@ -226,7 +229,7 @@ export function useCollection<T extends { id: string }>(
     }
   };
 
-  return { items, loading, add, update, remove };
+  return { items, loading, error, add, update, remove };
 }
 
 // ─── Lazy query hook — only fetches when enabled ────────────────
