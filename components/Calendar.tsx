@@ -8,25 +8,25 @@ import type { CasaEvent } from "./EventList";
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-// Portuguese holidays (fixed dates)
+// Portuguese holidays (fixed dates) — emoji reflects the holiday itself
 const HOLIDAYS_FIXED: Record<string, string> = {
   "01-01": "🎆 Ano Novo",
   "02-14": "💕 Dia dos Namorados",
   "03-19": "👨 Dia do Pai",
-  "04-25": "🇵🇹 Dia da Liberdade",
+  "04-25": "🔴 Dia da Liberdade",
   "05-01": "✊ Dia do Trabalhador",
   "05-04": "👩 Dia da Mãe",
   "06-01": "👶 Dia da Criança",
-  "06-10": "🇵🇹 Dia de Portugal",
+  "06-10": "⚔️ Dia de Portugal",
   "06-13": "🙏 Santo António",
   "08-15": "🙏 Assunção de Maria",
-  "10-05": "🇵🇹 Implantação da República",
+  "10-05": "📜 Implantação da República",
   "10-31": "🎃 Halloween",
-  "11-01": "🙏 Dia de Todos os Santos",
-  "12-01": "🇵🇹 Restauração da Independência",
+  "11-01": "🕯️ Dia de Todos os Santos",
+  "12-01": "🛡️ Restauração da Independência",
   "12-08": "🙏 Imaculada Conceição",
   "12-24": "🎄 Véspera de Natal",
-  "12-25": "🎄 Natal",
+  "12-25": "🎁 Natal",
   "12-31": "🎇 Véspera de Ano Novo",
 };
 
@@ -158,15 +158,17 @@ export default function Calendar() {
       }
     });
 
-    // Holidays (amber)
+    // Holidays (amber) — use each holiday's own emoji
     const year = viewDate.getFullYear();
     Object.entries(HOLIDAYS_FIXED).forEach(([mmdd, label]) => {
       const dateStr = `${year}-${mmdd}`;
-      addDot(dateStr, { color: "bg-amber-400", emoji: "🇵🇹", label, type: "event" });
+      const emoji = label.match(/^\p{Emoji_Presentation}/u)?.[0] || "📅";
+      addDot(dateStr, { color: "bg-amber-400", emoji, label, type: "event" });
     });
     const moving = getMovingHolidays(year);
     Object.entries(moving).forEach(([dateStr, label]) => {
-      addDot(dateStr, { color: "bg-amber-400", emoji: "🇵🇹", label, type: "event" });
+      const emoji = label.match(/^\p{Emoji_Presentation}/u)?.[0] || "📅";
+      addDot(dateStr, { color: "bg-amber-400", emoji, label, type: "event" });
     });
 
     return map;
@@ -327,7 +329,7 @@ export default function Calendar() {
                 <span className="text-[10px]">Meteo</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="text-[10px]">🇵🇹</span>
+                <span className="text-[10px]">📅</span>
                 <span className="text-[10px]">Feriados</span>
               </div>
             </div>
