@@ -17,7 +17,7 @@ const HOLIDAYS_FIXED: Record<string, string> = {
   "05-01": "✊ Dia do Trabalhador",
   "05-04": "👩 Dia da Mãe",
   "06-01": "👶 Dia da Criança",
-  "06-10": "⚔️ Dia de Portugal",
+  "06-10": "🇵🇹 Dia de Portugal",
   "06-13": "🙏 Santo António",
   "08-15": "🙏 Assunção de Maria",
   "10-05": "📜 Implantação da República",
