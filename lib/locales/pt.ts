@@ -197,6 +197,7 @@ export const pt = {
 
   // Tutorial
   "tutorial.skip": "Saltar",
+  "tutorial.dismiss": "Entendi!",
   "tutorial.prev": "Anterior",
   "tutorial.next": "Seguinte",
   "tutorial.start": "Começar!",

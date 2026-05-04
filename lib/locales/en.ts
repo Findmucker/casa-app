@@ -199,6 +199,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
 
   // Tutorial
   "tutorial.skip": "Skip",
+  "tutorial.dismiss": "Got it!",
   "tutorial.prev": "Previous",
   "tutorial.next": "Next",
   "tutorial.start": "Let's go!",

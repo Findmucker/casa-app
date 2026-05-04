@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import TabTip from "@/components/TabTip";
 import { useSharedCollections, useCollection } from "@/lib/hooks";
 import { getWeatherInfo } from "@/lib/weather";
 import type { CasaEvent } from "./EventList";
@@ -209,6 +210,7 @@ export default function Calendar() {
 
   return (
     <div className="flex flex-col h-full">
+      <TabTip tabId="calendar" emoji="📅" titleKey="tutorial.calendar.title" tips={["tutorial.calendar.tip1", "tutorial.calendar.tip2", "tutorial.calendar.tip3", "tutorial.calendar.tip4"]} />
       {/* Header */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-blue-100/40">
         <div className="flex items-center justify-between">

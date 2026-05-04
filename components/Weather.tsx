@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import TabTip from "@/components/TabTip";
 import { getWeatherInfo } from "@/lib/weather";
 
 interface CurrentWeather {
@@ -126,6 +127,7 @@ export default function Weather() {
 
   return (
     <div className="flex flex-col h-full">
+      <TabTip tabId="weather" emoji="🌤️" titleKey="tutorial.weather.title" tips={["tutorial.weather.tip1", "tutorial.weather.tip2"]} />
       {/* Current weather */}
       <div className="p-6 bg-white/60 backdrop-blur-sm border-b border-pink-100/40 animate-fade-in-up">
         <p className="text-xs text-pink-400 font-medium mb-3 uppercase tracking-wider">

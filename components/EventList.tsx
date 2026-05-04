@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import TabTip from "@/components/TabTip";
 import { useCollection } from "@/lib/hooks";
 import { getOrCreateShareId } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
@@ -198,6 +199,7 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 space-y-3">
+      <TabTip tabId="events" emoji="🎉" titleKey="tutorial.events.title" tips={["tutorial.events.tip1", "tutorial.events.tip2", "tutorial.events.tip3"]} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider flex items-center gap-2">

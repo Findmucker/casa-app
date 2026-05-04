@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import TabTip from "@/components/TabTip";
 import { useCollection, type SmallPriorityItem } from "@/lib/hooks";
 import {
   COISINHAS_CATEGORIES,
@@ -131,6 +132,7 @@ export default function PriorityList() {
 
   return (
     <div className="flex flex-col h-full">
+      <TabTip tabId="small" emoji="🧹" titleKey="tutorial.coisinhas.title" tips={["tutorial.coisinhas.tip1", "tutorial.coisinhas.tip2", "tutorial.coisinhas.tip3", "tutorial.coisinhas.tip4"]} />
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40 space-y-2">
         <div className="flex gap-2">

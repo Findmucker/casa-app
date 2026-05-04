@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/preserve-manual-memoization */
 import { useState, useRef, useCallback, useMemo, useEffect, memo } from "react";
+import TabTip from "@/components/TabTip";
 import { useCollection, type ShoppingItem } from "@/lib/hooks";
 import {
   SHOPPING_CATEGORIES,
@@ -246,6 +247,7 @@ export default function ShoppingList() {
 
   return (
     <div className="flex flex-col h-full">
+      <TabTip tabId="shopping" emoji="🛒" titleKey="tutorial.shopping.title" tips={["tutorial.shopping.tip1", "tutorial.shopping.tip2", "tutorial.shopping.tip3", "tutorial.shopping.tip4"]} />
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40 space-y-2">
         {/* Global progress */}

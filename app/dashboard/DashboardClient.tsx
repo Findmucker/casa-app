@@ -12,7 +12,6 @@ import Calendar from "@/components/Calendar";
 import DashboardSummary from "@/components/DashboardSummary";
 import MaintenancePanel from "@/components/MaintenancePanel";
 import ProfilePage from "@/components/ProfilePage";
-import Tutorial from "@/components/Tutorial";
 import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
@@ -68,7 +67,6 @@ function DashboardInner() {
   const [showHouseMembers, setShowHouseMembers] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
   const [houseMembersMessageTo, setHouseMembersMessageTo] = useState<string | undefined>(undefined);
-  const [showTutorial, setShowTutorial] = useState(false);
   const [showSendMessage, setShowSendMessage] = useState(false);
   const [memberActionTarget, setMemberActionTarget] = useState<MemberWidget | null>(null);
   const theme = useTimeTheme();
@@ -112,13 +110,6 @@ function DashboardInner() {
     shopping, coisinhas, projects, habits, checks, expenses,
   }), [shopping, coisinhas, projects, habits, checks, expenses]);
 
-  // Tutorial on first visit
-  useEffect(() => {
-    if (!localStorage.getItem("casa-tutorial-done")) {
-      setShowTutorial(true); // eslint-disable-line react-hooks/set-state-in-effect
-      localStorage.setItem("casa-tutorial-done", "true");
-    }
-  }, []);
 
   // Auto-register push token if permission already granted
   useEffect(() => {
@@ -274,7 +265,6 @@ function DashboardInner() {
                   ] : [
                     { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
                     { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowMaintenance(true); } },
-                    { emoji: "❓", label: t("menu.tutorial"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowTutorial(true); } },
                   ]).map((item) => (
                     <button
                       key={item.label}
@@ -496,7 +486,6 @@ function DashboardInner() {
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
         {showHouseMembers && <HouseMembers onClose={() => { setShowHouseMembers(false); setHouseMembersMessageTo(undefined); }} initialMessageTo={houseMembersMessageTo} />}
         {showFriends && <FriendsPanel onClose={() => setShowFriends(false)} />}
-        {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
         {showSendMessage && <SendMessagePanel onClose={() => setShowSendMessage(false)} />}
         <UndoToast />
       </main>

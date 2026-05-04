@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import TabTip from "@/components/TabTip";
 import { useCollection, type ExpenseItem, type IncomeItem, type SavingsGoal } from "@/lib/hooks";
 import { useMemberNames } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
@@ -109,6 +110,7 @@ export default function ExpenseList() {
 
   return (
     <div className="flex flex-col h-full">
+      <TabTip tabId="expenses" emoji="💰" titleKey="tutorial.expenses.title" tips={["tutorial.expenses.tip1", "tutorial.expenses.tip2", "tutorial.expenses.tip3", "tutorial.expenses.tip4", "tutorial.expenses.tip5"]} />
       {/* Header */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-emerald-100/40">
         <div className="flex items-center justify-between mb-2">

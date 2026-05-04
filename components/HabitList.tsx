@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import TabTip from "@/components/TabTip";
 import { useCollection, type HabitItem, type HabitCheck } from "@/lib/hooks";
 import { getToday, scheduleRepeatingNotification, cancelNotification, registerPushToken } from "@/lib/notifications";
 import { awardPoints, updateStreak } from "@/lib/gamification";
@@ -158,6 +159,7 @@ export default function HabitList() {
 
   return (
     <div className="flex flex-col h-full">
+      <TabTip tabId="habits" emoji="🧘" titleKey="tutorial.habits.title" tips={["tutorial.habits.tip1", "tutorial.habits.tip2", "tutorial.habits.tip3", "tutorial.habits.tip4"]} />
       {/* Header */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-purple-100/40">
         <div className="flex items-center justify-between">

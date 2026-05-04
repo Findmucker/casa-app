@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import TabTip from "@/components/TabTip";
 import {
   useCollection,
   type BigPriorityItem,
@@ -389,6 +390,7 @@ export default function ProjectList() {
 
   return (
     <div className="flex flex-col h-full">
+      <TabTip tabId="big" emoji="🔧" titleKey="tutorial.projects.title" tips={["tutorial.projects.tip1", "tutorial.projects.tip2", "tutorial.projects.tip3", "tutorial.projects.tip4"]} />
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40">
         <div className="flex gap-2">
