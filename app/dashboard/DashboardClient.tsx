@@ -16,6 +16,7 @@ import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
 import FriendsPanel from "@/components/FriendsPanel";
+import MiniAvatar from "@/components/MiniAvatar";
 import HouseMembers from "@/components/HouseMembers";
 import SendMessagePanel from "@/components/SendMessagePanel";
 import UndoToast from "@/components/UndoToast";
@@ -27,8 +28,8 @@ import { registerPushToken } from "@/lib/notifications";
 import { LocaleProvider, useT } from "@/lib/i18n";
 import { useHouseContext } from "@/lib/context";
 import { getLevel, getTitle } from "@/lib/gamification";
-import { AnimeAnimalCharacter, type AvatarConfig } from "@/components/AvatarBuilder";
-import { LOOT_POOL, type EquippedItems } from "@/lib/gamification";
+import { type AvatarConfig } from "@/components/AvatarBuilder";
+import { type EquippedItems } from "@/lib/gamification";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -418,20 +419,7 @@ function DashboardInner() {
                             style={{ animationDelay: `${i * 100}ms`, animationFillMode: "both" }}
                           >
                             <div className={`relative transition-transform duration-300 ${memberActionTarget?.uid === m.uid ? "animate-bounce-gentle" : ""}`}>
-                              {m.avatar ? (
-                                <div className={`w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center ${
-                                  darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
-                                }`}>
-                                  <AnimeAnimalCharacter config={m.avatar} size={40} />
-                                </div>
-                              ) : (
-                                <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center ${
-                                  darkMode ? "border-2 border-purple-200/60" : "border-2 border-rose-200/60 shadow-sm shadow-pink-100/30"
-                                }`}>
-                                  <span className="text-white font-bold text-base">{m.name.charAt(0).toUpperCase()}</span>
-                                </div>
-                              )}
-                              {m.equipped?.helmet && (() => { const h = LOOT_POOL.find(i => i.id === m.equipped!.helmet); return h ? <span className="absolute -top-1 -right-1 text-xs leading-none">{h.emoji}</span> : null; })()}
+                              <MiniAvatar name={m.name} size={48} avatarConfig={m.avatar || null} equippedItems={m.equipped} />
                             </div>
                             <span className={`text-[10px] font-semibold leading-tight ${darkMode ? "text-purple-700" : "text-rose-700"}`}>{m.name}</span>
                             <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-300 ${

@@ -13,20 +13,26 @@ interface MiniAvatarProps {
   name: string;
   size?: number; // px: 20, 28, 40 (default 24)
   showEquipBadge?: boolean;
+  /** Pass pre-loaded avatar to skip Firestore fetch */
+  avatarConfig?: AvatarConfig | null;
+  /** Pass pre-loaded equipped items to skip Firestore fetch */
+  equippedItems?: EquippedItems;
 }
 
-export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: MiniAvatarProps) {
+export default function MiniAvatar({ name, size = 24, showEquipBadge = true, avatarConfig, equippedItems }: MiniAvatarProps) {
   // Gamification docs use display name (capitalized), but assignees may be lowercase keys
   const docName = name.charAt(0).toUpperCase() + name.slice(1);
+  const preloaded = avatarConfig !== undefined;
 
   const [avatar, setAvatar] = useState<AvatarConfig | null | undefined>(
-    avatarCache.has(docName) ? avatarCache.get(docName)!.avatar : undefined
+    preloaded ? (avatarConfig ?? null) : avatarCache.has(docName) ? avatarCache.get(docName)!.avatar : undefined
   );
   const [equipped, setEquipped] = useState<EquippedItems>(
-    avatarCache.has(docName) ? avatarCache.get(docName)!.equipped : {}
+    preloaded ? (equippedItems || {}) : avatarCache.has(docName) ? avatarCache.get(docName)!.equipped : {}
   );
 
   useEffect(() => {
+    if (preloaded) return; // Skip fetch when data is passed in
     if (!docName) { setAvatar(null); return; }
 
     if (avatarCache.has(docName)) {
@@ -65,7 +71,7 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true }: M
     };
     load();
     return () => { cancelled = true; };
-  }, [docName, name]);
+  }, [docName, name, preloaded]);
 
   // Get helmet emoji for badge
   const helmetItem = equipped.helmet ? LOOT_POOL.find((i) => i.id === equipped.helmet) : null;

@@ -5,7 +5,8 @@ import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useHouseContext } from "@/lib/context";
 import { getLevel, getTitle } from "@/lib/gamification";
-import { AnimeAnimalCharacter, type AvatarConfig } from "./AvatarBuilder";
+import { type AvatarConfig } from "./AvatarBuilder";
+import MiniAvatar from "./MiniAvatar";
 import { useT } from "@/lib/i18n";
 
 interface HouseMembersProps {
@@ -234,15 +235,7 @@ export default function HouseMembers({ onClose, initialMessageTo }: HouseMembers
               <div className="flex items-center gap-3">
                 {/* Avatar */}
                 <div className="flex-shrink-0">
-                  {m.avatar ? (
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-rose-200/50 bg-white flex items-center justify-center">
-                      <AnimeAnimalCharacter config={m.avatar} size={40} />
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center border-2 border-rose-200/50">
-                      <span className="text-white font-bold text-lg">{m.name.charAt(0).toUpperCase()}</span>
-                    </div>
-                  )}
+                  <MiniAvatar name={m.name} size={48} avatarConfig={m.avatar || null} />
                 </div>
 
                 {/* Info */}
