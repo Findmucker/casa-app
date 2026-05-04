@@ -5,6 +5,7 @@ import TabTip from "@/components/TabTip";
 import MiniAvatar from "@/components/MiniAvatar";
 import { useSharedCollections, useCollection } from "@/lib/hooks";
 import { useHouseContext } from "@/lib/context";
+import { useFriends } from "@/lib/friends";
 import { useT } from "@/lib/i18n";
 import { getWeatherInfo } from "@/lib/weather";
 import { doc, getDoc } from "firebase/firestore";
@@ -116,11 +117,13 @@ export default function Calendar() {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [weatherData, setWeatherData] = useState<Record<string, DayWeather>>({});
-  const [birthdays, setBirthdays] = useState<{ name: string; date: string }[]>([]);
+  const [birthdays, setBirthdays] = useState<{ name: string; date: string; houseName?: string }[]>([]);
+  const [friendBirthdays, setFriendBirthdays] = useState<{ name: string; date: string; houseName?: string }[]>([]);
 
   const { habits, checks, coisinhas, projects } = useSharedCollections();
   const { items: events } = useCollection<CasaEvent>("events", "createdAt");
-  const { members } = useHouseContext();
+  const { members, houseId } = useHouseContext();
+  const { friends } = useFriends(houseId);
   const { t, tArray } = useT();
   const weekdays = tArray("calendar.weekdays");
   const months = tArray("calendar.months");
@@ -132,11 +135,11 @@ export default function Calendar() {
     fetchWeather7Days().then(setWeatherData);
   }, []);
 
-  // Fetch member birthdays
+  // Fetch member birthdays (own house)
   useEffect(() => {
     if (members.length === 0) return;
     const load = async () => {
-      const results: { name: string; date: string }[] = [];
+      const results: { name: string; date: string; houseName?: string }[] = [];
       for (const m of members) {
         try {
           const snap = await getDoc(doc(db, "users", m.uid));
@@ -149,6 +152,32 @@ export default function Calendar() {
     };
     load();
   }, [members]);
+
+  // Fetch friend house members' birthdays
+  useEffect(() => {
+    if (friends.length === 0) return;
+    const load = async () => {
+      const results: { name: string; date: string; houseName?: string }[] = [];
+      for (const friend of friends) {
+        try {
+          const houseSnap = await getDoc(doc(db, "houses", friend.houseId));
+          if (!houseSnap.exists()) continue;
+          const houseMembers = houseSnap.data().members || [];
+          for (const m of houseMembers) {
+            if (!m.uid) continue;
+            try {
+              const userSnap = await getDoc(doc(db, "users", m.uid));
+              if (userSnap.exists() && userSnap.data().birthDate) {
+                results.push({ name: m.name, date: userSnap.data().birthDate, houseName: friend.houseName });
+              }
+            } catch { /* ignore */ }
+          }
+        } catch { /* ignore */ }
+      }
+      setFriendBirthdays(results);
+    };
+    load();
+  }, [friends]);
 
   // Build dots map: date → dots[]
   const dotsMap = useMemo(() => {
@@ -208,8 +237,16 @@ export default function Calendar() {
       addDot(dateStr, { color: "bg-cyan-400", emoji: "🎂", label: `🎂 ${b.name}`, type: "birthday", memberName: b.name });
     });
 
+    // Friend birthdays
+    friendBirthdays.forEach((b) => {
+      const parts = b.date.split("-");
+      const mmdd = parts.length === 3 ? `${parts[1]}-${parts[2]}` : b.date;
+      const dateStr = `${year}-${mmdd}`;
+      addDot(dateStr, { color: "bg-cyan-300", emoji: "🎂", label: `🎂 ${b.name} (${b.houseName})`, type: "birthday", memberName: b.name });
+    });
+
     return map;
-  }, [habits, checks, coisinhas, projects, events, viewDate, birthdays]);
+  }, [habits, checks, coisinhas, projects, events, viewDate, birthdays, friendBirthdays]);
 
   // Calendar grid
   const calendarDays = useMemo(() => {
