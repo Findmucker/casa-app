@@ -77,6 +77,28 @@ function DashboardInner() {
   const houseId = useContext(HouseIdContext);
   const { members, userName, houseName } = useHouseContext();
 
+  // ─── Back button navigation ───────────────────────────────────
+  const openOverlay = useCallback((open: () => void) => {
+    history.pushState({ overlay: true }, "");
+    open();
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (showGamification) { setShowGamification(false); setProfileViewMember(undefined); }
+      else if (showSearch) { setShowSearch(false); }
+      else if (showMaintenance) { setShowMaintenance(false); }
+      else if (showHistory) { setShowHistory(false); }
+      else if (showInvite) { setShowInvite(false); }
+      else if (showHouseMembers) { setShowHouseMembers(false); setHouseMembersMessageTo(undefined); }
+      else if (showFriends) { setShowFriends(false); }
+      else if (showSendMessage) { setShowSendMessage(false); }
+      else if (showPanel) { setShowPanel(false); setMenuSubPanel(null); }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [showGamification, showSearch, showMaintenance, showHistory, showInvite, showHouseMembers, showFriends, showSendMessage, showPanel]);
+
   // Members widget data
   const [memberWidgets, setMemberWidgets] = useState<MemberWidget[]>([]);
   useEffect(() => {
@@ -183,7 +205,7 @@ function DashboardInner() {
           : "bg-white/50 border-pink-100/40"
       }`}>
         <button
-          onClick={() => setShowSearch(true)}
+          onClick={() => openOverlay(() => setShowSearch(true))}
           aria-label="Pesquisar"
           className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
             darkMode ? "bg-purple-100/60 text-purple-500 hover:bg-purple-100" : "bg-pink-50 text-pink-400 hover:bg-pink-100"
@@ -192,7 +214,7 @@ function DashboardInner() {
           🔍
         </button>
         <button
-          onClick={() => { setShowPanel(!showPanel); setMenuSubPanel(null); }}
+          onClick={() => { if (showPanel) { history.back(); } else { openOverlay(() => { setShowPanel(true); setMenuSubPanel(null); }); } }}
           aria-label="Menu principal"
           aria-expanded={showPanel}
           className={`text-lg font-bold tracking-wide active:scale-95 transition-all ${
@@ -202,7 +224,7 @@ function DashboardInner() {
           🏡 {houseName}
         </button>
         <button
-          onClick={() => setShowGamification(true)}
+          onClick={() => openOverlay(() => setShowGamification(true))}
           aria-label="Perfil e gamificação"
           className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
             darkMode ? "bg-purple-100/60 text-purple-500 hover:bg-purple-100" : "bg-purple-50 text-purple-500 hover:bg-purple-100"
@@ -235,7 +257,7 @@ function DashboardInner() {
         {/* Grid panel overlay */}
         {showPanel && (
           <div
-            onClick={(e) => { if (e.target === e.currentTarget) setShowPanel(false); }}
+            onClick={(e) => { if (e.target === e.currentTarget) history.back(); }}
             className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up bg-gradient-to-br ${
             darkMode
               ? "from-purple-100/98 via-indigo-100/98 to-pink-100/98"
@@ -508,14 +530,14 @@ function DashboardInner() {
         )}
 
         {/* Overlays */}
-        {showMaintenance && <MaintenancePanel onClose={() => setShowMaintenance(false)} />}
-        {showGamification && <ProfilePage onClose={() => { setShowGamification(false); setProfileViewMember(undefined); }} viewMember={profileViewMember} />}
-        {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} onNavigate={(tab) => switchTab(tab as TabId)} />}
-        {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
-        {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
-        {showHouseMembers && <HouseMembers onClose={() => { setShowHouseMembers(false); setHouseMembersMessageTo(undefined); }} initialMessageTo={houseMembersMessageTo} />}
-        {showFriends && <FriendsPanel onClose={() => setShowFriends(false)} />}
-        {showSendMessage && <SendMessagePanel onClose={() => setShowSendMessage(false)} />}
+        {showMaintenance && <MaintenancePanel onClose={() => history.back()} />}
+        {showGamification && <ProfilePage onClose={() => history.back()} viewMember={profileViewMember} />}
+        {showSearch && <SearchOverlay onClose={() => history.back()} onNavigate={(tab) => switchTab(tab as TabId)} />}
+        {showHistory && <HistoryPanel onClose={() => history.back()} />}
+        {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => history.back()} />}
+        {showHouseMembers && <HouseMembers onClose={() => history.back()} initialMessageTo={houseMembersMessageTo} />}
+        {showFriends && <FriendsPanel onClose={() => history.back()} />}
+        {showSendMessage && <SendMessagePanel onClose={() => history.back()} />}
         <UndoToast />
       </main>
       </CollectionDataContext.Provider>
