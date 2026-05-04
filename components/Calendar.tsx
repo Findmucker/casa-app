@@ -337,10 +337,9 @@ export default function Calendar() {
               <div key={i} className="flex items-center gap-2 bg-white/70 rounded-xl p-3 border border-blue-100/30">
                 {dot.memberName ? (
                   <MiniAvatar name={dot.memberName} size={24} showEquipBadge={false} />
-                ) : (
-                  <span className="text-sm">{dot.emoji}</span>
-                )}
-                <span className="text-sm text-blue-800">{dot.label}</span>
+                ) : null}
+                <span className="text-sm text-blue-800 flex-1">{dot.label}</span>
+                <span className={`w-2 h-2 rounded-full ${dot.color}`} />
               </div>
             ))}
           </div>
