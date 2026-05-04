@@ -227,11 +227,9 @@ function DashboardInner() {
         <button
           onClick={() => openOverlay(() => setShowGamification(true))}
           aria-label="Perfil e gamificação"
-          className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
-            darkMode ? "bg-purple-100/60 text-purple-500 hover:bg-purple-100" : "bg-purple-50 text-purple-500 hover:bg-purple-100"
-          }`}
+          className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all"
         >
-          ⚔️
+          <MiniAvatar name={userName} size={32} />
         </button>
       </header>
 
