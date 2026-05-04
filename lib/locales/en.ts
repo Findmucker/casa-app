@@ -27,6 +27,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "menu.invite": "Invite",
   "menu.members": "Members",
   "menu.maintenance": "Maintenance",
+  "menu.friends": "Friends",
   "menu.tutorial": "Tutorial",
   "menu.language": "Language",
   "menu.logout": "Logout",
@@ -155,6 +156,25 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "messages.sent": "Message sent!",
   "messages.failed": "Couldn't send. Does the other member have notifications enabled?",
   "messages.noMembers": "No other members in the house yet. Invite someone first!",
+
+  // Friends
+  "friends.title": "Friend Houses",
+  "friends.add": "Add",
+  "friends.code": "Friend code",
+  "friends.generateCode": "Generate code",
+  "friends.enterCode": "Enter code",
+  "friends.search": "Search by name",
+  "friends.pending": "Pending requests",
+  "friends.accept": "Accept",
+  "friends.reject": "Reject",
+  "friends.remove": "Remove",
+  "friends.empty": "No friend houses yet",
+  "friends.connected": "Connected!",
+  "friends.requestSent": "Request sent!",
+  "friends.members": "Members",
+  "friends.birthdays": "Birthdays",
+  "friends.noResults": "No houses found",
+  "friends.inviteToEvent": "Invite to event",
 
   // Tutorial
   "tutorial.title": "Tutorial",

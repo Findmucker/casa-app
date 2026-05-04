@@ -36,6 +36,8 @@
 | `fcm_tokens/{memberName}` | display name | Push notification tokens |
 | `users/{uid}` | Firebase UID | User profile |
 | `shopping`, `priorities_small`, `priorities_big`, `habits`, `habit_checks`, `expenses`, `events`, `income`, `savings_goals` | auto-ID | App data collections |
+| `houses/{id}/friends/{friendHouseId}` | friend house ID | Friend house connections |
+| `friend_requests` | auto-ID | Pending friend requests between houses |
 
 ### Component Patterns
 - Full-screen overlays: `fixed inset-0 z-50 overflow-y-auto animate-fade-in-up`
@@ -274,4 +276,45 @@ Issue URL: https://github.com/Findmucker/casa-app/issues/{NUMBER}
 ```
 
 Wait for user approval before coding.
+
+## Issue Organization
+
+### Labels
+- `enhancement` — new feature
+- `bug` — something broken
+- `TBD` — aspirational, needs design work
+- `epic` — groups related sub-issues
+- `theme` — visual theme related
+- `ai` — AI/LLM feature
+- `ui` — UI/UX improvement
+- `documentation` — docs only
+- `priority: high` / `priority: medium` — urgency
+
+### Epics (grouping issues)
+- When creating an epic, use title prefix `epic: Name`
+- Body should list sub-issues with `- #N - description`
+- Add acceptance criteria for the overall epic goal
+- Keep children open as sub-tasks
+
+### Issue Quality Standards
+Every actionable issue MUST have:
+- Clear title (imperative or descriptive)
+- `## Acceptance Criteria` section with checkboxes
+- Appropriate labels
+- Link to parent epic if applicable
+
+### Creating Issues via API
+Use Python `urllib.request` for issue bodies with special characters (em-dashes, emojis break shell JSON). The curl approach works for simple bodies only.
+
+## Removing a Feature (Checklist)
+
+When removing a feature entirely:
+1. Delete the component file
+2. Remove import + render from `DashboardClient.tsx`
+3. Remove from `TAB_IDS` and `TAB_LABEL_KEYS` arrays
+4. Remove all i18n keys from both `pt.ts` and `en.ts` (tabs.*, feature.*, tutorial.feature.*)
+5. Remove tutorial step from `Tutorial.tsx`
+6. Remove from docs: README, CHANGELOG, USER_MANUAL, CLAUDE.md collections table
+7. Run `npx tsc --noEmit`
+8. Commit, merge, close issue
 

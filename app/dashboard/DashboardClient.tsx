@@ -16,6 +16,7 @@ import Tutorial from "@/components/Tutorial";
 import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
 import InvitePanel from "@/components/InvitePanel";
+import FriendsPanel from "@/components/FriendsPanel";
 import HouseMembers from "@/components/HouseMembers";
 import SendMessagePanel from "@/components/SendMessagePanel";
 import UndoToast from "@/components/UndoToast";
@@ -65,6 +66,7 @@ function DashboardInner() {
   const [showHistory, setShowHistory] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showHouseMembers, setShowHouseMembers] = useState(false);
+  const [showFriends, setShowFriends] = useState(false);
   const [houseMembersMessageTo, setHouseMembersMessageTo] = useState<string | undefined>(undefined);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSendMessage, setShowSendMessage] = useState(false);
@@ -268,6 +270,7 @@ function DashboardInner() {
                   {(menuSubPanel === "house" ? [
                     { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
                     { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); } },
+                    { emoji: "🏠", label: t("menu.friends"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowFriends(true); } },
                   ] : [
                     { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
                     { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowMaintenance(true); } },
@@ -492,6 +495,7 @@ function DashboardInner() {
         {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => setShowInvite(false)} />}
         {showHouseMembers && <HouseMembers onClose={() => { setShowHouseMembers(false); setHouseMembersMessageTo(undefined); }} initialMessageTo={houseMembersMessageTo} />}
+        {showFriends && <FriendsPanel onClose={() => setShowFriends(false)} />}
         {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
         {showSendMessage && <SendMessagePanel onClose={() => setShowSendMessage(false)} />}
         <UndoToast />

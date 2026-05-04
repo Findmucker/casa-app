@@ -25,6 +25,7 @@ export const pt = {
   "menu.invite": "Convidar",
   "menu.members": "Membros",
   "menu.maintenance": "Manutenção",
+  "menu.friends": "Amigas",
   "menu.tutorial": "Tutorial",
   "menu.language": "Idioma",
   "menu.logout": "Sair",
@@ -153,6 +154,25 @@ export const pt = {
   "messages.sent": "Mensagem enviada!",
   "messages.failed": "Não consegui enviar. O outro membro tem notificações ativas?",
   "messages.noMembers": "Ainda não tens outros membros na casa. Convida alguém primeiro!",
+
+  // Friends
+  "friends.title": "Casas Amigas",
+  "friends.add": "Adicionar",
+  "friends.code": "Código de amizade",
+  "friends.generateCode": "Gerar código",
+  "friends.enterCode": "Introduzir código",
+  "friends.search": "Procurar por nome",
+  "friends.pending": "Pedidos pendentes",
+  "friends.accept": "Aceitar",
+  "friends.reject": "Rejeitar",
+  "friends.remove": "Remover",
+  "friends.empty": "Ainda não tens casas amigas",
+  "friends.connected": "Conectadas!",
+  "friends.requestSent": "Pedido enviado!",
+  "friends.members": "Membros",
+  "friends.birthdays": "Aniversários",
+  "friends.noResults": "Nenhuma casa encontrada",
+  "friends.inviteToEvent": "Convidar para evento",
 
   // Tutorial
   "tutorial.title": "Tutorial",
