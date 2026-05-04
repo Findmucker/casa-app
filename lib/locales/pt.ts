@@ -25,7 +25,7 @@ export const pt = {
   "menu.invite": "Convidar",
   "menu.members": "Membros",
   "menu.maintenance": "Manutenção",
-  "menu.friends": "Amigas",
+  "menu.friends": "Vizinhos",
   "menu.tutorial": "Tutorial",
   "menu.language": "Idioma",
   "menu.logout": "Sair",
@@ -156,7 +156,7 @@ export const pt = {
   "messages.noMembers": "Ainda não tens outros membros na casa. Convida alguém primeiro!",
 
   // Friends
-  "friends.title": "Casas Amigas",
+  "friends.title": "Vizinhos",
   "friends.add": "Adicionar",
   "friends.code": "Código de amizade",
   "friends.generateCode": "Gerar código",
