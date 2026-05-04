@@ -1,10 +1,10 @@
 # A Nossa Casinha
 
-A household management PWA for couples and families — organize shopping, tasks, projects, habits, expenses, meals, events, and more. Built with love.
+A household management PWA for couples and families — organize shopping, tasks, projects, habits, expenses, events, and more. Built with love.
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.8.3
+**Version:** 0.8.4
 
 ## Features
 

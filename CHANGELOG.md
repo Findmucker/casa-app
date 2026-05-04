@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.4] - 2026-05-04
+
+### Removed
+- **Receitinhas (Meal Planner)** — removed feature entirely (component, i18n, tutorial, docs)
+
+### Changed
+- **Branch workflow** — all changes now require GitHub issue + feature branch before merging to master
+- **Issue housekeeping** — created epics (#102-#106), added acceptance criteria to all actionable issues
+
 ## [0.8.3] - 2026-05-03
 
 ### Added
