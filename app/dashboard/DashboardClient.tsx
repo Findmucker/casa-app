@@ -8,7 +8,6 @@ import EventList from "@/components/EventList";
 import Weather from "@/components/Weather";
 import HabitList from "@/components/HabitList";
 import ExpenseList from "@/components/ExpenseList";
-import MealPlanner from "@/components/MealPlanner";
 import Calendar from "@/components/Calendar";
 import DashboardSummary from "@/components/DashboardSummary";
 import MaintenancePanel from "@/components/MaintenancePanel";
@@ -33,13 +32,13 @@ import { LOOT_POOL, type EquippedItems } from "@/lib/gamification";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "meals", "calendar", "events", "weather"] as const;
+const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "calendar", "events", "weather"] as const;
 
 interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; equipped?: EquippedItems; }
 const TAB_EMOJIS = ["✨", "🛒", "🪴", "🏠", "🧘", "💰", "🍽️", "📅", "🎉", "🌤️"];
 const TAB_LABEL_KEYS = [
   "tabs.home", "tabs.shopping", "tabs.small", "tabs.big", "tabs.habits",
-  "tabs.expenses", "tabs.meals", "tabs.calendar", "tabs.events", "tabs.weather",
+  "tabs.expenses", "tabs.calendar", "tabs.events", "tabs.weather",
 ] as const;
 
 type TabId = (typeof TAB_IDS)[number];
@@ -233,7 +232,6 @@ function DashboardInner() {
           {activeTab === "big" && <ProjectList />}
           {activeTab === "habits" && <HabitList />}
           {activeTab === "expenses" && <ExpenseList />}
-          {activeTab === "meals" && <MealPlanner />}
           {activeTab === "calendar" && <Calendar />}
           {activeTab === "events" && <EventList />}
           {activeTab === "weather" && <Weather />}

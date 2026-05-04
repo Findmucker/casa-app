@@ -187,7 +187,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Rotinazinhas** (Habits) — daily check with streak, push notifications
 - **Gastinhos** (Expenses) — monthly tracking by person and category
-- **Receitinhas** (Meal Planner) — weekly view, send ingredients to shopping
 - **Calendarzinho** — monthly grid with dots from all collections
 - **Dashboard Summary** — overview cards + weekly progress
 - **Gamification** — points, levels, 9 badges

@@ -55,12 +55,6 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tipsKeys: ["tutorial.expenses.tip1", "tutorial.expenses.tip2", "tutorial.expenses.tip3", "tutorial.expenses.tip4", "tutorial.expenses.tip5"],
   },
   {
-    emoji: "🍽️",
-    titleKey: "tutorial.meals.title",
-    textKey: "tutorial.meals.text",
-    tipsKeys: ["tutorial.meals.tip1", "tutorial.meals.tip2"],
-  },
-  {
     emoji: "📅",
     titleKey: "tutorial.calendar.title",
     textKey: "tutorial.calendar.text",

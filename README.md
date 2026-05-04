@@ -51,12 +51,6 @@ A household management PWA for couples and families — organize shopping, tasks
 - **Income tracking** — log income entries per member
 - **Savings goals** — set targets with progress bars
 
-### Meal Planner (Receitinhas)
-- Weekly view (7 days)
-- Slots: Breakfast, Lunch, Dinner, Snack
-- Send ingredients directly to Shopping List
-- Autocomplete with past meals
-
 ### Calendar (Calendarzinho)
 - Monthly grid with **emoji indicators** by type (replaced colored dots)
 - Portuguese holidays (fixed + Easter-based)

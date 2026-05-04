@@ -6,7 +6,6 @@ export const pt = {
   "tabs.big": "Projetinhos",
   "tabs.habits": "Rotinazinhas",
   "tabs.expenses": "Gastinhos",
-  "tabs.meals": "Receitinhas",
   "tabs.calendar": "Calendarzinho",
   "tabs.events": "Eventinhos",
   "tabs.weather": "Tempinho",
@@ -113,12 +112,6 @@ export const pt = {
   "expenses.whoPaid": "Quem pagou",
   "expenses.charts.monthly": "Evolução mensal",
 
-  // Meals
-  "meals.title": "Receitinhas",
-  "meals.breakfast": "Pequeno-almoço",
-  "meals.lunch": "Almoço",
-  "meals.dinner": "Jantar",
-  "meals.snack": "Lanche",
 
   // Calendar
   "calendar.title": "Calendarzinho",
@@ -238,10 +231,6 @@ export const pt = {
   "tutorial.expenses.tip4": "Gráficos visuais: donut, barras, e split por membro",
   "tutorial.expenses.tip5": "Saldo mensal automático: rendimentos - despesas",
 
-  "tutorial.meals.title": "Receitinhas",
-  "tutorial.meals.text": "Planeia refeições da semana. Pequeno-almoço, almoço, jantar e snacks para 7 dias.",
-  "tutorial.meals.tip1": "Autocomplete com refeições já usadas",
-  "tutorial.meals.tip2": "Envia ingredientes direto para as Comprinhas! 🛒",
 
   "tutorial.calendar.title": "Calendarzinho",
   "tutorial.calendar.text": "Vista mensal integrada com tudo o que acontece na casa. Cada atividade tem uma cor diferente.",

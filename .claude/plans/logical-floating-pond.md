@@ -1,68 +1,56 @@
-# Fix: Página de equipamento e sincronização com avatar (#95)
+# Push Notifications Reais via Vercel Cron
 
 ## Contexto
-Existem 2 sistemas de avatar:
-1. **AnimeAnimalCharacter** (`AvatarConfig`) — avatar animal com roupa integrada (top/bottom/accessory como índices de estilo)
-2. **CharacterModel** (`EquippedItems`) — boneco RPG com loot equipado (helmet/weapon/shield/armor/boots/accessory como item IDs)
+As rotinas mandam notificação client-side (só com app aberta). Precisamos de push notifications reais que funcionem com app fechada, para 4-5 casas.
 
-O CharacterModel só aparece no ProfilePage (header e tab inventário). O resto da app (widget membros, HouseMembers, MiniAvatar) usa AnimeAnimalCharacter. O equipamento RPG não é visível em lado nenhum fora do perfil próprio.
+## Estado Actual — JÁ IMPLEMENTADO
+A infraestrutura já existe:
+- `app/api/cron/habits/route.ts` — API route completa que lê hábitos, verifica checks, envia FCM
+- `app/api/send-notification/route.ts` — endpoint genérico para enviar notificações
+- `vercel.json` — cron configurado (actualmente `"0 8 * * *"`, só 1x/dia às 8h)
+- `firebase-admin` instalado no package.json
+- FCM tokens salvos em `fcm_tokens/{memberName}`
 
-## Problemas Identificados
-1. EquippedItems não é mostrado nos avatares de membros em lado nenhum
-2. Quando se vê o perfil de outro membro (`viewMember`), não carrega o `equipped` deles
-3. Não há sync real-time do equipamento (usa `getDoc` one-shot)
-4. O `CharacterModel` devia ter uma representação mini para mostrar junto ao AnimeAnimalCharacter
+## O que falta
 
-## Solução
+### 1. Configurar env vars no Vercel
+O Firebase Admin SDK precisa de 3 env vars server-side (não NEXT_PUBLIC_):
+```
+FIREBASE_PROJECT_ID=casa-66668
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@casa-66668.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
+```
 
-### Abordagem: Mostrar loot equipped como badges/overlay no avatar
+**Passos:**
+1. Ir ao Firebase Console → Project Settings → Service Accounts → Generate New Private Key
+2. Do JSON baixado, extrair `client_email` e `private_key`
+3. No Vercel Dashboard → Settings → Environment Variables → adicionar as 3 vars
 
-Em vez de substituir o AnimeAnimalCharacter pelo CharacterModel (são sistemas visuais diferentes), vou:
+### 2. Mudar cron schedule para cobrir mais horários
+O Vercel Hobby permite 2 cron jobs. Mudar de 1x/dia para correr em vários horários:
 
-1. **Adicionar overlay de equipamento ao MiniAvatar e avatar no widget** — mostrar emojis do loot equipado como pequenos badges ao redor do avatar
-2. **Fix viewMember no ProfilePage** — carregar `equipped` e `inventory` do membro visualizado
-3. **Adicionar `equipped` ao dados carregados no widget de membros** — para poder mostrar badges
+```json
+{
+  "crons": [
+    { "path": "/api/cron/habits", "schedule": "0 7,9,12,15,18,21 * * *" }
+  ]
+}
+```
 
-### Ficheiros a modificar
+Isto corre às 7h, 9h, 12h, 15h, 18h, 21h — cobre a maioria dos horários de hábitos.
 
+**NOTA**: No Vercel Hobby o mínimo é 1x/dia. Se o schedule hourly não funcionar, ficamos com `"0 8 * * *"` que cobre manhã.
+
+### 3. Verificar service worker FCM
+Ficheiro `public/firebase-messaging-sw.js` precisa de estar configurado para receber push em background.
+
+## Ficheiros a modificar
 | Ficheiro | Alteração |
 |---|---|
-| `components/MiniAvatar.tsx` | Carregar `equipped` do Firestore, mostrar badge de helmet/weapon como overlay |
-| `components/ProfilePage.tsx` | Fix: quando `viewMember`, carregar o equipped/inventory desse membro |
-| `app/dashboard/DashboardClient.tsx` | Adicionar `equipped` ao `MemberWidget`, mostrar badge no widget |
-| `components/HouseMembers.tsx` | Mostrar equipped badges nos cards de membros |
-
-### Implementação
-
-#### 1. MiniAvatar — overlay de equipamento
-```tsx
-// Carregar equipped junto com avatar
-const equipped = snap.data()?.equipped || {};
-// Mostrar badge do helmet (se existir) como pequeno emoji no canto superior
-```
-
-#### 2. ProfilePage viewMember fix
-```tsx
-// Quando viewMember é definido, usar viewMember como owner para carregar tudo
-const owner = viewMember || user?.displayName || user?.email || "user";
-// Já está parcialmente feito, verificar que equipped carrega corretamente
-```
-
-#### 3. Widget de membros — equipped badges
-```tsx
-interface MemberWidget {
-  // ... existing fields
-  equipped?: EquippedItems;
-}
-// Mostrar helmet emoji como badge no avatar do widget
-```
-
-#### 4. HouseMembers — equipped no card
-Mostrar emojis do equipamento principal (helmet + weapon) como mini-badges.
+| `vercel.json` | Mudar schedule para múltiplos horários |
 
 ## Verificação
-- `npx tsc --noEmit` passa
-- MiniAvatar mostra badge de equipamento quando o membro tem loot equipped
-- Widget de membros mostra badges de equipamento
-- Ver perfil de outro membro mostra o CharacterModel com o equipped deles
-- Equipar/desequipar no próprio perfil reflete após refresh nos outros locais
+1. Configurar env vars no Vercel
+2. Deploy
+3. Chamar manualmente `GET /api/cron/habits` para testar
+4. Verificar que notificação chega no telemóvel com app fechada

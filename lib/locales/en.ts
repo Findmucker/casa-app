@@ -8,7 +8,6 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tabs.big": "Projects",
   "tabs.habits": "Habits",
   "tabs.expenses": "Expenses",
-  "tabs.meals": "Meals",
   "tabs.calendar": "Calendar",
   "tabs.events": "Events",
   "tabs.weather": "Weather",
@@ -115,12 +114,6 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "expenses.whoPaid": "Who paid",
   "expenses.charts.monthly": "Monthly overview",
 
-  // Meals
-  "meals.title": "Meals",
-  "meals.breakfast": "Breakfast",
-  "meals.lunch": "Lunch",
-  "meals.dinner": "Dinner",
-  "meals.snack": "Snack",
 
   // Calendar
   "calendar.title": "Calendar",
@@ -240,10 +233,6 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.expenses.tip4": "Visual charts: donut, bars, and member split",
   "tutorial.expenses.tip5": "Automatic monthly balance: income - expenses",
 
-  "tutorial.meals.title": "Meals",
-  "tutorial.meals.text": "Plan the week's meals. Breakfast, lunch, dinner and snacks for 7 days.",
-  "tutorial.meals.tip1": "Autocomplete with previously used meals",
-  "tutorial.meals.tip2": "Send ingredients directly to Shopping! 🛒",
 
   "tutorial.calendar.title": "Calendar",
   "tutorial.calendar.text": "Monthly view integrated with everything happening at home. Each activity has a different color.",

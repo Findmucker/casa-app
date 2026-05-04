@@ -27,7 +27,6 @@ A app tem uma **barra de tabs** na parte inferior com 10 seccoes. Podes navegar 
 | 🏠 | Projetinhos | Projetos maiores da casa |
 | ✅ | Rotinazinhas | Habitos diarios com streaks e filtros |
 | 💰 | Gastinhos | Financas: despesas, rendimentos, poupancas |
-| 🍽️ | Receitinhas | Planeamento de refeicoes semanal |
 | 📅 | Calendarzinho | Calendario mensal integrado |
 | 🎉 | Eventinhos | Eventos e planos partilhados |
 | 🌤️ | Tempinho | Previsao meteorologica 7 dias |
@@ -123,15 +122,6 @@ Na seccao de despesas, tens acesso a graficos interativos (SVG puro, sem depende
 - **Split rings** — visualizacao da divisao de gastos entre membros da casa
 
 Os graficos atualizam automaticamente com os dados do mes selecionado.
-
----
-
-## Receitinhas (Planeamento de Refeicoes)
-
-- Planeia refeicoes para 7 dias numa vista semanal
-- Slots: Pequeno-almoco, Almoco, Jantar, Snack
-- Botao para enviar ingredientes direto para as Comprinhas
-- Autocomplete com refeicoes ja usadas anteriormente
 
 ---
 

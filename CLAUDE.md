@@ -35,7 +35,7 @@
 | `gamification/{memberName}` | display name | Points, level, badges, avatar, inventory |
 | `fcm_tokens/{memberName}` | display name | Push notification tokens |
 | `users/{uid}` | Firebase UID | User profile |
-| `shopping`, `priorities_small`, `priorities_big`, `habits`, `habit_checks`, `expenses`, `events`, `meals`, `income`, `savings_goals` | auto-ID | App data collections |
+| `shopping`, `priorities_small`, `priorities_big`, `habits`, `habit_checks`, `expenses`, `events`, `income`, `savings_goals` | auto-ID | App data collections |
 
 ### Component Patterns
 - Full-screen overlays: `fixed inset-0 z-50 overflow-y-auto animate-fade-in-up`
@@ -46,13 +46,29 @@
 
 ## Workflows
 
+### Task & Branch Workflow (MANDATORY for all work)
+Every feature, bugfix, or change — no matter how small — MUST follow this flow:
+1. **Create a GitHub issue** (even if trivial — close it immediately after merging)
+2. **Create a branch** from master: `git checkout -b feat/short-name` or `fix/short-name`
+3. Do the work, commit(s) on the branch
+4. Push branch: `git push -u origin <branch>`
+5. Merge to master (PR or fast-forward merge) and delete the branch
+6. Close the GitHub issue with a reference to the commit/PR
+
+Branch naming:
+- `feat/description` — new features
+- `fix/description` — bug fixes
+- `style/description` — visual/CSS changes
+- `chore/description` — maintenance, docs, config
+
 ### Adding a Feature
-1. Add i18n keys to `lib/locales/pt.ts` first (defines the type), then `en.ts`
-2. Create/modify component in `components/`
-3. Wire into `DashboardClient.tsx` (state + overlay render)
-4. Run `npx tsc --noEmit`
-5. Commit with conventional commit message + `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
-6. Push to master (auto-deploys to Vercel)
+1. Follow the **Task & Branch Workflow** above (issue + branch)
+2. Add i18n keys to `lib/locales/pt.ts` first (defines the type), then `en.ts`
+3. Create/modify component in `components/`
+4. Wire into `DashboardClient.tsx` (state + overlay render)
+5. Run `npx tsc --noEmit`
+6. Commit with conventional commit message + `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+7. Merge branch to master (auto-deploys to Vercel)
 
 ### Adding i18n Keys
 - Add to `lib/locales/pt.ts` — the `LocaleKeys` type is `keyof typeof pt`
@@ -155,7 +171,7 @@ Menu (click title) → Main panel:
 
 ### Deploy Pipeline
 - **Trigger**: Every push to `master` auto-deploys via Vercel
-- **No staging**: Direct to production (small team, fast iteration)
+- **Branch workflow**: Always work on a feature/fix branch, merge to master when ready
 - **Verify after deploy**: Check Vercel dashboard or visit app URL
 
 ### Quality Gates (Before Push)
