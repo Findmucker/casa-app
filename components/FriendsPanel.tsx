@@ -72,10 +72,54 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
     setSearchResults([]);
     setSearchInput("");
     setTimeout(() => setMessage(null), 3000);
+
+    // Notify target house members
+    try {
+      const { doc: firestoreDoc, getDoc: fsGetDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const houseSnap = await fsGetDoc(firestoreDoc(db, "houses", toId));
+      if (houseSnap.exists()) {
+        const targetMembers: { name: string }[] = houseSnap.data().members || [];
+        for (const m of targetMembers) {
+          fetch("/api/send-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: m.name.toLowerCase(),
+              title: `🏠 Pedido de amizade`,
+              body: `A casa "${houseName}" quer ser vossa vizinha!`,
+              tag: "friend-request",
+            }),
+          }).catch(() => {});
+        }
+      }
+    } catch { /* best effort */ }
   };
 
   const handleAccept = async (req: { id: string; fromHouseId: string; fromHouseName: string; toHouseId: string; toHouseName: string }) => {
     await acceptFriendRequest(req.id, req.fromHouseId, req.fromHouseName, req.toHouseId, req.toHouseName);
+
+    // Notify the requesting house that their request was accepted
+    try {
+      const { doc: firestoreDoc, getDoc: fsGetDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const houseSnap = await fsGetDoc(firestoreDoc(db, "houses", req.fromHouseId));
+      if (houseSnap.exists()) {
+        const fromMembers: { name: string }[] = houseSnap.data().members || [];
+        for (const m of fromMembers) {
+          fetch("/api/send-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: m.name.toLowerCase(),
+              title: `🎉 Pedido aceite!`,
+              body: `A casa "${houseName}" aceitou o vosso pedido de amizade!`,
+              tag: "friend-accepted",
+            }),
+          }).catch(() => {});
+        }
+      }
+    } catch { /* best effort */ }
   };
 
   const handleReject = async (requestId: string) => {

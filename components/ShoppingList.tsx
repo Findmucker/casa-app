@@ -13,6 +13,8 @@ import AutocompleteInput from "./AutocompleteInput";
 import SwipeableRow from "./SwipeableRow";
 import { useUndo } from "@/lib/useUndoStack";
 import { useT } from "@/lib/i18n";
+import { useHouseContext } from "@/lib/context";
+import { notifyOtherMembers } from "@/lib/notifications";
 
 const COMMON_SHOPPING = [
   "Leite", "Ovos", "Pão", "Manteiga", "Queijo", "Fiambre", "Iogurtes",
@@ -131,6 +133,7 @@ const ItemRow = memo(function ItemRow({
 
 export default function ShoppingList() {
   const { t } = useT();
+  const { userName, members } = useHouseContext();
   const { items, loading, add, update, remove } =
     useCollection<ShoppingItem>("shopping");
   const [newItem, setNewItem] = useState("");
@@ -141,6 +144,17 @@ export default function ShoppingList() {
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const { pushUndo } = useUndo();
+
+  // Wrap update to detect urgent changes and notify
+  const handleUpdate = useCallback((id: string, data: Partial<ShoppingItem>) => {
+    if (data.urgent === true) {
+      const item = items.find((i) => i.id === id);
+      if (item && !item.urgent) {
+        notifyOtherMembers(members, userName, "🔥 Item urgente!", `"${item.name}" foi marcado como urgente`, "urgent-shopping");
+      }
+    }
+    update(id, data);
+  }, [update, items, members, userName]);
 
   const suggestions = useMemo(() => {
     const fromHistory = items.map((i) => i.name);
@@ -213,6 +227,9 @@ export default function ShoppingList() {
     if (!name) return;
     const category = guessCategory(name, SHOPPING_CATEGORIES);
     await add({ name, addedBy: "", done: false, urgent: newUrgent, category });
+    if (newUrgent) {
+      notifyOtherMembers(members, userName, "🔥 Item urgente!", `"${name}" foi adicionado como urgente`, "urgent-shopping");
+    }
     setNewItem("");
     setNewUrgent(false);
     inputRef.current?.focus();
@@ -328,7 +345,7 @@ export default function ShoppingList() {
             </div>
             {urgentItems.map((item) => (
               <SwipeableRow key={item.id} onSwipeRight={() => handleCheck(item)} onSwipeLeft={() => removeWithUndo(item)}>
-                <ItemRow item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
+                <ItemRow item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={handleUpdate} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
               </SwipeableRow>
             ))}
           </>
@@ -384,7 +401,7 @@ export default function ShoppingList() {
                 <div className="space-y-2">
                   {catItems.map((item) => (
                     <SwipeableRow key={item.id} onSwipeRight={() => handleCheck(item)} onSwipeLeft={() => removeWithUndo(item)}>
-                      <ItemRow item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
+                      <ItemRow item={item} isDone={false} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={handleUpdate} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
                     </SwipeableRow>
                   ))}
                 </div>
@@ -404,7 +421,7 @@ export default function ShoppingList() {
             </div>
             {done.map((item) => (
               <SwipeableRow key={item.id} onSwipeLeft={() => removeWithUndo(item)} disabled>
-                <ItemRow item={item} isDone={true} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={update} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
+                <ItemRow item={item} isDone={true} celebrating={celebrating} editingCategory={editingCategory} categoryNames={categoryNames} onCheck={handleCheck} onUpdate={handleUpdate} onRemove={() => removeWithUndo(item)} onEditCategory={setEditingCategory} />
               </SwipeableRow>
             ))}
           </>

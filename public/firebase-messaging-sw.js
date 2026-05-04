@@ -1,5 +1,5 @@
-// v0.6.0 — force cache update
-const CACHE_VERSION = "v0.6.0";
+// v0.8.5 — force cache update
+const CACHE_VERSION = "v0.8.5";
 
 importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-messaging-compat.js");
@@ -44,4 +44,30 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
+});
+
+// Periodic background sync — triggers habit cron every 10 min (Android/Chrome only)
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "habit-reminders") {
+    event.waitUntil(
+      fetch("/api/cron/habits").catch(() => {})
+    );
+  }
+});
+
+// Fallback: on any fetch to the app origin, check if we should ping cron
+// (piggyback on existing network activity)
+let lastCronPing = 0;
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  // Only intercept navigation/app requests, not external APIs
+  if (url.origin === self.location.origin && url.pathname.startsWith("/dashboard")) {
+    const now = Date.now();
+    // Ping cron at most every 10 minutes when user is active
+    if (now - lastCronPing > 10 * 60 * 1000) {
+      lastCronPing = now;
+      // Fire and forget — don't block the page load
+      fetch("/api/cron/habits").catch(() => {});
+    }
+  }
 });

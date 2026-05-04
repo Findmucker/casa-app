@@ -191,7 +191,8 @@ export default function Calendar() {
     // Habit checks (green)
     checks.forEach((c) => {
       const habit = habits.find((h) => h.id === c.habitId);
-      addDot(c.date, { color: "bg-green-400", emoji: "🧘", label: `${habit?.emoji || "✓"} ${habit?.name || "Hábito"}`, type: "habit" });
+      const hEmoji = habit?.emoji || "✓";
+      addDot(c.date, { color: "bg-green-400", emoji: hEmoji, label: `${hEmoji} ${habit?.name || "Hábito"}`, type: "habit" });
     });
 
     // Completed coisinhas (pink) - use completedAt
@@ -219,12 +220,12 @@ export default function Calendar() {
     const year = viewDate.getFullYear();
     Object.entries(HOLIDAYS_FIXED).forEach(([mmdd, label]) => {
       const dateStr = `${year}-${mmdd}`;
-      const emoji = label.match(/^\p{Emoji_Presentation}/u)?.[0] || "📅";
+      const emoji = label.split(" ")[0] || "📅";
       addDot(dateStr, { color: "bg-amber-400", emoji, label, type: "event" });
     });
     const moving = getMovingHolidays(year);
     Object.entries(moving).forEach(([dateStr, label]) => {
-      const emoji = label.match(/^\p{Emoji_Presentation}/u)?.[0] || "📅";
+      const emoji = label.split(" ")[0] || "📅";
       addDot(dateStr, { color: "bg-amber-400", emoji, label, type: "event" });
     });
 
@@ -376,8 +377,10 @@ export default function Calendar() {
               <div key={i} className="flex items-center gap-2 bg-white/70 rounded-xl p-3 border border-blue-100/30">
                 {dot.memberName ? (
                   <MiniAvatar name={dot.memberName} size={24} showEquipBadge={false} />
-                ) : null}
-                <span className="text-sm text-blue-800 flex-1">{dot.label}</span>
+                ) : (
+                  <span className="text-base">{dot.emoji}</span>
+                )}
+                <span className="text-sm text-blue-800 flex-1">{dot.label.replace(/^\S+\s/, "")}</span>
                 <span className={`w-2 h-2 rounded-full ${dot.color}`} />
               </div>
             ))}
@@ -409,7 +412,7 @@ export default function Calendar() {
                 <span className="text-[10px]">{t("calendar.weather")}</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="text-[10px]">📅</span>
+                <span className="text-[10px]">🎆</span>
                 <span className="text-[10px]">{t("calendar.holidays")}</span>
               </div>
               <div className="flex items-center gap-1">

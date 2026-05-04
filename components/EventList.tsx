@@ -7,6 +7,8 @@ import { getOrCreateShareId } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getWeatherInfo } from "@/lib/weather";
+import { useHouseContext } from "@/lib/context";
+import { notifyOtherMembers } from "@/lib/notifications";
 
 // ─── Weather for event dates ────────────────────────────────
 
@@ -82,6 +84,7 @@ interface EventListProps {
 }
 
 export default function EventList({ isPublic = false, guestName }: EventListProps) {
+  const { userName, members } = useHouseContext();
   const { items: events, loading, add, update, remove } =
     useCollection<CasaEvent>("events");
   const [showCreate, setShowCreate] = useState(false);
@@ -111,6 +114,9 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     setDate("");
     setGuests("");
     setShowCreate(false);
+    if (!isPublic) {
+      notifyOtherMembers(members, userName, "🎉 Novo evento!", `"${title.trim()}" foi criado${date ? ` para ${date}` : ""}`, "new-event");
+    }
     // Auto-expand the new event so user can add items immediately
     if (newId) setExpandedId(newId);
   };

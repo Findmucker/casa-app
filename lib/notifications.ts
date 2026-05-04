@@ -4,6 +4,35 @@ import { getFCMToken } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
+/**
+ * Send a push notification to a specific member (by lowercase name).
+ * Fire-and-forget — errors are silently ignored.
+ */
+export function sendPushToMember(to: string, title: string, body: string, tag = "general") {
+  fetch("/api/send-notification", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ to: to.toLowerCase(), title, body, tag }),
+  }).catch(() => {});
+}
+
+/**
+ * Send a push notification to all house members except the sender.
+ */
+export function notifyOtherMembers(
+  members: { name: string }[],
+  senderName: string,
+  title: string,
+  body: string,
+  tag = "general"
+) {
+  for (const m of members) {
+    if (m.name.toLowerCase() !== senderName.toLowerCase()) {
+      sendPushToMember(m.name, title, body, tag);
+    }
+  }
+}
+
 // Request notification permission (basic browser API)
 export function requestNotificationPermission() {
   if (typeof window === "undefined") return;
@@ -52,6 +81,19 @@ export async function registerPushToken(owner: string): Promise<boolean> {
       token,
       updatedAt: new Date().toISOString(),
     });
+
+    // Register periodic background sync (Android/Chrome — habit reminders every 10 min)
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      if ("periodicSync" in registration) {
+        const status = await navigator.permissions.query({ name: "periodic-background-sync" as PermissionName });
+        if (status.state === "granted") {
+          await (registration as unknown as { periodicSync: { register: (tag: string, opts: { minInterval: number }) => Promise<void> } }).periodicSync.register("habit-reminders", { minInterval: 10 * 60 * 1000 });
+        }
+      }
+    } catch {
+      // Periodic sync not supported — fallback to SW fetch piggyback
+    }
 
     return true;
   } catch (e) {

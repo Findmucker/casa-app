@@ -130,6 +130,83 @@ export async function GET() {
       }
     }
 
+    // ─── Event reminders (tomorrow's events) ───
+    // Only run around 8am (between 7:50 and 8:10)
+    if (currentMinutes >= 470 && currentMinutes <= 490) {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+      for (const houseDoc of housesSnap.docs) {
+        const houseId = houseDoc.id;
+        const houseMembers: Array<{ name: string }> = houseDoc.data().members || [];
+
+        try {
+          const eventsSnap = await db.collection("houses").doc(houseId).collection("events")
+            .where("date", "==", tomorrowStr).get();
+
+          for (const eventDoc of eventsSnap.docs) {
+            const event = eventDoc.data();
+            for (const member of houseMembers) {
+              const tokenDoc = await db.collection("fcm_tokens").doc(member.name.toLowerCase()).get();
+              if (!tokenDoc.exists) continue;
+              try {
+                await adm.messaging().send({
+                  token: tokenDoc.data()!.token,
+                  notification: {
+                    title: `📅 Evento amanhã!`,
+                    body: `"${event.title}" é amanhã`,
+                  },
+                  data: { tag: `event-reminder-${eventDoc.id}` },
+                  webpush: { headers: { Urgency: "high" }, notification: { icon: "/icon-192.png", badge: "/icon-192.png", tag: `event-reminder-${eventDoc.id}` } },
+                });
+                sent++;
+              } catch { /* skip */ }
+            }
+          }
+        } catch { /* skip house */ }
+      }
+
+      // ─── Birthday notifications (today) ───
+      const todayMmDd = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+      for (const houseDoc of housesSnap.docs) {
+        const houseMembers: Array<{ name: string; uid?: string }> = houseDoc.data().members || [];
+
+        for (const member of houseMembers) {
+          if (!member.uid) continue;
+          try {
+            const userDoc = await db.collection("users").doc(member.uid).get();
+            if (!userDoc.exists) continue;
+            const birthDate: string | undefined = userDoc.data()?.birthDate;
+            if (!birthDate) continue;
+            const parts = birthDate.split("-");
+            const mmdd = parts.length === 3 ? `${parts[1]}-${parts[2]}` : birthDate;
+            if (mmdd !== todayMmDd) continue;
+
+            // Notify all OTHER members of the same house
+            for (const other of houseMembers) {
+              if (other.name === member.name) continue;
+              const tokenDoc = await db.collection("fcm_tokens").doc(other.name.toLowerCase()).get();
+              if (!tokenDoc.exists) continue;
+              try {
+                await adm.messaging().send({
+                  token: tokenDoc.data()!.token,
+                  notification: {
+                    title: `🎂 Parabéns!`,
+                    body: `Hoje é o aniversário de ${member.name}!`,
+                  },
+                  data: { tag: `birthday-${member.name}` },
+                  webpush: { headers: { Urgency: "high" }, notification: { icon: "/icon-192.png", badge: "/icon-192.png", tag: `birthday-${member.name}` } },
+                });
+                sent++;
+              } catch { /* skip */ }
+            }
+          } catch { /* skip */ }
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true, sent, timestamp: now.toISOString() });
   } catch (e) {
     console.error("Habit cron error:", e);

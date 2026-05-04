@@ -159,12 +159,32 @@ export async function joinHouse(uid: string, userName: string, inviteCode: strin
   const { houseId, expiresAt } = inviteSnap.data();
   if (expiresAt && new Date(expiresAt) < new Date()) return false;
 
+  // Get existing members before joining (for notification)
+  const houseSnap = await getDoc(doc(db, "houses", houseId));
+  const existingMembers: { name: string }[] = houseSnap.exists() ? (houseSnap.data().members || []) : [];
+
   // Add user to house members
   await updateDoc(doc(db, "houses", houseId), {
     members: arrayUnion({ uid, name: userName, avatar: "👤", role: "member" }),
   });
   // Update user with houseId
   await updateDoc(doc(db, "users", uid), { houseId });
+
+  // Notify existing members that someone joined
+  for (const m of existingMembers) {
+    if (m.name.toLowerCase() === userName.toLowerCase()) continue;
+    fetch("/api/send-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: m.name.toLowerCase(),
+        title: "🏠 Novo membro!",
+        body: `${userName} juntou-se à casa!`,
+        tag: "member-joined",
+      }),
+    }).catch(() => {});
+  }
+
   return true;
 }
 
