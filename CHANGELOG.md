@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.5] - 2026-05-04
+
+### Added
+- **Friends system** — connect houses via 6-char invite code, search by name, send/accept/reject requests
+- **FriendsPanel** — full-screen overlay with friend list, code generation, and search with member previews
+- **Customizable house name** — rename house from menu settings, displayed dynamically in header and friends
+- **Per-tab contextual tips** — replaced global tutorial with dismissible tips on first visit to each tab
+
+### Changed
+- **Tab names** — removed diminutive suffixes (Projetinhos → Projetos, Gastinhos → Finanças, etc.)
+- **Tab icons** — updated carousel emojis for better clarity
+- **Dashboard** — removed quick access section for cleaner home screen
+
+### Removed
+- **Global tutorial** — replaced by per-tab contextual tips (Tutorial.tsx kept as reference)
+
 ## [0.8.4] - 2026-05-04
 
 ### Removed

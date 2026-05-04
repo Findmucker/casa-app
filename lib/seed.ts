@@ -126,21 +126,6 @@ export async function seedTestAccount(owner: string, houseId: string) {
     await setDoc(doc(db, "houses", houseId, "expenses", `seed_${i}`), expenses[i]);
   }
 
-  // 8. Sample meal plans
-  const mealDays = ["2026-05-01", "2026-05-02", "2026-05-03"];
-  const meals = [
-    { breakfast: "Panquecas", lunch: "Frango grelhado com arroz", dinner: "Sopa e tostas", snack: "Fruta" },
-    { breakfast: "Granola com iogurte", lunch: "Massa carbonara", dinner: "Pizza caseira", snack: "Bolachas" },
-    { breakfast: "Torradas com abacate", lunch: "Salada César", dinner: "Salmão com batatas", snack: "Smoothie" },
-  ];
-
-  for (let i = 0; i < mealDays.length; i++) {
-    await setDoc(doc(db, "houses", houseId, "meal_plans", mealDays[i]), {
-      date: mealDays[i],
-      ...meals[i],
-      createdAt: new Date(),
-    });
-  }
 
   return { success: true, message: "Test account seeded with maxed stats!" };
 }

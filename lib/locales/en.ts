@@ -209,7 +209,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.goTo": "Go to step",
 
   "tutorial.welcome.title": "Welcome to Our Little Home!",
-  "tutorial.welcome.text": "The app that organizes life together. Shopping, tasks, habits, expenses, meals, events and more — all in one cute shared space.",
+  "tutorial.welcome.text": "The app that organizes life together. Shopping, tasks, habits, expenses, events and more — all in one cute shared space.",
   "tutorial.welcome.tip1": "All information syncs in real-time between members",
   "tutorial.welcome.tip2": "The app theme changes throughout the day ☀️🌅🌙",
   "tutorial.welcome.tip3": "Available in Português and English 🌐",

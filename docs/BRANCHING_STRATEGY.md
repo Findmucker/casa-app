@@ -13,7 +13,7 @@
 
 | Prefix | Usage | Example |
 |--------|-------|---------|
-| `feature/` | New functionality | `feature/meal-planner-improvements` |
+| `feature/` | New functionality | `feature/friends-system` |
 | `fix/` | Bug fix | `fix/pwa-cache-stale` |
 | `hotfix/` | Urgent production fix | `hotfix/login-crash` |
 | `chore/` | Maintenance, deps, docs | `chore/update-dependencies` |

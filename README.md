@@ -227,7 +227,6 @@ casa-app/
 │   ├── HabitList.tsx         # Habits with streaks and filters
 │   ├── ExpenseList.tsx       # Expense tracking (3 sub-tabs)
 │   ├── ExpenseCharts.tsx     # SVG donut, bar chart, split rings
-│   ├── MealPlanner.tsx       # Weekly meal planner
 │   ├── Calendar.tsx          # Monthly calendar with emojis
 │   ├── EventList.tsx         # Events with weather
 │   ├── Weather.tsx           # Weather forecast
@@ -271,7 +270,7 @@ casa-app/
 | `houses/{houseId}/expenses` | Expenses |
 | `houses/{houseId}/income` | Income entries |
 | `houses/{houseId}/savings_goals` | Savings goals with targets |
-| `houses/{houseId}/meal_plans` | Meal plans by day |
+| `houses/{houseId}/friends/{id}` | Friend house connections |
 | `houses/{houseId}/gamification` | Points, badges, stats |
 | `gamification/{owner}` | RPG profile: inventory, equipped, avatar, lootBoxes |
 | `fcm_tokens/{owner}` | FCM tokens for push notifications |

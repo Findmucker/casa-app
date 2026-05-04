@@ -207,7 +207,7 @@ export const pt = {
   "tutorial.goTo": "Ir para passo",
 
   "tutorial.welcome.title": "Bem-vindo à Nossa Casinha!",
-  "tutorial.welcome.text": "A app que organiza a vida a dois. Compras, tarefas, hábitos, despesas, refeições, eventos e mais — tudo num sítio fofo e partilhado.",
+  "tutorial.welcome.text": "A app que organiza a vida a dois. Compras, tarefas, hábitos, despesas, eventos e mais — tudo num sítio fofo e partilhado.",
   "tutorial.welcome.tip1": "Toda a informação sincroniza em tempo real entre membros",
   "tutorial.welcome.tip2": "A app muda de tema ao longo do dia ☀️🌅🌙",
   "tutorial.welcome.tip3": "Disponível em Português e English 🌐",

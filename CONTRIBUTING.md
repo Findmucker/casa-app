@@ -61,7 +61,7 @@ See [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) for full details.
 ### Commit messages
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat: add meal planner export`
+- `feat: add friends system`
 - `fix: prevent crash on empty habit days`
 - `chore: update dependencies`
 - `i18n: wire calendar strings`
