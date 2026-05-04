@@ -38,7 +38,7 @@ export default function HistoryPanel({ onClose }: HistoryPanelProps) {
   }), [shopping, coisinhas, projects, completedItems]);
 
   return (
-    <div className="absolute inset-0 bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md z-50 flex flex-col animate-fade-in-up">
+    <div className="fixed inset-0 bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md z-50 flex flex-col animate-fade-in-up">
       <div className="p-4 border-b border-pink-100/40">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-rose-500">📜 Histórico</h2>

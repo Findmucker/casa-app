@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useHouseContext } from "@/lib/context";
+import { useT } from "@/lib/i18n";
 
 interface SendMessagePanelProps {
   onClose: () => void;
@@ -20,6 +21,7 @@ const QUICK_MESSAGES = [
 
 export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
   const { userName, members } = useHouseContext();
+  const { t } = useT();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -55,30 +57,30 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
     }
 
     if (sentCount > 0) {
-      setStatus(`✅ Mensagem enviada!`);
+      setStatus(t("messages.sent"));
       setMessage("");
     } else {
-      setStatus("❌ Não consegui enviar. O outro membro tem notificações ativas?");
+      setStatus(t("messages.failed"));
     }
     setSending(false);
   };
 
   return (
-    <div className="absolute inset-0 bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md z-50 flex flex-col animate-fade-in-up">
+    <div className="fixed inset-0 bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md z-50 flex flex-col animate-fade-in-up">
       <div className="p-4 border-b border-pink-100/40">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-rose-500">💌 Enviar Mensagem</h2>
+          <h2 className="text-lg font-bold text-rose-500">{t("messages.title")}</h2>
           <button
             onClick={onClose}
-            aria-label="Fechar mensagens"
+            aria-label={t("messages.close")}
             className="text-sm text-pink-400 hover:text-pink-600 transition-colors"
           >
-            Fechar
+            {t("messages.close")}
           </button>
         </div>
         {otherMembers.length > 0 && (
           <p className="text-xs text-pink-400 mt-1">
-            Para: {otherMembers.map((m) => `${m.avatar || "👤"} ${m.name}`).join(", ")}
+            {t("messages.to")}: {otherMembers.map((m) => m.name).join(", ")}
           </p>
         )}
       </div>
@@ -86,7 +88,7 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Quick messages */}
         <div>
-          <p className="text-xs font-semibold text-pink-400 mb-2">Mensagens rápidas</p>
+          <p className="text-xs font-semibold text-pink-400 mb-2">{t("messages.quickMessages")}</p>
           <div className="grid grid-cols-1 gap-2">
             {QUICK_MESSAGES.map((msg) => (
               <button
@@ -103,7 +105,7 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
 
         {/* Custom message */}
         <div>
-          <p className="text-xs font-semibold text-pink-400 mb-2">Mensagem personalizada</p>
+          <p className="text-xs font-semibold text-pink-400 mb-2">{t("messages.custom")}</p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -112,7 +114,7 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && message.trim()) sendMessage(message);
               }}
-              placeholder="Escreve algo fofo..."
+              placeholder={t("messages.placeholder")}
               className="flex-1 px-4 py-2.5 rounded-2xl bg-white/70 border border-pink-100/30 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-200"
               disabled={sending}
             />
@@ -129,7 +131,7 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
 
         {otherMembers.length === 0 && (
           <p className="text-center text-pink-300 text-sm py-4">
-            Ainda não tens outros membros na casa. Convida alguém primeiro! 🏠
+            {t("messages.noMembers")}
           </p>
         )}
 

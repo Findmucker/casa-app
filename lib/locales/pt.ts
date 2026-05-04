@@ -151,13 +151,16 @@ export const pt = {
   "profile.totalPoints": "pontos totais",
 
   // Messages
-  "messages.title": "Enviar Mensagem",
+  "messages.title": "💌 Enviar Mensagem",
+  "messages.close": "Fechar",
+  "messages.to": "Para",
   "messages.quickMessages": "Mensagens rápidas",
   "messages.custom": "Mensagem personalizada",
   "messages.placeholder": "Escreve algo fofo...",
-  "messages.sent": "Mensagem enviada!",
-  "messages.failed": "Não consegui enviar. O outro membro tem notificações ativas?",
-  "messages.noMembers": "Ainda não tens outros membros na casa. Convida alguém primeiro!",
+  "messages.send": "📤",
+  "messages.sent": "✅ Mensagem enviada!",
+  "messages.failed": "❌ Não consegui enviar. O outro membro tem notificações ativas?",
+  "messages.noMembers": "Ainda não tens outros membros na casa. Convida alguém primeiro! 🏠",
 
   // Friends
   "friends.title": "Vizinhos",
@@ -304,6 +307,7 @@ export const pt = {
   "tutorial.notifications.tip1": "Rotinazinhas → 🔔 → aceita permissão",
   "tutorial.notifications.tip2": "Lembretes de hábitos na hora configurada",
   "tutorial.notifications.tip3": "Mensagens entre membros da casa",
+  "tutorial.notifications.tip4": "Alertas de items urgentes, eventos e aniversários",
 
   "tutorial.tips.title": "Dicas Finais",
   "tutorial.tips.text": "Estás pronto/a para organizar a tua casinha! Dicas essenciais:",

@@ -35,7 +35,7 @@ export default function Gamification({ onClose }: GamificationProps) {
   const pctToNext = (pointsInLevel / 50) * 100;
 
   return (
-    <div className="absolute inset-0 bg-gradient-to-br from-amber-50/98 via-yellow-50/98 to-orange-50/98 backdrop-blur-md z-50 flex flex-col items-center overflow-y-auto animate-fade-in-up p-6">
+    <div className="fixed inset-0 bg-gradient-to-br from-amber-50/98 via-yellow-50/98 to-orange-50/98 backdrop-blur-md z-50 flex flex-col items-center overflow-y-auto animate-fade-in-up p-6">
       {/* Header */}
       <div className="text-center mb-6">
         <div className="text-5xl mb-2 animate-bounce-gentle">🏆</div>

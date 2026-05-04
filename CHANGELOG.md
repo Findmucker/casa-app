@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.6] - 2026-05-04
+
+### Added
+- **Push notifications for key actions** — urgent shopping items, new events, friend requests, member joined house
+- **Event tomorrow reminders** — cron sends push at 8am for next-day events
+- **Birthday notifications** — cron sends push at 8am on member birthdays
+- **Friend request notifications** — push when request sent and when accepted
+- **Periodic background sync** — service worker self-triggers habit cron every 10min (Android/Chrome)
+- **notifyOtherMembers helper** — reusable push notification utility in lib/notifications
+
+### Changed
+- **Cron schedule** — upgraded from daily to hourly for more reliable habit reminders
+- **Service worker** — bumped to v0.8.5, added fetch piggyback for cron self-trigger
+- **Calendar emoji extraction** — fixed regex that failed on flags/VS16 emojis (🇵🇹, ✝️, 🛡️)
+- **Calendar habit dots** — now show each habit's custom emoji instead of hardcoded 🧘
+- **Calendar day details** — emoji shown as separate icon, no duplicate in label text
+- **Calendar legend** — holidays icon changed from 📅 to 🎆
+
+### Fixed
+- **Holiday emojis not showing** — regex `Emoji_Presentation` doesn't match flags/text+VS16; switched to split
+- **Calendar detail duplicate emojis** — labels had emoji prefix AND separate emoji rendering
+
 ## [0.8.5] - 2026-05-04
 
 ### Added

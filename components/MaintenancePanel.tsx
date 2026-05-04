@@ -173,7 +173,7 @@ export default function MaintenancePanel({ onClose }: MaintenancePanelProps) {
   };
 
   return (
-    <div className="absolute inset-0 bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up p-6">
+    <div className="fixed inset-0 bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up p-6">
       <h2 className="text-lg font-bold text-rose-500 mb-6">⚙️ Manutenção</h2>
 
       <div className="w-full max-w-sm space-y-3">

@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Ultima atualizacao: 4 de Maio de 2026 | Versao 0.8.5
+> Ultima atualizacao: 4 de Maio de 2026 | Versao 0.8.6
 
 ## O que e a app?
 
@@ -182,8 +182,15 @@ A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 4. Pronto! Recebes notificacoes mesmo com a app fechada
 
 ### Tipos de notificacao
-- **Lembretes de habitos** — recebe lembrete na hora configurada
+- **Lembretes de habitos** — recebe lembrete na hora configurada (repetido a cada 10 min ate completar)
 - **Mensagens de membros** — recebe mensagens enviadas por outros membros da casa
+- **Item urgente nas compras** — quando alguem marca um item como urgente 🔥
+- **Novo evento criado** — quando alguem cria um evento na casa
+- **Evento amanha** — lembrete automatico as 8h para eventos do dia seguinte
+- **Aniversario hoje** — lembrete automatico as 8h quando e aniversario de um membro
+- **Pedido de amizade** — quando outra casa envia um pedido de vizinhanca
+- **Pedido aceite** — quando o teu pedido de vizinhanca e aceite
+- **Novo membro** — quando alguem se junta a tua casa via convite
 
 ### Enviar mensagem a outro membro
 1. Tap no nome da casa no header

@@ -72,7 +72,7 @@ export default function SearchOverlay({ onClose, onNavigate }: SearchOverlayProp
   }, [query, enabled, shopping, coisinhas, projects, habits, expenses]);
 
   return (
-    <div className="absolute inset-0 bg-white/98 backdrop-blur-md z-50 flex flex-col animate-fade-in-up">
+    <div className="fixed inset-0 bg-white/98 backdrop-blur-md z-50 flex flex-col animate-fade-in-up">
       {/* Search input */}
       <div className="p-4 border-b border-pink-100/40">
         <div className="flex items-center gap-2">

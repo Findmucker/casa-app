@@ -153,13 +153,16 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "profile.totalPoints": "total points",
 
   // Messages
-  "messages.title": "Send Message",
+  "messages.title": "💌 Send Message",
+  "messages.close": "Close",
+  "messages.to": "To",
   "messages.quickMessages": "Quick messages",
   "messages.custom": "Custom message",
   "messages.placeholder": "Write something nice...",
-  "messages.sent": "Message sent!",
-  "messages.failed": "Couldn't send. Does the other member have notifications enabled?",
-  "messages.noMembers": "No other members in the house yet. Invite someone first!",
+  "messages.send": "📤",
+  "messages.sent": "✅ Message sent!",
+  "messages.failed": "❌ Couldn't send. Does the other member have notifications enabled?",
+  "messages.noMembers": "No other members in the house yet. Invite someone first! 🏠",
 
   // Friends
   "friends.title": "Friend Houses",
@@ -306,6 +309,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.notifications.tip1": "Habits → 🔔 → accept permission",
   "tutorial.notifications.tip2": "Habit reminders at the configured time",
   "tutorial.notifications.tip3": "Messages between house members",
+  "tutorial.notifications.tip4": "Alerts for urgent items, events and birthdays",
 
   "tutorial.tips.title": "Final Tips",
   "tutorial.tips.text": "You're ready to organize your home! Essential tips:",
