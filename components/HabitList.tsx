@@ -30,7 +30,7 @@ export default function HabitList() {
   const memberNames = useMemberNames();
   const { userName } = useHouseContext();
   const { items: habits, loading, error, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
-  const { items: checks, add: addCheck } = useCollection<HabitCheck>("habit_checks", "createdAt");
+  const { items: checks, loading: checksLoading, add: addCheck } = useCollection<HabitCheck>("habit_checks", "createdAt");
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState("🧘");
   const [newTime, setNewTime] = useState("");
@@ -54,6 +54,10 @@ export default function HabitList() {
     return new Set(checks.filter((c) => c.date === today).map((c) => c.habitId));
   }, [checks, today]);
 
+  // Stable ref for todayChecks to avoid re-triggering notification effect
+  const todayChecksRef = useRef(todayChecks);
+  todayChecksRef.current = todayChecks;
+
   // Schedule notifications for habits with reminder times
   const timerIds = useRef<number[]>([]);
   useEffect(() => {
@@ -70,7 +74,7 @@ export default function HabitList() {
         `${h.emoji} ${h.name}`,
         "Não te esqueças!",
         h.reminderTime,
-        () => todayChecks.has(h.id)
+        () => todayChecksRef.current.has(h.id)
       );
       if (id !== null) timerIds.current.push(id);
     });
@@ -79,7 +83,8 @@ export default function HabitList() {
       timerIds.current.forEach((id) => cancelNotification(id));
       timerIds.current = [];
     };
-  }, [habits, notificationsEnabled, todayChecks]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [habits, notificationsEnabled]);
 
   const getStreak = useCallback((habitId: string) => {
     const habitChecks = checks
@@ -297,7 +302,7 @@ export default function HabitList() {
 
       {/* Habits list */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {loading && (
+        {(loading || checksLoading) && (
           <div className="text-center text-purple-300 py-12 animate-pulse-soft">
             <div className="text-3xl mb-2">✨</div>
             <p className="text-sm">{t("common.loading")}</p>
@@ -312,7 +317,7 @@ export default function HabitList() {
           </div>
         )}
 
-        {!loading && habits.length === 0 && (
+        {!loading && !checksLoading && habits.length === 0 && (
           <div className="text-center text-purple-300 py-12">
             <div className="text-5xl mb-3 animate-float">✨</div>
             <p className="text-sm">{t("habits.empty")}</p>
