@@ -221,40 +221,6 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
         </button>
       </div>
 
-      {/* Quick actions footer */}
-      <div className="px-4 py-3 mt-auto">
-        <p className="text-[10px] text-purple-400 font-medium mb-2 uppercase tracking-wider">Acesso rápido</p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onNavigate("meals")}
-            className="flex-1 py-2 rounded-xl bg-white/70 border border-pink-100/50 text-center transition-all active:scale-95 hover:bg-white"
-          >
-            <span className="text-sm">🍽️</span>
-            <p className="text-[9px] text-gray-500 mt-0.5">Refeições</p>
-          </button>
-          <button
-            onClick={() => onNavigate("calendar")}
-            className="flex-1 py-2 rounded-xl bg-white/70 border border-pink-100/50 text-center transition-all active:scale-95 hover:bg-white"
-          >
-            <span className="text-sm">📅</span>
-            <p className="text-[9px] text-gray-500 mt-0.5">Calendário</p>
-          </button>
-          <button
-            onClick={() => onNavigate("events")}
-            className="flex-1 py-2 rounded-xl bg-white/70 border border-pink-100/50 text-center transition-all active:scale-95 hover:bg-white"
-          >
-            <span className="text-sm">🎉</span>
-            <p className="text-[9px] text-gray-500 mt-0.5">Eventos</p>
-          </button>
-          <button
-            onClick={() => onNavigate("weather")}
-            className="flex-1 py-2 rounded-xl bg-white/70 border border-pink-100/50 text-center transition-all active:scale-95 hover:bg-white"
-          >
-            <span className="text-sm">🌤️</span>
-            <p className="text-[9px] text-gray-500 mt-0.5">Meteo</p>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
