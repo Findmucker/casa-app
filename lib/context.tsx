@@ -5,6 +5,7 @@ import { HouseMember } from "./auth";
 
 export interface HouseContextValue {
   houseId: string;
+  houseName: string;
   userName: string;
   userId: string;
   members: HouseMember[];
@@ -15,12 +16,13 @@ const HouseContext = createContext<HouseContextValue | null>(null);
 export function HouseProvider({
   children,
   houseId,
+  houseName,
   userName,
   userId,
   members,
 }: HouseContextValue & { children: ReactNode }) {
   return (
-    <HouseContext.Provider value={{ houseId, userName, userId, members }}>
+    <HouseContext.Provider value={{ houseId, houseName, userName, userId, members }}>
       {children}
     </HouseContext.Provider>
   );

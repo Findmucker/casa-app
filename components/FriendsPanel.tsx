@@ -21,7 +21,7 @@ interface FriendsPanelProps {
 
 export default function FriendsPanel({ onClose }: FriendsPanelProps) {
   const { t } = useT();
-  const { houseId, userName } = useHouseContext();
+  const { houseId, userName, houseName } = useHouseContext();
   const { friends, loading } = useFriends(houseId);
   const { requests } = usePendingRequests(houseId);
 
@@ -29,13 +29,10 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
   const [friendCode, setFriendCode] = useState<string | null>(null);
   const [codeInput, setCodeInput] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [searchResults, setSearchResults] = useState<{ id: string; name: string }[]>([]);
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string; members: string[] }[]>([]);
   const [searching, setSearching] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [loadingAction, setLoadingAction] = useState(false);
-
-  // Get house name from Firestore (we use userName's house for now)
-  const houseName = "A Nossa Casinha"; // TODO: pull from house doc
 
   const handleGetCode = async () => {
     const code = await getFriendCode(houseId);
@@ -266,7 +263,12 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
                 <div className="space-y-2">
                   {searchResults.map((house) => (
                     <div key={house.id} className="flex items-center justify-between p-3 bg-pink-50/60 rounded-xl">
-                      <span className="text-sm font-medium text-rose-700">🏠 {house.name}</span>
+                      <div>
+                        <span className="text-sm font-medium text-rose-700">🏠 {house.name}</span>
+                        {house.members.length > 0 && (
+                          <p className="text-xs text-pink-400 mt-0.5">{house.members.join(", ")}</p>
+                        )}
+                      </div>
                       <button
                         onClick={() => handleSendRequest(house.id, house.name)}
                         className="px-3 py-1 rounded-full bg-rose-400 text-white text-xs font-medium active:scale-95 transition-all"

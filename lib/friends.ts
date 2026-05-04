@@ -160,20 +160,22 @@ export async function removeFriend(houseId: string, friendHouseId: string): Prom
 export async function searchHouses(
   searchQuery: string,
   myHouseId: string
-): Promise<{ id: string; name: string }[]> {
+): Promise<{ id: string; name: string; members: string[] }[]> {
   if (!searchQuery || searchQuery.length < 2) return [];
 
   const housesRef = collection(db, "houses");
   const snapshot = await getDocs(housesRef);
 
-  const results: { id: string; name: string }[] = [];
+  const results: { id: string; name: string; members: string[] }[] = [];
   const lowerQuery = searchQuery.toLowerCase();
 
   snapshot.docs.forEach((d) => {
     if (d.id === myHouseId) return;
-    const name = d.data().name || "";
+    const data = d.data();
+    const name = data.name || "";
     if (name.toLowerCase().includes(lowerQuery)) {
-      results.push({ id: d.id, name });
+      const memberNames = (data.members || []).map((m: { name: string }) => m.name);
+      results.push({ id: d.id, name, members: memberNames });
     }
   });
 

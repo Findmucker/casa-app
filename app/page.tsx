@@ -111,7 +111,7 @@ function HomeInner() {
 
   // Authenticated + has house
   return (
-    <HouseProvider houseId={houseId} userName={resolvedUserName} userId={user.uid} members={house?.members || []}>
+    <HouseProvider houseId={houseId} houseName={house?.name || "A Nossa Casinha"} userName={resolvedUserName} userId={user.uid} members={house?.members || []}>
       <HouseIdContext.Provider value={houseId}>
         {showGreeting && <Greeting onDone={handleGreetingDone} />}
         <Dashboard />

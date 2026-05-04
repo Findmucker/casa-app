@@ -133,6 +133,13 @@ export function useHouse(uid: string | null) {
 }
 
 // ─── House operations ────────────────────────────────────────────
+export async function updateHouseName(houseId: string, name: string): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length > 30) return;
+  const { updateDoc } = await import("firebase/firestore");
+  await updateDoc(doc(db, "houses", houseId), { name: trimmed });
+}
+
 export async function createHouse(uid: string, userName: string, houseName: string): Promise<string> {
   const { addDoc, collection } = await import("firebase/firestore");
   const houseRef = await addDoc(collection(db, "houses"), {

@@ -21,7 +21,7 @@ import SendMessagePanel from "@/components/SendMessagePanel";
 import UndoToast from "@/components/UndoToast";
 import { UndoProvider } from "@/lib/useUndoStack";
 import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
-import { useAuth } from "@/lib/auth";
+import { useAuth, updateHouseName } from "@/lib/auth";
 import { useTimeTheme } from "@/lib/themes";
 import { registerPushToken } from "@/lib/notifications";
 import { LocaleProvider, useT } from "@/lib/i18n";
@@ -66,6 +66,8 @@ function DashboardInner() {
   const [showInvite, setShowInvite] = useState(false);
   const [showHouseMembers, setShowHouseMembers] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
+  const [editingHouseName, setEditingHouseName] = useState(false);
+  const [houseNameInput, setHouseNameInput] = useState("");
   const [houseMembersMessageTo, setHouseMembersMessageTo] = useState<string | undefined>(undefined);
   const [showSendMessage, setShowSendMessage] = useState(false);
   const [memberActionTarget, setMemberActionTarget] = useState<MemberWidget | null>(null);
@@ -73,7 +75,7 @@ function DashboardInner() {
   const darkMode = theme.isDark;
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
-  const { members, userName } = useHouseContext();
+  const { members, userName, houseName } = useHouseContext();
 
   // Members widget data
   const [memberWidgets, setMemberWidgets] = useState<MemberWidget[]>([]);
@@ -197,7 +199,7 @@ function DashboardInner() {
             darkMode ? "text-purple-500 hover:text-purple-600" : "text-rose-400 hover:text-rose-500"
           }`}
         >
-          🏡 {t("header.title")}
+          🏡 {houseName}
         </button>
         <button
           onClick={() => setShowGamification(true)}
@@ -262,6 +264,7 @@ function DashboardInner() {
                     { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
                     { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); } },
                     { emoji: "🏠", label: t("menu.friends"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowFriends(true); } },
+                    { emoji: "✏️", label: t("house.rename"), action: () => { setHouseNameInput(houseName); setEditingHouseName(true); } },
                   ] : [
                     { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
                     { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowMaintenance(true); } },
@@ -279,6 +282,32 @@ function DashboardInner() {
                       <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
                     </button>
                   ))}
+                  {menuSubPanel === "house" && editingHouseName && (
+                    <div className={`col-span-full flex gap-2 p-3 rounded-2xl ${
+                      darkMode ? "bg-purple-100/60 border border-purple-200/30" : "bg-white/60 border border-pink-100/30"
+                    }`}>
+                      <input
+                        type="text"
+                        value={houseNameInput}
+                        onChange={(e) => setHouseNameInput(e.target.value)}
+                        maxLength={30}
+                        className="flex-1 px-3 py-1.5 rounded-xl border border-pink-200/60 text-sm focus:outline-none focus:border-rose-300"
+                        placeholder={t("house.namePlaceholder")}
+                        autoFocus
+                      />
+                      <button
+                        onClick={async () => {
+                          if (houseId && houseNameInput.trim()) {
+                            await updateHouseName(houseId, houseNameInput);
+                            setEditingHouseName(false);
+                          }
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-400 to-rose-400 text-white text-xs font-semibold active:scale-95 transition-all"
+                      >
+                        ✓
+                      </button>
+                    </div>
+                  )}
                   {menuSubPanel === "settings" && (
                     <div className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl ${
                       darkMode ? "bg-purple-100/60 border border-purple-200/30" : "bg-white/60 border border-pink-100/30"
