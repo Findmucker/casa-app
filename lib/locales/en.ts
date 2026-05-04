@@ -129,6 +129,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "calendar.events": "Events",
   "calendar.weather": "Weather",
   "calendar.holidays": "Holidays",
+  "calendar.birthdays": "Birthdays",
   "calendar.weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   "calendar.months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
 
@@ -178,6 +179,10 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "friends.birthdays": "Birthdays",
   "friends.noResults": "No houses found",
   "friends.inviteToEvent": "Invite to event",
+  "friends.errorInvalidCode": "Invalid code",
+  "friends.errorOwnHouse": "You can't add your own house",
+  "friends.errorAlreadyFriends": "Already friends!",
+  "friends.copied": "Copied!",
 
   // Tutorial
   "tutorial.title": "Tutorial",

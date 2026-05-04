@@ -127,6 +127,7 @@ export const pt = {
   "calendar.events": "Eventos",
   "calendar.weather": "Meteo",
   "calendar.holidays": "Feriados",
+  "calendar.birthdays": "Aniversários",
   "calendar.weekdays": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
   "calendar.months": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
 
@@ -176,6 +177,10 @@ export const pt = {
   "friends.birthdays": "Aniversários",
   "friends.noResults": "Nenhuma casa encontrada",
   "friends.inviteToEvent": "Convidar para evento",
+  "friends.errorInvalidCode": "Código inválido",
+  "friends.errorOwnHouse": "Não podes adicionar a tua própria casa",
+  "friends.errorAlreadyFriends": "Já são amigas!",
+  "friends.copied": "Copiado!",
 
   // Tutorial
   "tutorial.title": "Tutorial",

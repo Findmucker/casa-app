@@ -5,13 +5,12 @@ import TabTip from "@/components/TabTip";
 import MiniAvatar from "@/components/MiniAvatar";
 import { useSharedCollections, useCollection } from "@/lib/hooks";
 import { useHouseContext } from "@/lib/context";
+import { useT } from "@/lib/i18n";
 import { getWeatherInfo } from "@/lib/weather";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CasaEvent } from "./EventList";
 
-const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 // Portuguese holidays (fixed dates) — emoji reflects the holiday itself
 const HOLIDAYS_FIXED: Record<string, string> = {
@@ -122,6 +121,9 @@ export default function Calendar() {
   const { habits, checks, coisinhas, projects } = useSharedCollections();
   const { items: events } = useCollection<CasaEvent>("events", "createdAt");
   const { members } = useHouseContext();
+  const { t, tArray } = useT();
+  const weekdays = tArray("calendar.weekdays");
+  const months = tArray("calendar.months");
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -250,7 +252,7 @@ export default function Calendar() {
         <div className="flex items-center justify-between">
           <button onClick={() => changeMonth(-1)} aria-label="Mês anterior" className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&larr;</button>
           <h2 className="text-base font-bold text-blue-600 capitalize">
-            {MONTHS_PT[viewDate.getMonth()]} {viewDate.getFullYear()}
+            {months[viewDate.getMonth()]} {viewDate.getFullYear()}
           </h2>
           <button onClick={() => changeMonth(1)} aria-label="Mês seguinte" className="text-blue-400 px-3 py-1 active:scale-90 text-lg">&rarr;</button>
         </div>
@@ -260,7 +262,7 @@ export default function Calendar() {
       <div className="p-4">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {WEEKDAYS.map((d) => (
+          {weekdays.map((d) => (
             <div key={d} className="text-center text-[10px] font-medium text-blue-400">{d}</div>
           ))}
         </div>
@@ -331,7 +333,7 @@ export default function Calendar() {
             )}
 
             {selectedDots.length === 0 && !selectedWeather && (
-              <p className="text-xs text-blue-300 text-center py-4">Nada neste dia</p>
+              <p className="text-xs text-blue-300 text-center py-4">{t("calendar.nothingToday")}</p>
             )}
             {selectedDots.map((dot, i) => (
               <div key={i} className="flex items-center gap-2 bg-white/70 rounded-xl p-3 border border-blue-100/30">
@@ -347,35 +349,35 @@ export default function Calendar() {
 
         {!selectedDate && (
           <div className="text-center text-blue-300 py-6">
-            <p className="text-xs">Tap num dia para ver detalhes</p>
+            <p className="text-xs">{t("calendar.tapDay")}</p>
             <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">🧘</span>
-                <span className="text-[10px]">Hábitos</span>
+                <span className="text-[10px]">{t("calendar.habits")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">🪴</span>
-                <span className="text-[10px]">Coisinhas</span>
+                <span className="text-[10px]">{t("calendar.tasks")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">🏠</span>
-                <span className="text-[10px]">Projetos</span>
+                <span className="text-[10px]">{t("calendar.projects")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">🎉</span>
-                <span className="text-[10px]">Eventos</span>
+                <span className="text-[10px]">{t("calendar.events")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">☀️</span>
-                <span className="text-[10px]">Meteo</span>
+                <span className="text-[10px]">{t("calendar.weather")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">📅</span>
-                <span className="text-[10px]">Feriados</span>
+                <span className="text-[10px]">{t("calendar.holidays")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">🎂</span>
-                <span className="text-[10px]">Aniversários</span>
+                <span className="text-[10px]">{t("calendar.birthdays")}</span>
               </div>
             </div>
           </div>

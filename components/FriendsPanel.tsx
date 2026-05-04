@@ -48,11 +48,11 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
       setCodeInput("");
     } else {
       const errorMap: Record<string, string> = {
-        invalid_code: "Codigo invalido",
-        own_house: "Nao podes adicionar a tua propria casa",
-        already_friends: "Ja sao amigas!",
+        invalid_code: t("friends.errorInvalidCode"),
+        own_house: t("friends.errorOwnHouse"),
+        already_friends: t("friends.errorAlreadyFriends"),
       };
-      setMessage({ text: errorMap[result.error || ""] || "Erro", type: "error" });
+      setMessage({ text: errorMap[result.error || ""] || "Error", type: "error" });
     }
     setLoadingAction(false);
     setTimeout(() => setMessage(null), 3000);
@@ -200,7 +200,7 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(friendCode);
-                      setMessage({ text: "Copiado!", type: "success" });
+                      setMessage({ text: t("friends.copied"), type: "success" });
                       setTimeout(() => setMessage(null), 2000);
                     }}
                     className="text-xs px-2 py-1 rounded-full bg-pink-100 text-pink-600 active:scale-95"
@@ -248,7 +248,7 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Nome da casa..."
+                  placeholder={t("friends.search")}
                   className="flex-1 px-4 py-2 rounded-xl border border-pink-200/60 text-sm focus:outline-none focus:border-rose-300"
                 />
                 <button
