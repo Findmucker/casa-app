@@ -41,6 +41,14 @@ export default function PriorityList() {
   const [celebratingCategory, setCelebratingCategory] = useState<string | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const { pushUndo } = useUndo();
+  // Track items completed in this session (shown with strikethrough, hidden next session)
+  const [doneThisSession, setDoneThisSession] = useState<Set<string>>(new Set());
+
+  // Filter: hide items done in previous sessions (but keep items done this session visible)
+  const visibleItems = useMemo(() =>
+    items.filter((i) => !i.done || doneThisSession.has(i.id)),
+    [items, doneThisSession]
+  );
 
   const nameSuggestions = useMemo(() => {
     const fromHistory = items.map((i) => i.name);
@@ -70,8 +78,9 @@ export default function PriorityList() {
     if (!item.done) {
       setCelebrating(item.id);
       setTimeout(() => setCelebrating(null), 600);
+      setDoneThisSession((s) => new Set(s).add(item.id));
       const cat = item.category || guessCategory(item.name, COISINHAS_CATEGORIES);
-      const catUndone = items.filter(
+      const catUndone = visibleItems.filter(
         (i) => !i.done && i.id !== item.id &&
           (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
       );
@@ -79,9 +88,14 @@ export default function PriorityList() {
         setCelebratingCategory(cat);
         setTimeout(() => setCelebratingCategory(null), 1500);
       }
+    } else {
+      setDoneThisSession((s) => { const n = new Set(s); n.delete(item.id); return n; });
     }
-    await update(item.id, { done: !item.done });
-  }, [update, items]);
+    await update(item.id, {
+      done: !item.done,
+      completedAt: !item.done ? new Date().toISOString().split("T")[0] : undefined,
+    });
+  }, [update, visibleItems]);
 
   const handleAdd = async () => {
     const name = newName.trim();
@@ -177,7 +191,7 @@ export default function PriorityList() {
           </div>
         )}
 
-        {!loading && items.length === 0 && (
+        {!loading && visibleItems.length === 0 && (
           <div className="text-center text-pink-300 py-12">
             <div className="text-5xl mb-3 animate-float">🪴</div>
             <p className="text-sm">{t("priority.empty")}</p>
@@ -186,10 +200,10 @@ export default function PriorityList() {
         )}
 
         {/* Category progress badges */}
-        {!loading && items.length > 0 && (
+        {!loading && visibleItems.length > 0 && (
           <div className="flex flex-wrap gap-2 pb-3">
             {COISINHAS_CATEGORY_ORDER.map((cat) => {
-              const catItems = items.filter(
+              const catItems = visibleItems.filter(
                 (i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
               );
               if (catItems.length === 0) return null;
@@ -220,20 +234,20 @@ export default function PriorityList() {
         )}
 
         {/* Category boxes */}
-        {!loading && items.length > 0 && (
+        {!loading && visibleItems.length > 0 && (
           <button
             onClick={() => {
-              const cats = COISINHAS_CATEGORY_ORDER.filter((c) => items.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c));
+              const cats = COISINHAS_CATEGORY_ORDER.filter((c) => visibleItems.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c));
               const allCol = cats.every((c) => collapsedCategories.has(c));
               setCollapsedCategories(allCol ? new Set() : new Set(cats));
             }}
             className="text-[11px] text-pink-400 hover:text-pink-600 transition-colors mb-2 self-end"
           >
-            {COISINHAS_CATEGORY_ORDER.filter((c) => items.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c)).every((c) => collapsedCategories.has(c)) ? "▼ " + t("priority.expandAll") : "▲ " + t("priority.collapseAll")}
+            {COISINHAS_CATEGORY_ORDER.filter((c) => visibleItems.some((i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === c)).every((c) => collapsedCategories.has(c)) ? "▼ " + t("priority.expandAll") : "▲ " + t("priority.collapseAll")}
           </button>
         )}
-        {!loading && items.length > 0 && COISINHAS_CATEGORY_ORDER.map((cat) => {
-          const catItems = items.filter(
+        {!loading && visibleItems.length > 0 && COISINHAS_CATEGORY_ORDER.map((cat) => {
+          const catItems = visibleItems.filter(
             (i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
           );
           if (catItems.length === 0) return null;
