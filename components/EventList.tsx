@@ -7,7 +7,7 @@ import { getOrCreateShareId } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getWeatherInfo } from "@/lib/weather";
-import { useHouseContext } from "@/lib/context";
+import { useHouseContextSafe } from "@/lib/context";
 import { notifyOtherMembers } from "@/lib/notifications";
 
 // ─── Weather for event dates ────────────────────────────────
@@ -84,7 +84,9 @@ interface EventListProps {
 }
 
 export default function EventList({ isPublic = false, guestName }: EventListProps) {
-  const { userName, members } = useHouseContext();
+  const houseCtx = useHouseContextSafe();
+  const userName = houseCtx?.userName || guestName || "";
+  const members = houseCtx?.members || [];
   const { items: events, loading, add, update, remove } =
     useCollection<CasaEvent>("events");
   const [showCreate, setShowCreate] = useState(false);

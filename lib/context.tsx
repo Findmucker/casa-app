@@ -34,6 +34,11 @@ export function useHouseContext(): HouseContextValue {
   return ctx;
 }
 
+/** Safe version — returns null outside HouseProvider (e.g. public pages) */
+export function useHouseContextSafe(): HouseContextValue | null {
+  return useContext(HouseContext);
+}
+
 /** Get member names for assignee/payer selectors. Returns ["Member1", "Member2", "Ambos"] style list */
 export function useMemberNames(): { key: string; label: string; emoji: string }[] {
   const ctx = useContext(HouseContext);
