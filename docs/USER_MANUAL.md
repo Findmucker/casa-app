@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Ultima atualizacao: 3 de Maio de 2026 | Versao 0.8.3
+> Ultima atualizacao: 4 de Maio de 2026 | Versao 0.8.5
 
 ## O que e a app?
 
@@ -12,10 +12,11 @@ Todos os membros da casa sao **iguais** — nao ha hierarquia de administrador.
 
 ## Navegacao
 
-A app tem uma **barra de tabs** na parte inferior com 10 seccoes. Podes navegar por:
+A app tem uma **barra de tabs** na parte inferior com 9 seccoes. Podes navegar por:
 - **Tap** na tab desejada
 - **Swipe** horizontal para avancar/recuar entre tabs
-- **Menu central** (tap no titulo "A Nossa Casinha") para ver todas as opcoes
+- **Menu central** (tap no nome da casa no header) para ver todas as opcoes
+- **Botao voltar** (dispositivo/browser) — fecha o painel aberto em vez de sair da app
 
 ### Tabs disponiveis
 
@@ -40,7 +41,6 @@ O ecra inicial mostra:
 - **Alertas urgentes** — comprinhas marcadas como urgentes
 - **Habitos de hoje** — quantos habitos ja fizeste hoje + streak
 - **Cards resumo** — comprinhas pendentes, coisinhas, projetos em progresso, gastos do mes
-- **Acesso rapido** — botoes para calendario, eventos e meteo
 
 ---
 
@@ -134,11 +134,14 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
   - 🏠 Projetos concluidos
   - 🎉 Eventos agendados
   - 🇵🇹 Feriados portugueses
+  - 🎂 Aniversarios dos membros (com MiniAvatar pixel art)
 - **Feriados portugueses** automaticos (fixos + moveis como Pascoa e Carnaval)
+- **Aniversarios** — datas de nascimento dos membros aparecem com o avatar no grid
 - **Previsao meteorologica** — emoji do tempo nos proximos 7 dias diretamente no grid
 - Tap num dia para ver todos os detalhes:
   - Card de meteo com temperatura min/max e probabilidade de chuva
   - Lista de eventos, habitos, coisinhas e projetos desse dia
+  - Aniversarios com MiniAvatar do membro
   - Feriados e datas especiais
 
 ---
@@ -183,7 +186,7 @@ A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 - **Mensagens de membros** — recebe mensagens enviadas por outros membros da casa
 
 ### Enviar mensagem a outro membro
-1. Tap no titulo "A Nossa Casinha" no header
+1. Tap no nome da casa no header
 2. Na seccao **👥 Membros**, tap no membro a quem queres enviar
 3. Tap em **💌 Mensagem** (aparece para todos os membros exceto tu proprio)
 4. Escolhe uma mensagem rapida ou escreve a tua
@@ -202,20 +205,37 @@ A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 
 ## Tutorial
 
-A app inclui um **tutorial interativo** que aparece na primeira utilizacao. O tutorial foi completamente reescrito e suporta ambos os idiomas (PT/EN).
+A app inclui **dicas contextuais por tab** — quando entras numa tab pela primeira vez, aparece um pequeno painel com dicas sobre essa seccao. Podes dispensar cada dica individualmente.
 
-Podes rever o tutorial a qualquer momento:
-1. Tap no titulo "A Nossa Casinha"
-2. Seccao Definicoes → **❓ Tutorial**
+---
+
+## Vizinhos (Casas Amigas)
+
+O sistema de Vizinhos permite conectar a tua casa com outras casas na app.
+
+### Aceder
+- Menu central → seccao Casa → 🏠 Vizinhos
+
+### Conectar casas
+Existem 2 formas de adicionar casas amigas:
+
+1. **Por codigo** — gera um codigo de 6 caracteres na tua casa e partilha com o amigo. O amigo introduz o codigo na sua app.
+2. **Por pesquisa** — pesquisa casas por nome e envia um pedido de amizade.
+
+### Funcionalidades
+- Ver lista de casas amigas
+- Aceitar/rejeitar pedidos pendentes
+- Remover casas amigas
+- Resultados de pesquisa mostram nomes dos membros da casa
 
 ---
 
 ## Menu Central
 
-Ao tocar no titulo "A Nossa Casinha" no header, abre um menu organizado em seccoes:
+Ao tocar no **nome da casa** no header, abre um menu organizado em seccoes:
 
 ### Navegar
-Grid com todas as 10 tabs — tap para ir directamente.
+Grid com todas as 9 tabs — tap para ir directamente.
 
 ### Casa
 - **🔗 Convidar** — gerar codigo de convite para novos membros
@@ -224,12 +244,13 @@ Grid com todas as 10 tabs — tap para ir directamente.
   - **💌 Mensagem** — abre diretamente o painel de mensagem para esse membro (nao aparece para ti proprio)
   - **👤 Perfil** — mostra o perfil do membro em modo leitura (sem tab de definicoes); no teu proprio perfil, abre o perfil editavel completo
   - Animacoes: entrada staggered, bounce no membro selecionado, hover scale
+- **🏠 Vizinhos** — sistema de casas amigas (conectar, pesquisar, pedidos)
+- **✏️ Renomear** — editar o nome da casa (visivel para todos os membros em tempo real)
 
 ### Definicoes
 - **📜 Historico** — registo de items completados com data e stats
 - **⚙️ Manutencao** — reorganizar categorias, limpar items feitos, seed de teste
 - **🌐 Idioma** — toggle inline PT 🇵🇹 / EN 🇬🇧
-- **❓ Tutorial** — rever o tutorial interativo da app
 
 ### Sair
 Botao isolado para logout seguro.
@@ -238,7 +259,7 @@ Botao isolado para logout seguro.
 
 ## Perfil e Gamificacao
 
-Acede ao perfil tocando no icone ⚔️ no canto superior direito.
+Acede ao perfil tocando no **teu avatar** (pixel art) no canto superior direito do header.
 
 ### Avatar Pixel Art
 - Escolhe entre 11 animais (Panda, Gatinho, Coelhinho, Raposa, Ursinho, Caozinho, Pinguim, Hamster, Coala, Coruja, Sapinho)

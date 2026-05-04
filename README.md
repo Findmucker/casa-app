@@ -4,7 +4,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.8.4
+**Version:** 0.8.5
 
 ## Features
 
@@ -54,9 +54,10 @@ A household management PWA for couples and families — organize shopping, tasks
 ### Calendar (Calendário)
 - Monthly grid with **emoji indicators** by type (replaced colored dots)
 - Portuguese holidays (fixed + Easter-based)
+- **Member birthdays** with MiniAvatar pixel art on the grid
 - Weather emoji integration (next 7 days)
 - Event integration
-- Tap day for details panel
+- Tap day for details panel (MiniAvatar shown for birthdays)
 
 ### Events (Eventos)
 - Create events with date and participants
@@ -109,6 +110,18 @@ A household management PWA for couples and families — organize shopping, tasks
 - Members can only leave themselves (no removing others)
 - **Animations** — staggered entrance, bounce on selected, hover scale
 - Dynamic member names throughout the app
+- **Customizable house name** — rename from menu, syncs in real-time
+
+### Friends (Vizinhos)
+- Connect houses via **6-char invite code** or **search by name**
+- Send/accept/reject friend requests
+- View friend houses list with remove option
+- Search results show member names
+- Bidirectional friendship (both houses see each other)
+
+### Navigation
+- **Back button support** — device/browser back closes the topmost panel instead of leaving the app
+- **Profile button** — user's MiniAvatar pixel art in the header (top right)
 
 ### Send Message Panel
 - Send push notification with message to other house members
@@ -121,9 +134,8 @@ A household management PWA for couples and families — organize shopping, tasks
 - Results grouped by type
 
 ### Tutorial System
-- Interactive step-by-step tutorial on first use
-- **Fully rewritten** with updated content and full i18n support
-- Accessible anytime via menu
+- **Per-tab contextual tips** — dismissible tips shown on first visit to each tab
+- Tips stored in localStorage per tab ID
 
 ### Profile with Avatar Customization
 - 11 pixel art animals with unique idle animations
