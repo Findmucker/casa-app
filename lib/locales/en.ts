@@ -7,7 +7,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tabs.small": "Tasks",
   "tabs.big": "Projects",
   "tabs.habits": "Habits",
-  "tabs.expenses": "Expenses",
+  "tabs.expenses": "Finances",
   "tabs.calendar": "Calendar",
   "tabs.events": "Events",
   "tabs.weather": "Weather",

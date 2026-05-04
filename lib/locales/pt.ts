@@ -1,14 +1,14 @@
 export const pt = {
   // Tabs
   "tabs.home": "Início",
-  "tabs.shopping": "Comprinhas",
+  "tabs.shopping": "Compras",
   "tabs.small": "Coisinhas",
-  "tabs.big": "Projetinhos",
-  "tabs.habits": "Rotinazinhas",
-  "tabs.expenses": "Gastinhos",
-  "tabs.calendar": "Calendarzinho",
-  "tabs.events": "Eventinhos",
-  "tabs.weather": "Tempinho",
+  "tabs.big": "Projetos",
+  "tabs.habits": "Rotinas",
+  "tabs.expenses": "Finanças",
+  "tabs.calendar": "Calendário",
+  "tabs.events": "Eventos",
+  "tabs.weather": "Tempo",
 
   // Header
   "header.title": "A Nossa Casinha",
