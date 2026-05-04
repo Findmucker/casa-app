@@ -2,8 +2,12 @@
 
 import { useState, useMemo, useEffect } from "react";
 import TabTip from "@/components/TabTip";
+import MiniAvatar from "@/components/MiniAvatar";
 import { useSharedCollections, useCollection } from "@/lib/hooks";
+import { useHouseContext } from "@/lib/context";
 import { getWeatherInfo } from "@/lib/weather";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import type { CasaEvent } from "./EventList";
 
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -70,7 +74,8 @@ interface CalendarDot {
   color: string;
   emoji: string;
   label: string;
-  type: "event" | "habit" | "deadline" | "weather";
+  type: "event" | "habit" | "deadline" | "weather" | "birthday";
+  memberName?: string; // for birthday dots — renders MiniAvatar
 }
 
 interface DayWeather {
@@ -112,9 +117,11 @@ export default function Calendar() {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [weatherData, setWeatherData] = useState<Record<string, DayWeather>>({});
+  const [birthdays, setBirthdays] = useState<{ name: string; date: string }[]>([]);
 
   const { habits, checks, coisinhas, projects } = useSharedCollections();
   const { items: events } = useCollection<CasaEvent>("events", "createdAt");
+  const { members } = useHouseContext();
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -122,6 +129,24 @@ export default function Calendar() {
   useEffect(() => {
     fetchWeather7Days().then(setWeatherData);
   }, []);
+
+  // Fetch member birthdays
+  useEffect(() => {
+    if (members.length === 0) return;
+    const load = async () => {
+      const results: { name: string; date: string }[] = [];
+      for (const m of members) {
+        try {
+          const snap = await getDoc(doc(db, "users", m.uid));
+          if (snap.exists() && snap.data().birthDate) {
+            results.push({ name: m.name, date: snap.data().birthDate });
+          }
+        } catch { /* ignore */ }
+      }
+      setBirthdays(results);
+    };
+    load();
+  }, [members]);
 
   // Build dots map: date → dots[]
   const dotsMap = useMemo(() => {
@@ -172,8 +197,17 @@ export default function Calendar() {
       addDot(dateStr, { color: "bg-amber-400", emoji, label, type: "event" });
     });
 
+    // Birthdays (show on this year's date matching month-day)
+    birthdays.forEach((b) => {
+      // birthDate format could be "YYYY-MM-DD" or "MM-DD"
+      const parts = b.date.split("-");
+      const mmdd = parts.length === 3 ? `${parts[1]}-${parts[2]}` : b.date;
+      const dateStr = `${year}-${mmdd}`;
+      addDot(dateStr, { color: "bg-cyan-400", emoji: "🎂", label: `🎂 ${b.name}`, type: "birthday", memberName: b.name });
+    });
+
     return map;
-  }, [habits, checks, coisinhas, projects, events, viewDate]);
+  }, [habits, checks, coisinhas, projects, events, viewDate, birthdays]);
 
   // Calendar grid
   const calendarDays = useMemo(() => {
@@ -258,9 +292,11 @@ export default function Calendar() {
                   <span className="text-[8px] leading-none">{getWeatherInfo(dayWeather.weathercode).emoji}</span>
                 )}
                 {dots.length > 0 && (
-                  <div className="flex gap-0.5">
+                  <div className="flex gap-0.5 items-center">
                     {dots.slice(0, 3).map((d, j) => (
-                      <span key={j} className="text-[7px] leading-none">{d.emoji}</span>
+                      d.memberName
+                        ? <MiniAvatar key={j} name={d.memberName} size={12} showEquipBadge={false} />
+                        : <span key={j} className="text-[7px] leading-none">{d.emoji}</span>
                     ))}
                   </div>
                 )}
@@ -299,7 +335,11 @@ export default function Calendar() {
             )}
             {selectedDots.map((dot, i) => (
               <div key={i} className="flex items-center gap-2 bg-white/70 rounded-xl p-3 border border-blue-100/30">
-                <span className="text-sm">{dot.emoji}</span>
+                {dot.memberName ? (
+                  <MiniAvatar name={dot.memberName} size={24} showEquipBadge={false} />
+                ) : (
+                  <span className="text-sm">{dot.emoji}</span>
+                )}
                 <span className="text-sm text-blue-800">{dot.label}</span>
               </div>
             ))}
@@ -333,6 +373,10 @@ export default function Calendar() {
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">📅</span>
                 <span className="text-[10px]">Feriados</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px]">🎂</span>
+                <span className="text-[10px]">Aniversários</span>
               </div>
             </div>
           </div>
