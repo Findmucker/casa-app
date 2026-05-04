@@ -8,7 +8,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 ## Features
 
-### Shopping List (Comprinhas)
+### Shopping List (Compras)
 - Add/remove items with estimated price
 - Assign to any house member
 - Auto-categorization (Fresh, Meats, Fruits, Bakery, Pantry, Drinks, Snacks, Hygiene, Pets)
@@ -23,13 +23,13 @@ A household management PWA for couples and families — organize shopping, tasks
 - Collapsible categories with progress bars
 - Autocomplete suggestions
 
-### Projects (Projetinhos)
+### Projects (Projetos)
 - Status workflow: Pending → In Progress → Done
 - **Subtasks**, budget, detailed notes
 - Auto-categorization (Painting, Construction, Doors/Windows, Electrical, Repairs, Plumbing, Kitchen, Exterior, Heating)
 - Collapsible categories with state counters
 
-### Habit Tracking (Rotinazinhas)
+### Habit Tracking (Rotinas)
 - Daily check that resets at midnight
 - **Streak tracking** with fire animations
 - **Weekday selector** — define which days a habit is active
@@ -38,7 +38,7 @@ A household management PWA for couples and families — organize shopping, tasks
 - **Repeating notifications** — reminder every 10 min until completed
 - Push notifications via FCM
 
-### Expenses (Gastinhos)
+### Finances (Finanças)
 - **3 sub-tabs:** Despesas (expenses), Rendimentos (income), Poupancas (savings goals)
 - Track: name, amount, category, who paid
 - Monthly summary by category with visual bars
@@ -51,14 +51,14 @@ A household management PWA for couples and families — organize shopping, tasks
 - **Income tracking** — log income entries per member
 - **Savings goals** — set targets with progress bars
 
-### Calendar (Calendarzinho)
+### Calendar (Calendário)
 - Monthly grid with **emoji indicators** by type (replaced colored dots)
 - Portuguese holidays (fixed + Easter-based)
 - Weather emoji integration (next 7 days)
 - Event integration
 - Tap day for details panel
 
-### Events (Eventinhos)
+### Events (Eventos)
 - Create events with date and participants
 - Shopping list and tasks per event
 - Assign responsible members
@@ -75,7 +75,6 @@ A household management PWA for couples and families — organize shopping, tasks
 ### Dashboard Summary
 - Cards with status from all areas
 - Weekly progress bar
-- Quick access to each section
 
 ### Gamification & RPG Profile
 - Points system (+1 shopping, +2 task, +5 project, +2 habit)

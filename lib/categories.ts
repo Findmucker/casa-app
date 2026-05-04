@@ -1,4 +1,4 @@
-// Category maps and auto-classification for Comprinhas & Coisinhas
+// Category maps and auto-classification for Compras & Coisinhas
 
 export const SHOPPING_CATEGORIES: Record<string, string[]> = {
   "🥛 Frescos": ["leite", "ovos", "manteiga", "queijo", "fiambre", "iogurtes", "iogurte", "natas", "presunto", "requeijão", "mozarela", "mozzarella", "cream cheese", "philadelphia", "ricotta", "brie", "camembert", "emmental"],

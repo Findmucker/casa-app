@@ -4,7 +4,7 @@
 
 ## O que e a app?
 
-A Nossa Casinha e uma app de gestao domestica para casais e familias. Permite organizar compras, tarefas, habitos, despesas, refeicoes, eventos e muito mais — tudo partilhado entre os membros da casa, com notificacoes push reais e um sistema de gamificacao RPG completo.
+A Nossa Casinha e uma app de gestao domestica para casais e familias. Permite organizar compras, tarefas, habitos, financas, eventos e muito mais — tudo partilhado entre os membros da casa, com notificacoes push reais e um sistema de gamificacao RPG completo.
 
 Todos os membros da casa sao **iguais** — nao ha hierarquia de administrador.
 
@@ -22,14 +22,14 @@ A app tem uma **barra de tabs** na parte inferior com 10 seccoes. Podes navegar 
 | Emoji | Nome | Funcao |
 |-------|------|--------|
 | ✨ | Inicio | Dashboard com resumo semanal |
-| 🛒 | Comprinhas | Lista de compras partilhada |
-| 🪴 | Coisinhas | Pequenas tarefas/prioridades |
-| 🏠 | Projetinhos | Projetos maiores da casa |
-| ✅ | Rotinazinhas | Habitos diarios com streaks e filtros |
-| 💰 | Gastinhos | Financas: despesas, rendimentos, poupancas |
-| 📅 | Calendarzinho | Calendario mensal integrado |
-| 🎉 | Eventinhos | Eventos e planos partilhados |
-| 🌤️ | Tempinho | Previsao meteorologica 7 dias |
+| 🛒 | Compras | Lista de compras partilhada |
+| 🧹 | Coisinhas | Pequenas tarefas/prioridades |
+| 🔧 | Projetos | Projetos maiores da casa |
+| 🧘 | Rotinas | Habitos diarios com streaks e filtros |
+| 💰 | Finanças | Despesas, rendimentos, poupancas |
+| 📅 | Calendário | Calendario mensal integrado |
+| 🎉 | Eventos | Eventos e planos partilhados |
+| 🌤️ | Tempo | Previsao meteorologica 7 dias |
 
 ---
 
@@ -40,11 +40,11 @@ O ecra inicial mostra:
 - **Alertas urgentes** — comprinhas marcadas como urgentes
 - **Habitos de hoje** — quantos habitos ja fizeste hoje + streak
 - **Cards resumo** — comprinhas pendentes, coisinhas, projetos em progresso, gastos do mes
-- **Acesso rapido** — botoes para refeicoes, calendario, eventos e meteo
+- **Acesso rapido** — botoes para calendario, eventos e meteo
 
 ---
 
-## Comprinhas (Lista de Compras)
+## Compras (Lista de Compras)
 
 - Adiciona items com o campo de texto no topo
 - Marca como **urgente** para destacar no topo
@@ -69,7 +69,7 @@ O ecra inicial mostra:
 
 ---
 
-## Projetinhos (Projetos)
+## Projetos
 
 - Projetos maiores (obras, compras grandes, reparacoes)
 - Estados: **pendente** → **a fazer** → **concluido**
@@ -79,7 +79,7 @@ O ecra inicial mostra:
 
 ---
 
-## Rotinazinhas (Habitos)
+## Rotinas (Habitos)
 
 - Cria habitos diarios (ex: tomar vitaminas, exercicio, medicacao)
 - Marca cada dia como feito com check diario (reseta a meia-noite)
@@ -94,9 +94,9 @@ O ecra inicial mostra:
 
 ---
 
-## Gastinhos (Financas)
+## Finanças
 
-A tab Gastinhos esta organizada em **3 sub-tabs** para gestao financeira completa:
+A tab Finanças esta organizada em **3 sub-tabs** para gestao financeira completa:
 
 ### Sub-tab: Despesas
 - Regista gastos com nome, valor, categoria e quem pagou
@@ -125,7 +125,7 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 
 ---
 
-## Calendarzinho
+## Calendário
 
 - Vista mensal com grid interativo
 - **Emojis** por tipo de atividade no dia (substituiram os dots coloridos):
@@ -143,7 +143,7 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 
 ---
 
-## Eventinhos
+## Eventos
 
 - Cria eventos com titulo, data e numero de participantes
 - Lista de compras e tarefas especificas por evento
@@ -154,17 +154,17 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
   - Veem detalhes do evento e podem juntar-se
   - Confirmacao antes de participar
 - Historico de eventos passados com opcao de clonar
-- **Integrado no Calendarzinho** — eventos aparecem com emoji 🎉
+- **Integrado no Calendário** — eventos aparecem com emoji 🎉
 
 ---
 
-## Tempinho (Meteorologia)
+## Tempo (Meteorologia)
 
 - Previsao a 7 dias via Open-Meteo API (gratuita)
 - Temperatura, vento, precipitacao
 - Vista horaria expandivel por dia (tap para expandir)
-- **Integrada no Calendarzinho** — emoji do tempo visivel no grid
-- **Integrada nos Eventinhos** — previsao automatica para eventos proximos
+- **Integrada no Calendário** — emoji do tempo visivel no grid
+- **Integrada nos Eventos** — previsao automatica para eventos proximos
 
 ---
 
@@ -173,7 +173,7 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 
 ### Ativar notificacoes
-1. Vai a tab **Rotinazinhas**
+1. Vai a tab **Rotinas**
 2. Toca no botao 🔔 no topo
 3. Aceita a permissao do browser
 4. Pronto! Recebes notificacoes mesmo com a app fechada
@@ -246,7 +246,7 @@ Acede ao perfil tocando no icone ⚔️ no canto superior direito.
 - 6 tabs de customizacao: Animal, Olhos, Boca, Roupa Cima, Roupa Baixo, Acessorios (7 opcoes cada)
 - Sombras realisticas por peso do animal
 - Avatar exibido no header do perfil
-- **MiniAvatar** — versao compacta do avatar pixel art, usada nos filtros de pessoa e selectores de responsavel (Rotinazinhas, Gastinhos, Coisinhas)
+- **MiniAvatar** — versao compacta do avatar pixel art, usada nos filtros de pessoa e selectores de responsavel (Rotinas, Finanças, Coisinhas)
 - Se nao tiveres avatar configurado, o MiniAvatar mostra um **avatar pixel art deterministico** baseado no teu nome
 - Se nao tiveres avatar NEM equipamento, o perfil mostra um **circulo com a letra inicial** do teu nome
 - **Badge de capacete** — quando tens equipamento equipado, o MiniAvatar e o widget de membros mostram um pequeno badge de capacete
@@ -384,9 +384,8 @@ A app funciona como **Progressive Web App (PWA)** — podes instala-la no telemo
 ## Dicas
 
 - **Swipe** entre tabs para navegar rapidamente
-- **Marca items como urgentes** nas comprinhas para destacar no topo
+- **Marca items como urgentes** nas compras para destacar no topo
 - **Mantem streaks** nos habitos para ganhar mais pontos e badges
-- **Usa o planeador de refeicoes** e envia ingredientes direto para as comprinhas
 - O **dashboard** mostra o que e mais importante para hoje
 - **Ativa notificacoes** para nao perderes lembretes de habitos
 - **Envia mensagens** a outros membros diretamente pela app

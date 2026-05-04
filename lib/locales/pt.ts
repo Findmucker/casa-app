@@ -46,7 +46,7 @@ export const pt = {
   "common.weekdays": "Dias da semana",
 
   // Shopping
-  "shopping.title": "Comprinhas",
+  "shopping.title": "Compras",
   "shopping.placeholder": "O que falta comprar?",
   "shopping.empty": "Nada para comprar!",
   "shopping.emptyHint": "Adiciona algo em cima",
@@ -65,7 +65,7 @@ export const pt = {
   "priority.collapseAll": "Minimizar tudo",
 
   // Projects
-  "projects.title": "Projetinhos",
+  "projects.title": "Projetos",
   "projects.placeholder": "Novo projeto...",
   "projects.empty": "Nenhum projeto ainda!",
   "projects.status.pending": "pendente",
@@ -73,7 +73,7 @@ export const pt = {
   "projects.status.done": "concluido",
 
   // Habits
-  "habits.title": "Rotinazinhas",
+  "habits.title": "Rotinas",
   "habits.allDone": "Tudo feito hoje!",
   "habits.placeholder": "Nome do hábito...",
   "habits.empty": "Nenhuma rotina ainda!",
@@ -86,7 +86,7 @@ export const pt = {
   "habits.startDefault": "Começar com uma rotina",
 
   // Expenses
-  "expenses.title": "Gastinhos",
+  "expenses.title": "Finanças",
   "expenses.placeholder": "O que gastaste?",
   "expenses.empty": "Nenhum gasto registado!",
   "expenses.total": "Total",
@@ -115,7 +115,7 @@ export const pt = {
 
 
   // Calendar
-  "calendar.title": "Calendarzinho",
+  "calendar.title": "Calendário",
   "calendar.tapDay": "Tap num dia para ver detalhes",
   "calendar.nothingToday": "Nada neste dia",
   "calendar.habits": "Hábitos",
@@ -128,12 +128,12 @@ export const pt = {
   "calendar.months": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
 
   // Events
-  "events.title": "Eventinhos",
+  "events.title": "Eventos",
   "events.placeholder": "Nome do evento...",
   "events.empty": "Nenhum evento ainda!",
 
   // Weather
-  "weather.title": "Tempinho",
+  "weather.title": "Tempo",
 
   // Profile
   "profile.title": "Perfil",
@@ -215,7 +215,7 @@ export const pt = {
   "tutorial.nav.tip3": "🔍 no canto para pesquisar em tudo",
   "tutorial.nav.tip4": "⚔️ no canto para o teu perfil RPG",
 
-  "tutorial.shopping.title": "Comprinhas",
+  "tutorial.shopping.title": "Compras",
   "tutorial.shopping.text": "Lista de compras partilhada. Items organizam-se por categoria seguindo o fluxo do supermercado.",
   "tutorial.shopping.tip1": "Marca como urgente para destacar no topo ⚡",
   "tutorial.shopping.tip2": "Atribui a quem vai comprar",
@@ -229,21 +229,21 @@ export const pt = {
   "tutorial.coisinhas.tip3": "Celebração ao completar uma categoria inteira! 🎉",
   "tutorial.coisinhas.tip4": "Autocomplete sugere tarefas já usadas",
 
-  "tutorial.projects.title": "Projetinhos",
+  "tutorial.projects.title": "Projetos",
   "tutorial.projects.text": "Projetos maiores — obras, pinturas, reparações. Acompanha desde a ideia até à conclusão.",
   "tutorial.projects.tip1": "3 estados: Pendente → A Fazer → Concluído",
   "tutorial.projects.tip2": "Subtarefas para dividir o trabalho",
   "tutorial.projects.tip3": "Orçamento para controlar custos",
   "tutorial.projects.tip4": "Cada projeto concluído dá +5 XP! 🎮",
 
-  "tutorial.habits.title": "Rotinazinhas",
+  "tutorial.habits.title": "Rotinas",
   "tutorial.habits.text": "Hábitos diários com sistema de streaks. Cria rotinas saudáveis e acompanha o progresso.",
   "tutorial.habits.tip1": "🔥 Streak conta os dias seguidos sem falhar",
   "tutorial.habits.tip2": "Configura hora do lembrete em cada hábito",
   "tutorial.habits.tip3": "Ativa notificações 🔔 para receber push",
   "tutorial.habits.tip4": "Filtra por pessoa ou vê todos",
 
-  "tutorial.expenses.title": "Gastinhos",
+  "tutorial.expenses.title": "Finanças",
   "tutorial.expenses.text": "Controlo financeiro completo com 3 sub-tabs: Despesas, Rendimentos e Poupanças.",
   "tutorial.expenses.tip1": "💸 Despesas — regista gastos por categoria e pessoa",
   "tutorial.expenses.tip2": "💵 Rendimentos — salários e outros rendimentos mensais",
@@ -252,20 +252,20 @@ export const pt = {
   "tutorial.expenses.tip5": "Saldo mensal automático: rendimentos - despesas",
 
 
-  "tutorial.calendar.title": "Calendarzinho",
+  "tutorial.calendar.title": "Calendário",
   "tutorial.calendar.text": "Vista mensal integrada com tudo o que acontece na casa. Cada atividade tem uma cor diferente.",
   "tutorial.calendar.tip1": "🟢 Hábitos  🩷 Coisinhas  🟣 Projetos  🔴 Eventos",
   "tutorial.calendar.tip2": "Feriados portugueses automáticos (fixos + Páscoa/Carnaval)",
   "tutorial.calendar.tip3": "Previsão meteo nos próximos 7 dias no grid",
   "tutorial.calendar.tip4": "Tap num dia para ver todos os detalhes",
 
-  "tutorial.events.title": "Eventinhos",
+  "tutorial.events.title": "Eventos",
   "tutorial.events.text": "Organiza eventos e partilha com amigos via link público!",
   "tutorial.events.tip1": "Partilha eventos via link 🔗",
   "tutorial.events.tip2": "Previsão meteo automática para eventos próximos 🌤️",
-  "tutorial.events.tip3": "Eventos aparecem como dots no Calendarzinho",
+  "tutorial.events.tip3": "Eventos aparecem como dots no Calendário",
 
-  "tutorial.weather.title": "Tempinho",
+  "tutorial.weather.title": "Tempo",
   "tutorial.weather.text": "Previsão meteorológica para os próximos 7 dias. Temperatura, precipitação e vento.",
   "tutorial.weather.tip1": "Tap num dia para expandir vista horária",
   "tutorial.weather.tip2": "Integrado no calendário e nos eventos",

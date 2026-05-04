@@ -136,9 +136,9 @@ export interface RPGStat {
 
 export function calculateStats(stats: GameStats): RPGStat[] {
   return [
-    { key: "str", name: "Força", emoji: "⚔️", value: Math.min(stats.projectsDone * 3, 100), maxValue: 100, description: "Projetinhos concluídos" },
+    { key: "str", name: "Força", emoji: "⚔️", value: Math.min(stats.projectsDone * 3, 100), maxValue: 100, description: "Projetos concluídos" },
     { key: "int", name: "Inteligência", emoji: "🧠", value: Math.min(Math.round(stats.coisinhasDone * 1.5), 100), maxValue: 100, description: "Coisinhas feitas" },
-    { key: "dex", name: "Destreza", emoji: "🏃", value: Math.min(stats.shoppingDone * 2, 100), maxValue: 100, description: "Comprinhas feitas" },
+    { key: "dex", name: "Destreza", emoji: "🏃", value: Math.min(stats.shoppingDone * 2, 100), maxValue: 100, description: "Compras feitas" },
     { key: "cha", name: "Carisma", emoji: "💬", value: Math.min(Math.round(stats.totalCompleted * 0.5), 100), maxValue: 100, description: "Colaboração total" },
     { key: "vit", name: "Vitalidade", emoji: "❤️", value: Math.min((stats.habitsDone || 0) * 2, 100), maxValue: 100, description: "Hábitos completados" },
     { key: "lck", name: "Sorte", emoji: "🍀", value: Math.min(stats.maxStreak * 4, 100), maxValue: 100, description: "Melhor streak" },
