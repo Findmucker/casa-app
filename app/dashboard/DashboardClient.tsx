@@ -19,6 +19,7 @@ import FriendsPanel from "@/components/FriendsPanel";
 import MiniAvatar from "@/components/MiniAvatar";
 import HouseMembers from "@/components/HouseMembers";
 import SendMessagePanel from "@/components/SendMessagePanel";
+import HelpPanel from "@/components/HelpPanel";
 import UndoToast from "@/components/UndoToast";
 import { UndoProvider } from "@/lib/useUndoStack";
 import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
@@ -71,6 +72,7 @@ function DashboardInner() {
   const [houseNameInput, setHouseNameInput] = useState("");
   const [houseMembersMessageTo, setHouseMembersMessageTo] = useState<string | undefined>(undefined);
   const [showSendMessage, setShowSendMessage] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [memberActionTarget, setMemberActionTarget] = useState<MemberWidget | null>(null);
   const theme = useTimeTheme();
   const darkMode = theme.isDark;
@@ -94,11 +96,12 @@ function DashboardInner() {
       else if (showHouseMembers) { setShowHouseMembers(false); setHouseMembersMessageTo(undefined); }
       else if (showFriends) { setShowFriends(false); }
       else if (showSendMessage) { setShowSendMessage(false); }
+      else if (showHelp) { setShowHelp(false); }
       else if (showPanel) { setShowPanel(false); setMenuSubPanel(null); }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [showGamification, showSearch, showMaintenance, showHistory, showInvite, showHouseMembers, showFriends, showSendMessage, showPanel]);
+  }, [showGamification, showSearch, showMaintenance, showHistory, showInvite, showHouseMembers, showFriends, showSendMessage, showHelp, showPanel]);
 
   // Members widget data
   const [memberWidgets, setMemberWidgets] = useState<MemberWidget[]>([]);
@@ -289,6 +292,7 @@ function DashboardInner() {
                   ] : [
                     { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
                     { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowMaintenance(true); } },
+                    { emoji: "❓", label: t("menu.help"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHelp(true); } },
                   ]).map((item) => (
                     <button
                       key={item.label}
@@ -524,6 +528,7 @@ function DashboardInner() {
         {showHouseMembers && <HouseMembers onClose={() => history.back()} initialMessageTo={houseMembersMessageTo} />}
         {showFriends && <FriendsPanel onClose={() => history.back()} />}
         {showSendMessage && <SendMessagePanel onClose={() => history.back()} />}
+        {showHelp && <HelpPanel onClose={() => history.back()} />}
         <UndoToast />
       </main>
       </CollectionDataContext.Provider>
