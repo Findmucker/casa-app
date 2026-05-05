@@ -322,21 +322,35 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
                 </button>
               </div>
               {searchResults.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {searchResults.map((house) => (
-                    <div key={house.id} className="flex items-center justify-between p-3 bg-pink-50/60 rounded-xl">
-                      <div>
-                        <span className="text-sm font-medium text-rose-700">🏠 {house.name}</span>
-                        {house.members.length > 0 && (
-                          <p className="text-xs text-pink-400 mt-0.5">{house.members.join(", ")}</p>
-                        )}
+                    <div key={house.id} className="p-4 bg-pink-50/60 rounded-[28px] border border-pink-100/40">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">🏠</span>
+                          <p className="text-sm font-bold text-rose-700">{house.name}</p>
+                        </div>
+                        <button
+                          onClick={() => handleSendRequest(house.id, house.name)}
+                          className="px-3 py-1.5 rounded-full bg-rose-400 text-white text-xs font-medium active:scale-95 transition-all"
+                        >
+                          + {t("friends.add")}
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleSendRequest(house.id, house.name)}
-                        className="px-3 py-1 rounded-full bg-rose-400 text-white text-xs font-medium active:scale-95 transition-all"
-                      >
-                        + {t("friends.add")}
-                      </button>
+                      {house.members.length > 0 && (
+                        <div className="flex gap-3 justify-center flex-wrap">
+                          {house.members.map((name, i) => (
+                            <div
+                              key={name}
+                              className="flex flex-col items-center gap-1 p-2 rounded-2xl animate-fade-in-up"
+                              style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}
+                            >
+                              <MiniAvatar name={name} size={42} />
+                              <span className="text-[10px] font-semibold text-rose-700 leading-tight">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
