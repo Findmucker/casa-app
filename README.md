@@ -4,7 +4,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.8.6
+**Version:** 0.8.7
 
 ## Features
 
@@ -96,10 +96,12 @@ A household management PWA for couples and families — organize shopping, tasks
 
 ### PWA & Push Notifications
 - Full PWA with installable manifest
-- Push notifications via Firebase Cloud Messaging (FCM)
+- Push notifications via Firebase Cloud Messaging (FCM) using **data-only messages** (no duplicates)
 - **Service worker with `skipWaiting` + cache purge** for reliable updates
 - **Periodic background sync** — self-triggers habit cron every 10min (Android/Chrome)
+- **Smart notification routing** — tapping a notification opens the correct tab automatically
 - Repeating habit reminders (client-side, every 10 min)
+- **In-app Help panel** with notification permission status debug
 - **Smart notifications** for key actions:
   - 🔥 Urgent shopping items
   - 🎉 New events created
@@ -124,7 +126,8 @@ A household management PWA for couples and families — organize shopping, tasks
 ### Friends (Vizinhos)
 - Connect houses via **6-char invite code** or **search by name**
 - Send/accept/reject friend requests
-- View friend houses list with remove option
+- View friend houses list with **member avatar cards** (pixel art, like the menu members widget)
+- Remove friend houses
 - Search results show member names
 - Bidirectional friendship (both houses see each other)
 

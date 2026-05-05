@@ -40,17 +40,13 @@ export async function POST(request: Request) {
 
     const { token } = tokenDoc.data()!;
 
+    // Data-only message — SW handles display via onBackgroundMessage
+    // (avoids duplicate: FCM auto-display + SW manual display)
     await adm.messaging().send({
       token,
-      notification: { title, body: body || "" },
-      data: { tag: tag || "general" },
+      data: { title, body: body || "", tag: tag || "general" },
       webpush: {
         headers: { Urgency: "high" },
-        notification: {
-          icon: "/icon-192.png",
-          badge: "/icon-192.png",
-          vibrate: [200, 100, 200] as unknown as number[],
-        },
       },
     });
 

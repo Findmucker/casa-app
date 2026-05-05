@@ -14,6 +14,7 @@ import {
   removeFriend,
   searchHouses,
 } from "@/lib/friends";
+import MiniAvatar from "@/components/MiniAvatar";
 
 interface FriendsPanelProps {
   onClose: () => void;
@@ -211,14 +212,12 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
               friends.map((friend) => (
                 <div
                   key={friend.id}
-                  className="p-4 bg-white/70 rounded-2xl border border-pink-100/40 backdrop-blur-sm"
+                  className="p-4 bg-white/70 rounded-[28px] border border-pink-100/40 backdrop-blur-sm shadow-sm"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🏠</span>
-                      <div>
-                        <p className="text-sm font-bold text-rose-700">{friend.houseName}</p>
-                      </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🏠</span>
+                      <p className="text-sm font-bold text-rose-700">{friend.houseName}</p>
                     </div>
                     <button
                       onClick={() => handleRemove(friend.id)}
@@ -227,6 +226,24 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
                       {t("friends.remove")}
                     </button>
                   </div>
+                  {/* Member avatars */}
+                  {friend.members && friend.members.length > 0 && (
+                    <div className="flex gap-3 justify-center flex-wrap">
+                      {friend.members.map((m, i) => (
+                        <div
+                          key={m.name}
+                          className="flex flex-col items-center gap-1 p-2 rounded-2xl hover:bg-pink-50/60 transition-all animate-fade-in-up"
+                          style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}
+                        >
+                          <MiniAvatar name={m.name} size={42} />
+                          <span className="text-[10px] font-semibold text-rose-700 leading-tight">{m.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(!friend.members || friend.members.length === 0) && (
+                    <p className="text-xs text-pink-300 text-center">{t("friends.noMembers")}</p>
+                  )}
                 </div>
               ))
             )}

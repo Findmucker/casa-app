@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.7] - 2026-05-05
+
+### Added
+- **Friend house member avatars** — Vizinhos panel now shows member avatar cards for each friend house (like the menu members widget)
+- **friends.noMembers i18n key** — shown when a friend house has no visible members
+- **Smart notification routing** — tapping a notification opens the correct tab (e.g., shopping, events, habits)
+- **In-app Help panel** — includes notification permission status debug info
+- **useHouseContextSafe() hook** — safe version of useHouseContext for components outside HouseProvider
+- **SendMessagePanel full i18n** — all strings now localized (PT/EN)
+
+### Fixed
+- **Duplicate push notifications** — switched to data-only FCM messages to prevent system tray duplicates
+- **Notification click "cannot be loaded"** — service worker now uses absolute URLs for notification click targets
+
+### Changed
+- **Service worker bumped to v0.8.6** — includes absolute URL fix and data-only message handling
+
 ## [0.8.6] - 2026-05-04
 
 ### Added

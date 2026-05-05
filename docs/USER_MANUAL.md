@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Ultima atualizacao: 4 de Maio de 2026 | Versao 0.8.6
+> Ultima atualizacao: 5 de Maio de 2026 | Versao 0.8.7
 
 ## O que e a app?
 
@@ -181,6 +181,12 @@ A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 3. Aceita a permissao do browser
 4. Pronto! Recebes notificacoes mesmo com a app fechada
 
+### Verificar estado das notificacoes
+- Menu central → **❓ Ajuda** — mostra se as notificacoes estao ativas, o estado da permissao e informacao de debug
+
+### Routing inteligente
+- Ao tocar numa notificacao, a app abre diretamente na **tab correta** (ex: notificacao de compras abre a tab Compras, notificacao de evento abre Eventos)
+
 ### Tipos de notificacao
 - **Lembretes de habitos** — recebe lembrete na hora configurada (repetido a cada 10 min ate completar)
 - **Mensagens de membros** — recebe mensagens enviadas por outros membros da casa
@@ -230,7 +236,7 @@ Existem 2 formas de adicionar casas amigas:
 2. **Por pesquisa** — pesquisa casas por nome e envia um pedido de amizade.
 
 ### Funcionalidades
-- Ver lista de casas amigas
+- Ver lista de casas amigas com **cards de avatar dos membros** (pixel art, como no widget de membros do menu)
 - Aceitar/rejeitar pedidos pendentes
 - Remover casas amigas
 - Resultados de pesquisa mostram nomes dos membros da casa

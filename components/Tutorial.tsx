@@ -91,10 +91,22 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tipsKeys: ["tutorial.rpg.tip1", "tutorial.rpg.tip2", "tutorial.rpg.tip3", "tutorial.rpg.tip4"],
   },
   {
+    emoji: "🏘️",
+    titleKey: "tutorial.vizinhos.title",
+    textKey: "tutorial.vizinhos.text",
+    tipsKeys: ["tutorial.vizinhos.tip1", "tutorial.vizinhos.tip2", "tutorial.vizinhos.tip3"],
+  },
+  {
     emoji: "🔔",
     titleKey: "tutorial.notifications.title",
     textKey: "tutorial.notifications.text",
-    tipsKeys: ["tutorial.notifications.tip1", "tutorial.notifications.tip2", "tutorial.notifications.tip3"],
+    tipsKeys: ["tutorial.notifications.tip1", "tutorial.notifications.tip2", "tutorial.notifications.tip3", "tutorial.notifications.tip4", "tutorial.notifications.tip5"],
+  },
+  {
+    emoji: "❓",
+    titleKey: "tutorial.help.title",
+    textKey: "tutorial.help.text",
+    tipsKeys: ["tutorial.help.tip1", "tutorial.help.tip2"],
   },
   {
     emoji: "💡",

@@ -181,6 +181,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "friends.members": "Members",
   "friends.birthdays": "Birthdays",
   "friends.noResults": "No houses found",
+  "friends.noMembers": "No visible members",
   "friends.inviteToEvent": "Invite to event",
   "friends.errorInvalidCode": "Invalid code",
   "friends.errorOwnHouse": "You can't add your own house",
@@ -359,12 +360,24 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.rpg.tip3": "4 rarities: Common, Rare, Epic, Legendary ✨",
   "tutorial.rpg.tip4": "8-bit pixel art avatar with full customization",
 
+  "tutorial.vizinhos.title": "Neighbours",
+  "tutorial.vizinhos.text": "Connect with other friendly houses! See what your neighbours are up to.",
+  "tutorial.vizinhos.tip1": "Send friend requests to other houses",
+  "tutorial.vizinhos.tip2": "See member avatars of each friend house",
+  "tutorial.vizinhos.tip3": "Accept or decline incoming requests",
+
   "tutorial.notifications.title": "Push Notifications",
   "tutorial.notifications.text": "Receive reminders and messages even with the app closed!",
   "tutorial.notifications.tip1": "Habits → 🔔 → accept permission",
   "tutorial.notifications.tip2": "Habit reminders at the configured time",
   "tutorial.notifications.tip3": "Messages between house members",
-  "tutorial.notifications.tip4": "Alerts for urgent items, events and birthdays",
+  "tutorial.notifications.tip4": "Alerts for urgent items, events, birthdays and friend requests",
+  "tutorial.notifications.tip5": "Tap a notification to go directly to the correct tab",
+
+  "tutorial.help.title": "Help Panel",
+  "tutorial.help.text": "Need help? The Help panel is available in Settings.",
+  "tutorial.help.tip1": "⚙️ Settings → Help to access",
+  "tutorial.help.tip2": "Shows notification debug status",
 
   "tutorial.tips.title": "Final Tips",
   "tutorial.tips.text": "You're ready to organize your home! Essential tips:",

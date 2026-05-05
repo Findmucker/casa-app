@@ -179,6 +179,7 @@ export const pt = {
   "friends.members": "Membros",
   "friends.birthdays": "Aniversários",
   "friends.noResults": "Nenhuma casa encontrada",
+  "friends.noMembers": "Sem membros visíveis",
   "friends.inviteToEvent": "Convidar para evento",
   "friends.errorInvalidCode": "Código inválido",
   "friends.errorOwnHouse": "Não podes adicionar a tua própria casa",
@@ -357,12 +358,24 @@ export const pt = {
   "tutorial.rpg.tip3": "4 raridades: Comum, Raro, Épico, Lendário ✨",
   "tutorial.rpg.tip4": "Avatar 8-bit pixel art com customização total",
 
+  "tutorial.vizinhos.title": "Vizinhos",
+  "tutorial.vizinhos.text": "Conecta-te com outras casas amigas! Vê o que os vizinhos andam a fazer.",
+  "tutorial.vizinhos.tip1": "Envia pedidos de amizade a outras casas",
+  "tutorial.vizinhos.tip2": "Vê os avatares dos membros de cada casa amiga",
+  "tutorial.vizinhos.tip3": "Aceita ou recusa pedidos recebidos",
+
   "tutorial.notifications.title": "Notificações Push",
   "tutorial.notifications.text": "Recebe lembretes e mensagens mesmo com a app fechada!",
   "tutorial.notifications.tip1": "Rotinazinhas → 🔔 → aceita permissão",
   "tutorial.notifications.tip2": "Lembretes de hábitos na hora configurada",
   "tutorial.notifications.tip3": "Mensagens entre membros da casa",
-  "tutorial.notifications.tip4": "Alertas de items urgentes, eventos e aniversários",
+  "tutorial.notifications.tip4": "Alertas de items urgentes, eventos, aniversários e pedidos de amizade",
+  "tutorial.notifications.tip5": "Tap na notificação abre diretamente a tab correta",
+
+  "tutorial.help.title": "Painel de Ajuda",
+  "tutorial.help.text": "Precisa de ajuda? O painel de Ajuda está nas Definições.",
+  "tutorial.help.tip1": "⚙️ Definições → Ajuda para aceder",
+  "tutorial.help.tip2": "Mostra estado de debug das notificações",
 
   "tutorial.tips.title": "Dicas Finais",
   "tutorial.tips.text": "Estás pronto/a para organizar a tua casinha! Dicas essenciais:",

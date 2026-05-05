@@ -1,5 +1,5 @@
-// v0.8.5 — force cache update
-const CACHE_VERSION = "v0.8.5";
+// v0.8.6 — fix duplicate notifications + click routing
+const CACHE_VERSION = "v0.8.6";
 
 importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/11.8.1/firebase-messaging-compat.js");
@@ -16,15 +16,18 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const { title, body } = payload.notification || {};
+  // Data-only messages: title/body are in payload.data
+  const data = payload.data || {};
+  const title = data.title || payload.notification?.title;
+  const body = data.body || payload.notification?.body || "";
   if (!title) return;
 
   self.registration.showNotification(title, {
-    body: body || "",
+    body,
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     vibrate: [200, 100, 200],
-    tag: payload.data?.tag || "casinha-" + Date.now(),
+    tag: data.tag || "casinha-" + Date.now(),
   });
 });
 
@@ -52,8 +55,8 @@ self.addEventListener("notificationclick", (event) => {
           return;
         }
       }
-      // Otherwise open new window
-      return clients.openWindow(path);
+      // Otherwise open new window with full URL
+      return clients.openWindow(new URL(path, self.location.origin).href);
     })
   );
 });
