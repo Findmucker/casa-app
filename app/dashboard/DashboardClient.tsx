@@ -306,14 +306,14 @@ function DashboardInner() {
                 </p>
                 <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
                   {(menuSubPanel === "house" ? [
-                    { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowInvite(true); } },
-                    { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); } },
-                    { emoji: "🏠", label: t("menu.friends"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowFriends(true); } },
+                    { emoji: "🔗", label: t("menu.invite"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowInvite(true); } },
+                    { emoji: "👥", label: t("menu.members"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowHouseMembers(true); } },
+                    { emoji: "🏠", label: t("menu.friends"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowFriends(true); } },
                     { emoji: "✏️", label: t("house.rename"), action: () => { setHouseNameInput(houseName); setEditingHouseName(true); } },
                   ] : [
-                    { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHistory(true); } },
-                    { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowMaintenance(true); } },
-                    { emoji: "❓", label: t("menu.help"), action: () => { setShowPanel(false); setMenuSubPanel(null); setShowHelp(true); } },
+                    { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowHistory(true); } },
+                    { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowMaintenance(true); } },
+                    { emoji: "❓", label: t("menu.help"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowHelp(true); } },
                   ]).map((item) => (
                     <button
                       key={item.label}
@@ -410,7 +410,7 @@ function DashboardInner() {
                     }`}>
                       {/* Title as elegant button */}
                       <button
-                        onClick={() => { setShowPanel(false); setMenuSubPanel(null); setShowHouseMembers(true); }}
+                        onClick={() => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowHouseMembers(true); }}
                         className={`w-full flex items-center justify-center gap-2 mb-4 py-2 rounded-2xl transition-all active:scale-[0.97] ${
                           darkMode
                             ? "bg-purple-200/30 hover:bg-purple-200/50"
@@ -463,7 +463,7 @@ function DashboardInner() {
                         }`}>
                           {memberActionTarget.uid !== user?.uid && (
                             <button
-                              onClick={() => { setHouseMembersMessageTo(memberActionTarget.name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowHouseMembers(true); }}
+                              onClick={() => { setHouseMembersMessageTo(memberActionTarget.name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); history.replaceState({ overlay: true }, ""); setShowHouseMembers(true); }}
                               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[11px] font-semibold transition-all active:scale-90 shadow-sm ${
                                 darkMode
                                   ? "bg-purple-200/70 text-purple-700 hover:bg-purple-200 shadow-purple-200/20"
@@ -474,7 +474,7 @@ function DashboardInner() {
                             </button>
                           )}
                           <button
-                            onClick={() => { const name = memberActionTarget.uid !== user?.uid ? memberActionTarget.name : undefined; setProfileViewMember(name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); setShowGamification(true); }}
+                            onClick={() => { const name = memberActionTarget.uid !== user?.uid ? memberActionTarget.name : undefined; setProfileViewMember(name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); history.replaceState({ overlay: true }, ""); setShowGamification(true); }}
                             className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[11px] font-semibold transition-all active:scale-90 shadow-sm ${
                               darkMode
                                 ? "bg-purple-200/70 text-purple-700 hover:bg-purple-200 shadow-purple-200/20"
@@ -495,7 +495,7 @@ function DashboardInner() {
                   {ALL_TABS.map((section) => (
                     <button
                       key={section.id}
-                      onClick={() => { switchTab(section.id); setShowPanel(false); }}
+                      onClick={() => { switchTab(section.id); history.back(); }}
                       className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl transition-all active:scale-90 ${
                         activeTab === section.id
                           ? darkMode
