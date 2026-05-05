@@ -135,13 +135,8 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
     <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in-up bg-gradient-to-br from-pink-50/98 via-rose-50/98 to-purple-50/98 backdrop-blur-md">
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white/60 backdrop-blur-sm border-b border-pink-100/40">
-        <button
-          onClick={onClose}
-          className="text-pink-400 text-sm font-medium active:scale-95 transition-all"
-        >
-          ← {t("friends.title")}
-        </button>
-        <div className="flex gap-2">
+        <h2 className="text-lg font-bold text-rose-500">{t("friends.title")}</h2>
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setView("list")}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
@@ -157,6 +152,12 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
             }`}
           >
             + {t("friends.add")}
+          </button>
+          <button
+            onClick={onClose}
+            className="text-sm text-pink-400 hover:text-pink-600 transition-all active:scale-95"
+          >
+            ✕
           </button>
         </div>
       </div>
