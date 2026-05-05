@@ -38,6 +38,7 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
 
     // Send to all other members
     let sentCount = 0;
+    let lastError = "";
     for (const member of otherMembers) {
       try {
         const res = await fetch("/api/send-notification", {
@@ -50,9 +51,14 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
             tag: "message",
           }),
         });
-        if (res.ok) sentCount++;
-      } catch {
-        // continue to next member
+        if (res.ok) {
+          sentCount++;
+        } else {
+          const data = await res.json().catch(() => ({}));
+          lastError = data.error || `${res.status}`;
+        }
+      } catch (e) {
+        lastError = String(e);
       }
     }
 
@@ -60,7 +66,7 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
       setStatus(t("messages.sent"));
       setMessage("");
     } else {
-      setStatus(t("messages.failed"));
+      setStatus(`${t("messages.failed")} (${lastError})`);
     }
     setSending(false);
   };

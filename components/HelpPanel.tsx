@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useT } from "@/lib/i18n";
+import { useHouseContext } from "@/lib/context";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface HelpPanelProps {
   onClose: () => void;
@@ -79,8 +82,25 @@ const HELP_SECTIONS: HelpSection[] = [
 
 export default function HelpPanel({ onClose }: HelpPanelProps) {
   const { t } = useT();
+  const { userName } = useHouseContext();
   const [search, setSearch] = useState("");
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [notifStatus, setNotifStatus] = useState<{ permission: string; hasToken: boolean | null }>({ permission: "unknown", hasToken: null });
+
+  // Check notification status
+  useEffect(() => {
+    const perm = typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported";
+    setNotifStatus((s) => ({ ...s, permission: perm }));
+
+    // Check if FCM token exists in Firestore
+    if (userName) {
+      getDoc(doc(db, "fcm_tokens", userName.toLowerCase())).then((snap) => {
+        setNotifStatus((s) => ({ ...s, hasToken: snap.exists() }));
+      }).catch(() => {
+        setNotifStatus((s) => ({ ...s, hasToken: false }));
+      });
+    }
+  }, [userName]);
 
   const filteredSections = useMemo(() => {
     if (!search.trim()) return HELP_SECTIONS;
@@ -157,6 +177,35 @@ export default function HelpPanel({ onClose }: HelpPanelProps) {
             </div>
           );
         })}
+      </div>
+
+      {/* Notification status */}
+      <div className="px-5 pb-6">
+        <div className="bg-white/70 rounded-2xl border border-pink-100/30 p-4 space-y-2">
+          <p className="text-xs font-semibold text-rose-700">🔔 Notification Status</p>
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${notifStatus.permission === "granted" ? "bg-green-400" : notifStatus.permission === "denied" ? "bg-red-400" : "bg-amber-400"}`} />
+            <span className="text-xs text-rose-600">
+              Permission: <strong>{notifStatus.permission}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${notifStatus.hasToken === true ? "bg-green-400" : notifStatus.hasToken === false ? "bg-red-400" : "bg-gray-300"}`} />
+            <span className="text-xs text-rose-600">
+              FCM Token: <strong>{notifStatus.hasToken === true ? "registered" : notifStatus.hasToken === false ? "missing" : "checking..."}</strong>
+            </span>
+          </div>
+          {notifStatus.permission !== "granted" && (
+            <p className="text-[10px] text-pink-400 mt-1">
+              Go to Habits → tap 🔔 to enable push notifications
+            </p>
+          )}
+          {notifStatus.permission === "granted" && notifStatus.hasToken === false && (
+            <p className="text-[10px] text-pink-400 mt-1">
+              Token missing — try tapping 🔔 in Habits again to re-register
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
