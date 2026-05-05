@@ -88,17 +88,24 @@ export async function connectByCode(
   }
 
   const friendHouseName = friendDoc.data().name || "Casa";
+  const friendMembers: { name: string }[] = (friendDoc.data().members || []).map((m: { name: string }) => ({ name: m.name }));
+
+  // Get my house members
+  const myHouseDoc = await getDoc(doc(db, "houses", myHouseId));
+  const myMembers: { name: string }[] = (myHouseDoc.data()?.members || []).map((m: { name: string }) => ({ name: m.name }));
 
   // Create bidirectional friendship
   await setDoc(doc(db, "houses", myHouseId, "friends", friendHouseId), {
     houseId: friendHouseId,
     houseName: friendHouseName,
+    members: friendMembers,
     connectedAt: serverTimestamp(),
   });
 
   await setDoc(doc(db, "houses", friendHouseId, "friends", myHouseId), {
     houseId: myHouseId,
     houseName: myHouseName,
+    members: myMembers,
     connectedAt: serverTimestamp(),
   });
 
@@ -132,16 +139,24 @@ export async function acceptFriendRequest(
   // Update request status
   await updateDoc(doc(db, "friend_requests", requestId), { status: "accepted" });
 
+  // Fetch members from both houses
+  const fromHouseDoc = await getDoc(doc(db, "houses", fromHouseId));
+  const toHouseDoc = await getDoc(doc(db, "houses", toHouseId));
+  const fromMembers: { name: string }[] = (fromHouseDoc.data()?.members || []).map((m: { name: string }) => ({ name: m.name }));
+  const toMembers: { name: string }[] = (toHouseDoc.data()?.members || []).map((m: { name: string }) => ({ name: m.name }));
+
   // Create bidirectional friendship
   await setDoc(doc(db, "houses", toHouseId, "friends", fromHouseId), {
     houseId: fromHouseId,
     houseName: fromHouseName,
+    members: fromMembers,
     connectedAt: serverTimestamp(),
   });
 
   await setDoc(doc(db, "houses", fromHouseId, "friends", toHouseId), {
     houseId: toHouseId,
     houseName: toHouseName,
+    members: toMembers,
     connectedAt: serverTimestamp(),
   });
 }
@@ -193,12 +208,30 @@ export function useFriends(houseId: string | null) {
     const ref = collection(db, "houses", houseId, "friends");
     const q = query(ref, orderBy("connectedAt", "desc"));
 
-    const unsub = onSnapshot(q, (snapshot) => {
+    const unsub = onSnapshot(q, async (snapshot) => {
       const data = snapshot.docs.map((d) => ({
         id: d.id,
         ...d.data(),
       })) as FriendHouse[];
-      setFriends(data);
+
+      // Backfill members for legacy friend docs that lack them
+      const enriched = await Promise.all(
+        data.map(async (f) => {
+          if (f.members && f.members.length > 0) return f;
+          try {
+            const houseSnap = await getDoc(doc(db, "houses", f.houseId));
+            if (houseSnap.exists()) {
+              const members = (houseSnap.data().members || []).map((m: { name: string }) => ({ name: m.name }));
+              // Update the friend doc for future loads
+              setDoc(doc(db, "houses", houseId!, "friends", f.id), { members }, { merge: true }).catch(() => {});
+              return { ...f, members };
+            }
+          } catch { /* ignore */ }
+          return f;
+        })
+      );
+
+      setFriends(enriched);
       setLoading(false);
     }, () => setLoading(false));
 
