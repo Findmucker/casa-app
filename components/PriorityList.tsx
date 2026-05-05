@@ -38,7 +38,6 @@ export default function PriorityList() {
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesText, setNotesText] = useState("");
   const [celebrating, setCelebrating] = useState<string | null>(null);
-  const [celebratingCategory, setCelebratingCategory] = useState<string | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const { pushUndo } = useUndo();
   // Track items completed in this session (shown with strikethrough, hidden next session)
@@ -79,15 +78,6 @@ export default function PriorityList() {
       setCelebrating(item.id);
       setTimeout(() => setCelebrating(null), 600);
       setDoneThisSession((s) => new Set(s).add(item.id));
-      const cat = item.category || guessCategory(item.name, COISINHAS_CATEGORIES);
-      const catUndone = visibleItems.filter(
-        (i) => !i.done && i.id !== item.id &&
-          (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
-      );
-      if (catUndone.length === 0) {
-        setCelebratingCategory(cat);
-        setTimeout(() => setCelebratingCategory(null), 1500);
-      }
     } else {
       setDoneThisSession((s) => { const n = new Set(s); n.delete(item.id); return n; });
     }
@@ -196,40 +186,6 @@ export default function PriorityList() {
             <div className="text-5xl mb-3 animate-float">🪴</div>
             <p className="text-sm">{t("priority.empty")}</p>
             <p className="text-xs text-pink-200 mt-1">{t("priority.emptyHint")}</p>
-          </div>
-        )}
-
-        {/* Category progress badges */}
-        {!loading && visibleItems.length > 0 && (
-          <div className="flex flex-wrap gap-2 pb-3">
-            {COISINHAS_CATEGORY_ORDER.map((cat) => {
-              const catItems = visibleItems.filter(
-                (i) => (i.category || guessCategory(i.name, COISINHAS_CATEGORIES)) === cat
-              );
-              if (catItems.length === 0) return null;
-              const catDone = catItems.filter((i) => i.done).length;
-              const isComplete = catDone === catItems.length;
-              const isCelebrating = celebratingCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setCollapsedCategories((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(cat)) next.delete(cat); else next.add(cat);
-                      return next;
-                    });
-                  }}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all active:scale-95 ${
-                    isComplete ? "bg-green-100 text-green-600" : "bg-pink-50 text-pink-500"
-                  } ${isCelebrating ? "animate-category-complete" : ""}`}
-                >
-                  <span>{cat.split(" ")[0]}</span>
-                  <span>{catDone}/{catItems.length}</span>
-                  {isComplete && <span>✓</span>}
-                </button>
-              );
-            })}
           </div>
         )}
 
