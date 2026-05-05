@@ -75,6 +75,9 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "projects.status.pending": "pending",
   "projects.status.inProgress": "in progress",
   "projects.status.done": "done",
+  "projects.linkSavings": "Link savings",
+  "projects.funded": "Funded",
+  "projects.savingsProgress": "Saved",
 
   // Habits
   "habits.title": "Habits",

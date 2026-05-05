@@ -60,6 +60,7 @@ export interface BigPriorityItem {
   category?: string;
   subtasks?: Subtask[];
   completedAt?: string;
+  linkedSavingsId?: string;
   createdAt: unknown;
 }
 
@@ -109,6 +110,7 @@ export interface SavingsGoal {
   targetAmount: number;
   currentAmount: number;
   deadline?: string;
+  linkedProjectId?: string;
   createdAt: unknown;
 }
 

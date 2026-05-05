@@ -350,7 +350,10 @@ export default function ExpenseList() {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{goal.emoji}</span>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-emerald-800">{goal.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-semibold text-emerald-800">{goal.name}</p>
+                          {goal.linkedProjectId && <span className="text-[10px] bg-pink-100 text-pink-500 px-1.5 py-0.5 rounded-full font-medium">🔧</span>}
+                        </div>
                         <p className="text-xs text-emerald-400">{goal.currentAmount.toFixed(0)}€ / {goal.targetAmount.toFixed(0)}€</p>
                       </div>
                       {isComplete && <span className="text-lg">🎉</span>}

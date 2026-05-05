@@ -73,6 +73,9 @@ export const pt = {
   "projects.status.pending": "pendente",
   "projects.status.inProgress": "em progresso",
   "projects.status.done": "concluido",
+  "projects.linkSavings": "Ligar poupança",
+  "projects.funded": "Financiado",
+  "projects.savingsProgress": "Poupado",
 
   // Habits
   "habits.title": "Rotinas",

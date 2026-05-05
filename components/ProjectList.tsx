@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import TabTip from "@/components/TabTip";
 import {
   useCollection,
   type BigPriorityItem,
+  type SavingsGoal,
 } from "@/lib/hooks";
 import {
   PROJECTS_CATEGORIES,
@@ -27,6 +28,7 @@ export default function ProjectList() {
     "priorities_big",
     "order"
   );
+  const { items: savingsGoals, add: addSavings, update: updateSavings } = useCollection<SavingsGoal>("savings_goals", "createdAt");
   const [newName, setNewName] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubtask, setNewSubtask] = useState("");
@@ -135,6 +137,25 @@ export default function ProjectList() {
   const getBudgetPercent = (item: BigPriorityItem) => {
     if (!item.budget || item.budget === 0) return 0;
     return Math.min(100, Math.round(((item.spent || 0) / item.budget) * 100));
+  };
+
+  const getLinkedSavings = useCallback((item: BigPriorityItem): SavingsGoal | null => {
+    if (!item.linkedSavingsId) return null;
+    return savingsGoals.find((g) => g.id === item.linkedSavingsId) || null;
+  }, [savingsGoals]);
+
+  const linkSavings = async (item: BigPriorityItem) => {
+    if (!item.budget || item.budget === 0) return;
+    const newGoal = await addSavings({
+      name: item.name,
+      emoji: "🪙",
+      targetAmount: item.budget,
+      currentAmount: 0,
+      linkedProjectId: item.id,
+    } as Omit<SavingsGoal, "id" | "createdAt">);
+    if (newGoal) {
+      await update(item.id, { linkedSavingsId: newGoal });
+    }
   };
 
   const toggleCategory = (cat: string) => {
@@ -300,6 +321,41 @@ export default function ProjectList() {
                   <p className="text-[10px] text-pink-300 mt-1 text-right">{budgetPct}% gasto</p>
                 </div>
               )}
+              {/* Savings link */}
+              {(item.budget || 0) > 0 && (() => {
+                const linked = getLinkedSavings(item);
+                if (linked) {
+                  const savingsPct = Math.min(100, Math.round((linked.currentAmount / linked.targetAmount) * 100));
+                  const isFunded = linked.currentAmount >= linked.targetAmount;
+                  return (
+                    <div className="mt-3 pt-3 border-t border-pink-50">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-semibold text-emerald-500">🪙 {t("projects.savingsProgress")}</span>
+                        {isFunded && (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">✓ {t("projects.funded")}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 rounded-full bg-emerald-100 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-teal-400 transition-all"
+                            style={{ width: `${savingsPct}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-emerald-500">{linked.currentAmount}€/{linked.targetAmount}€</span>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <button
+                    onClick={() => linkSavings(item)}
+                    className="mt-2 w-full py-2 rounded-xl bg-emerald-50 text-emerald-500 text-xs font-medium hover:bg-emerald-100 active:scale-[0.98] transition-all"
+                  >
+                    🪙 {t("projects.linkSavings")}
+                  </button>
+                );
+              })()}
             </div>
 
             {/* Subtasks section */}
