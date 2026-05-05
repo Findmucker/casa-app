@@ -156,7 +156,7 @@ export default function ExpenseList() {
                 subTab === tab ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-400"
               }`}
             >
-              {tab === "expenses" ? "💸" : tab === "income" ? "💵" : "🎯"} {t(`expenses.subtab.${tab}`)}
+              {tab === "expenses" ? "💸" : tab === "income" ? "💵" : "🐷"} {t(`expenses.subtab.${tab}`)}
             </button>
           ))}
         </div>
