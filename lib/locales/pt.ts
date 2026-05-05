@@ -24,7 +24,6 @@ export const pt = {
   "menu.history": "Histórico",
   "menu.invite": "Convidar",
   "menu.members": "Membros",
-  "menu.maintenance": "Manutenção",
   "menu.friends": "Vizinhos",
   "house.rename": "Renomear",
   "house.namePlaceholder": "Nome da casa",

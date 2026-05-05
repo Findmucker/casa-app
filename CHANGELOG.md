@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **In-app Help panel** — includes notification permission status debug info
 - **useHouseContextSafe() hook** — safe version of useHouseContext for components outside HouseProvider
 - **SendMessagePanel full i18n** — all strings now localized (PT/EN)
+- **Back button navigation** — overlays push history state and close via popstate; menu→overlay uses replaceState for clean UX
 
 ### Fixed
 - **Duplicate push notifications** — switched to data-only FCM messages to prevent system tray duplicates
@@ -21,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Service worker bumped to v0.8.6** — includes absolute URL fix and data-only message handling
+
+### Removed
+- **Maintenance panel** — removed from Settings sub-panel (data migration no longer needed)
 
 ## [0.8.6] - 2026-05-04
 
@@ -182,7 +186,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Menu restructured** into categorized sections:
   - Communication (Message, History)
   - House (Invite, Members)
-  - Settings (Maintenance, Tutorial, Language toggle)
+  - Settings (Tutorial, Language toggle)
 - **Profile name sync** — changing name propagates to house members, gamification, and FCM tokens
 
 ### Changed

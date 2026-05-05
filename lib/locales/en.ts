@@ -26,7 +26,6 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "menu.history": "History",
   "menu.invite": "Invite",
   "menu.members": "Members",
-  "menu.maintenance": "Maintenance",
   "menu.friends": "Friends",
   "house.rename": "Rename",
   "house.namePlaceholder": "House name",

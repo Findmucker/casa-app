@@ -22,7 +22,7 @@ interface FriendsPanelProps {
 
 export default function FriendsPanel({ onClose }: FriendsPanelProps) {
   const { t } = useT();
-  const { houseId, userName, houseName } = useHouseContext();
+  const { houseId, houseName } = useHouseContext();
   const { friends, loading } = useFriends(houseId);
   const { requests } = usePendingRequests(houseId);
 

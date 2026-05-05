@@ -23,6 +23,7 @@
 | `lib/hooks.ts` | `useCollection()` generic Firestore hook, shared types |
 | `lib/themes.ts` | Time-based themes (morning/afternoon/dusk/night), `useTimeTheme()` |
 | `lib/gamification.ts` | Points, levels, streaks, badges, inventory |
+| `lib/friends.ts` | Friends/vizinhos system — `useFriends()` hook, invite codes, friend requests |
 | `lib/i18n.tsx` | `useT()` hook, `LocaleProvider` |
 | `lib/locales/pt.ts` | Portuguese translations — `LocaleKeys` type derived from here |
 | `lib/locales/en.ts` | English translations — must have same keys as pt.ts |
@@ -111,7 +112,8 @@ After feature work, update: `README.md`, `CHANGELOG.md`, `docs/USER_MANUAL.md`, 
 Menu (click title) → Main panel:
   ├── Members widget (top, premium card, clickable avatars with actions)
   ├── Tabs grid (5 cols, all navigation tabs)
-  ├── Category buttons (Communication, House, Settings → sub-panels)
+  ├── Category buttons (House, Settings → sub-panels)
+      └── Settings: History, Help
 ```
 
 ### ProfilePage viewMember Pattern
@@ -147,6 +149,8 @@ Menu (click title) → Main panel:
 - **AnimeAnimalCharacter** needs minimum ~16px to render pixel grid visibly (each pixel = size/16)
 - **Two avatar systems**: `AvatarConfig` (animal pixel art, shown everywhere) vs `EquippedItems` (RPG loot, shown only in ProfilePage inventory). They are independent.
 - **Always show issue URL to user before starting work** — let them review/edit scope first
+- **Notifications use data-only FCM messages** (no `notification` field) — SW handles all display via `onBackgroundMessage`
+- **Back button navigation**: overlays push history state, close via popstate. Menu→overlay uses `replaceState`.
 
 ## Avatar System Reference
 

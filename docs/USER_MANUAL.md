@@ -240,6 +240,7 @@ Existem 2 formas de adicionar casas amigas:
 - Aceitar/rejeitar pedidos pendentes
 - Remover casas amigas
 - Resultados de pesquisa mostram nomes dos membros da casa
+- O **botao voltar** fecha o painel de Vizinhos (como em qualquer outro painel)
 
 ---
 
@@ -262,7 +263,6 @@ Grid com todas as 9 tabs — tap para ir directamente.
 
 ### Definicoes
 - **📜 Historico** — registo de items completados com data e stats
-- **⚙️ Manutencao** — reorganizar categorias, limpar items feitos, seed de teste
 - **🌐 Idioma** — toggle inline PT 🇵🇹 / EN 🇬🇧
 
 ### Sair
@@ -374,18 +374,6 @@ A app muda automaticamente de tema ao longo do dia:
 | 20h - 7h | 🌙 Noite | Modo escuro, slate, purple |
 
 A transicao entre temas e suave e automatica.
-
----
-
-## Manutencao
-
-Acessivel via menu central → ⚙️ Manutencao:
-- **Reorganizar categorias** — reclassifica automaticamente todos os items
-- **Limpar comprinhas feitas** — remove items ja comprados
-- **Limpar coisinhas feitas** — remove tarefas ja concluidas
-- **Migrar dados** — copia dados antigos para a casa atual (se aplicavel)
-- **Seed dados de teste** — preenche com dados exemplo (dev only)
-- **Sair do modo teste** — limpa dados de teste e reseta stats
 
 ---
 

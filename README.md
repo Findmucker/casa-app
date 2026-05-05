@@ -96,6 +96,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 ### PWA & Push Notifications
 - Full PWA with installable manifest
+- **Back button navigation** — device/browser back closes panels instead of leaving the app
 - Push notifications via Firebase Cloud Messaging (FCM) using **data-only messages** (no duplicates)
 - **Service worker with `skipWaiting` + cache purge** for reliable updates
 - **Periodic background sync** — self-triggers habit cron every 10min (Android/Chrome)
