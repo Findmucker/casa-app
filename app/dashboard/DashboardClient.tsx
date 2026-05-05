@@ -56,8 +56,29 @@ export default function Dashboard() {
 function DashboardInner() {
   const { t, locale, setLocale } = useT();
   const ALL_TABS = TAB_IDS.map((id, i) => ({ id, label: t(TAB_LABEL_KEYS[i]), emoji: TAB_EMOJIS[i] }));
-  const [activeTab, setActiveTab] = useState<TabId>("home");
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    if (typeof window === "undefined") return "home";
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    if (tab && TAB_IDS.includes(tab as TabId)) return tab as TabId;
+    return "home";
+  });
   const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
+
+  // Listen for notification click messages from service worker
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === "NOTIFICATION_CLICK" && event.data.path) {
+        const url = new URL(event.data.path, window.location.origin);
+        const tab = url.searchParams.get("tab");
+        if (tab && TAB_IDS.includes(tab as TabId)) {
+          setActiveTab(tab as TabId);
+        }
+      }
+    };
+    navigator.serviceWorker?.addEventListener("message", handler);
+    return () => navigator.serviceWorker?.removeEventListener("message", handler);
+  }, []);
   const [showPanel, setShowPanel] = useState(false);
   const [menuSubPanel, setMenuSubPanel] = useState<"house" | "settings" | null>(null);
   const [showMaintenance, setShowMaintenance] = useState(false);

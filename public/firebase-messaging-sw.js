@@ -30,7 +30,32 @@ messaging.onBackgroundMessage((payload) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow("/dashboard"));
+
+  // Route to the correct tab based on notification tag
+  const tag = event.notification.tag || "";
+  let path = "/dashboard";
+  if (tag.startsWith("habit-")) path = "/dashboard?tab=habits";
+  else if (tag === "message") path = "/dashboard?tab=dashboard";
+  else if (tag === "urgent-shopping") path = "/dashboard?tab=shopping";
+  else if (tag === "new-event" || tag.startsWith("event-reminder")) path = "/dashboard?tab=events";
+  else if (tag.startsWith("birthday-")) path = "/dashboard?tab=calendar";
+  else if (tag === "friend-request" || tag === "friend-accepted") path = "/dashboard?tab=dashboard";
+  else if (tag === "member-joined") path = "/dashboard?tab=dashboard";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      // If app is already open, focus it and navigate
+      for (const client of windowClients) {
+        if (client.url.includes("/dashboard") && "focus" in client) {
+          client.focus();
+          client.postMessage({ type: "NOTIFICATION_CLICK", path, tag });
+          return;
+        }
+      }
+      // Otherwise open new window
+      return clients.openWindow(path);
+    })
+  );
 });
 
 // Force activate new service worker immediately (skip waiting)
