@@ -121,7 +121,7 @@ export default function MiniAvatar({ name, size = 24, showEquipBadge = true, ava
         className="rounded-sm overflow-hidden border-2 border-rose-300/60 bg-white flex items-center justify-center"
         style={{ width: size, height: size, imageRendering: "pixelated" }}
       >
-        <AnimeAnimalCharacter config={displayAvatar} size={size - 2} />
+        <AnimeAnimalCharacter config={displayAvatar} size={size - 4} />
       </div>
       {showEquipBadge && helmetItem && size >= 28 && (
         <span className="absolute -top-0.5 -right-0.5 leading-none" style={{ fontSize: size * 0.35 }}>{helmetItem.emoji}</span>
