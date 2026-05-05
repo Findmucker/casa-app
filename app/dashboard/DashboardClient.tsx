@@ -10,7 +10,7 @@ import HabitList from "@/components/HabitList";
 import ExpenseList from "@/components/ExpenseList";
 import Calendar from "@/components/Calendar";
 import DashboardSummary from "@/components/DashboardSummary";
-import MaintenancePanel from "@/components/MaintenancePanel";
+
 import ProfilePage from "@/components/ProfilePage";
 import SearchOverlay from "@/components/SearchOverlay";
 import HistoryPanel from "@/components/HistoryPanel";
@@ -81,7 +81,6 @@ function DashboardInner() {
   }, []);
   const [showPanel, setShowPanel] = useState(false);
   const [menuSubPanel, setMenuSubPanel] = useState<"house" | "settings" | null>(null);
-  const [showMaintenance, setShowMaintenance] = useState(false);
   const [showGamification, setShowGamification] = useState(false);
   const [profileViewMember, setProfileViewMember] = useState<string | undefined>(undefined);
   const [showSearch, setShowSearch] = useState(false);
@@ -111,7 +110,6 @@ function DashboardInner() {
     const handlePopState = () => {
       if (showGamification) { setShowGamification(false); setProfileViewMember(undefined); }
       else if (showSearch) { setShowSearch(false); }
-      else if (showMaintenance) { setShowMaintenance(false); }
       else if (showHistory) { setShowHistory(false); }
       else if (showInvite) { setShowInvite(false); }
       else if (showHouseMembers) { setShowHouseMembers(false); setHouseMembersMessageTo(undefined); }
@@ -122,7 +120,7 @@ function DashboardInner() {
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [showGamification, showSearch, showMaintenance, showHistory, showInvite, showHouseMembers, showFriends, showSendMessage, showHelp, showPanel]);
+  }, [showGamification, showSearch, showHistory, showInvite, showHouseMembers, showFriends, showSendMessage, showHelp, showPanel]);
 
   // Members widget data
   const [memberWidgets, setMemberWidgets] = useState<MemberWidget[]>([]);
@@ -312,7 +310,6 @@ function DashboardInner() {
                     { emoji: "✏️", label: t("house.rename"), action: () => { setHouseNameInput(houseName); setEditingHouseName(true); } },
                   ] : [
                     { emoji: "📜", label: t("menu.history"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowHistory(true); } },
-                    { emoji: "⚙️", label: t("menu.maintenance"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowMaintenance(true); } },
                     { emoji: "❓", label: t("menu.help"), action: () => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowHelp(true); } },
                   ]).map((item) => (
                     <button
@@ -541,7 +538,6 @@ function DashboardInner() {
         )}
 
         {/* Overlays */}
-        {showMaintenance && <MaintenancePanel onClose={() => history.back()} />}
         {showGamification && <ProfilePage onClose={() => history.back()} viewMember={profileViewMember} />}
         {showSearch && <SearchOverlay onClose={() => history.back()} onNavigate={(tab) => switchTab(tab as TabId)} />}
         {showHistory && <HistoryPanel onClose={() => history.back()} />}
