@@ -13,20 +13,20 @@ interface PDFRow {
 function guessCategory(desc: string): string {
   const d = desc.toLowerCase();
   // Compras (groceries/shopping)
-  if (/supermercado|continente|pingo doce|lidl|aldi|mercadona|minipreço|intermarche|auchan|e\.leclerc|jumbo|modelo/i.test(d)) return "compras";
+  if (/supermercado|continente|pingo doce|lidl|aldi|mercadona|minipreço|intermarche|auchan|e\.leclerc|jumbo|modelo|supercor|mamute/i.test(d)) return "compras";
   if (/compras c\.deb|cofidis/i.test(d)) return "compras";
   // Saúde
   if (/farmácia|farmacia|hospital|clínica|clinica|médico|medico|dentist|ótica|otica|wells/i.test(d)) return "saude";
   // Transporte
-  if (/uber(?! eats)|bolt|taxi|cp |comboio|metro|gasolina|galp|repsol|bp |estacion|portagem|via verde|a8|pa obidos|pa a8|brisa/i.test(d)) return "transporte";
+  if (/uber(?! eats)|bolt(?! food)|taxi|cp |comboio|metro|gasolina|galp(?! energia)|repsol|bp |estacion|portagem|via verde|\ba[0-9]+\b|pa obidos|pa a8|brisa|a5 pa|lev\.? atm/i.test(d)) return "transporte";
   // Restaurantes
-  if (/restaurante|café|cafe|mcdonald|burger|pizza|sushi|padaria|pastelaria|uber eats|glovo|just eat|fortunity food|cafe restauran|imperio e|lounge b|sardine/i.test(d)) return "restaurantes";
+  if (/restaurante|café|cafe|mcdonald|burger|pizza|sushi|padaria|pastelaria|uber eats|bolt food|glovo|just eat|fortunity food|cafe restauran|imperio|lounge b|sardine|washoku|doce mar|legenda matinal|quiosque/i.test(d)) return "restaurantes";
   // Lazer
-  if (/cinema|spotify|netflix|hbo|disney|bilhete|concerto|teatro|steam|playstation|xbox|gaming|proud earth/i.test(d)) return "lazer";
+  if (/cinema|spotify|netflix|hbo|disney|bilhete|concerto|teatro|steam|playstation|xbox|gaming|proud earth|\boch\b/i.test(d)) return "lazer";
   // Casa
-  if (/renda|aluguer|água|agua|luz|eletricidade|gás|gas|internet|vodafone|meo|nos |prestacao|manut conta|via direta|real vida seguros|seguro/i.test(d)) return "casa";
+  if (/renda|aluguer|água|agua|luz|eletricidade|gás|gas|internet|vodafone|meo|nos |prestacao|manut.?conta|via direta|real vida seguros|seguro|allianz|fidelidade|endesa|edp|galp energia|municipio|imposto.?selo|digi portugal/i.test(d)) return "casa";
   // Transferências pessoais — outros
-  if (/trf|tfi|mbway|cxdapp|reembolso/i.test(d)) return "outros";
+  if (/trf|tfi|mbway|cxdapp|reembolso|estorno|pagamento a\./i.test(d)) return "outros";
   return "outros";
 }
 
@@ -290,19 +290,11 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
 }
 
 // ─── Parse raw text extracted from PDF ───────────────────────
-// Handles messy text from pdf.js where structure is lost
+// Only used as fallback when parsePDFRows doesn't find results
 export function parsePDFText(text: string): ParsedTransaction[] {
-  // Try BPI PDF format first
-  if (text.includes("bancobpi") || text.includes("BPI") || text.includes("CONTA VALOR BPI")) {
-    const bpi = parseBPIPDF(text);
-    if (bpi.length > 0) return bpi;
-  }
-
-  // Try CGD PDF format
-  const cgd = parseCGDPDF(text);
-  if (cgd.length > 0) return cgd;
-
-  return [];
+  // Only try CGD format (full dates DD-MM-YYYY work reliably with text)
+  // BPI is handled by parsePDFRows (position-based) which is much more accurate
+  return parseCGDPDF(text);
 }
 
 function parseCGDPDF(text: string): ParsedTransaction[] {
@@ -319,68 +311,6 @@ function parseCGDPDF(text: string): ParsedTransaction[] {
 
     if (amount === 0) continue;
     const isNegative = match[3].trim().startsWith("-");
-
-    results.push({
-      description: desc.slice(0, 80),
-      amount,
-      date,
-      type: isNegative ? "expense" : "income",
-      category: guessCategory(desc),
-    });
-  }
-
-  return results;
-}
-
-function parseBPIPDF(text: string): ParsedTransaction[] {
-  const results: ParsedTransaction[] = [];
-
-  // Extract year from document period (e.g. "De 17/03/2026 a 16/04/2026")
-  const periodMatch = text.match(/(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/);
-  const year = periodMatch ? periodMatch[6] : new Date().getFullYear().toString();
-
-  // BPI PDF structure from pdf.js has rows like:
-  // "18/03 | 18/03 | DD MEO, SA 44545936843 | -46,16 | -22,43"
-  // "23/03 | 21/03 | 21/03 COMPRA ELEC 1772576/87 PINGO DOCE   OBIDOS | -5,86 | 1 097,61"
-  // We need to match: DD/MM date, description (with transaction keywords), amount, balance
-  // Key insight: amounts in BPI use space as thousands separator: "1 103,47"
-
-  // Split into transaction chunks — each starts with a DD/MM date pattern at a row boundary
-  // Use a regex that matches: date description amount balance
-  const txPattern = /(\d{2}\/\d{2})\s+(?:\d{2}\/\d{2}\s+)?(.+?)\s+(-?\d[\d ]*,\d{2})\s+(-?\d[\d ]*,\d{2})/g;
-
-  let m;
-  while ((m = txPattern.exec(text)) !== null) {
-    const dateStr = m[1];
-    let desc = m[2].trim();
-    const amountStr = m[3].trim();
-
-    // Skip non-transaction lines
-    if (desc.includes("SALDO ANTERIOR")) continue;
-    if (desc.includes("DATA") && desc.includes("DESCRIÇÃO")) continue;
-    if (desc.includes("Sede:") || desc.includes("Capital Social")) continue;
-    if (desc.includes("IBAN") || desc.includes("NIB") || desc.includes("Pág.")) continue;
-    if (desc.includes("ACTIVOS") || desc.includes("PASSIVOS")) continue;
-    if (desc.includes("EXTRACTO") || desc.includes("DEPÓSITOS À ORDEM")) continue;
-    if (desc.length < 3) continue;
-
-    // Parse date with year
-    const month = dateStr.slice(3, 5);
-    const day = dateStr.slice(0, 2);
-    const date = `${year}-${month}-${day}`;
-
-    // Parse amount (BPI uses space as thousands sep: "1 103,47")
-    const amount = parseAmount(amountStr.replace(/\s/g, ""));
-    if (amount === 0) continue;
-
-    const isNegative = amountStr.startsWith("-");
-
-    // Clean description: remove "DD/MM COMPRA ELEC XXXXXXX/XX" prefix
-    desc = desc.replace(/^\d{2}\/\d{2}\s+/, "");
-    desc = desc.replace(/COMPRA ELEC \d+\/\d+\s*/g, "").trim();
-    // Remove trailing location after multiple spaces
-    desc = desc.replace(/\s{2,}.*$/, "").trim();
-    if (!desc || desc.length < 2) desc = "Transação";
 
     results.push({
       description: desc.slice(0, 80),
