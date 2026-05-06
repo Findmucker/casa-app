@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
-import { parseCSV, type ParsedTransaction } from "@/lib/bankParsers";
+import { parseCSV, parsePDFText, type ParsedTransaction } from "@/lib/bankParsers";
 import { pdfToText, pdfToImage } from "@/lib/pdfToImage";
 
 interface ImportPanelProps {
@@ -61,9 +61,11 @@ export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
         // PDF: try text extraction first (no AI needed)
         if (file.type === "application/pdf") {
           const text = await pdfToText(file);
+          // Try structured CSV parsing first, then raw PDF text parsing
           const parsed = parseCSV(text);
-          if (parsed.length > 0) {
-            setItems(parsed);
+          const results = parsed.length > 0 ? parsed : parsePDFText(text);
+          if (results.length > 0) {
+            setItems(results);
             setView("preview");
             return;
           }

@@ -198,3 +198,55 @@ export function parseCSV(content: string): ParsedTransaction[] {
   }
   return results;
 }
+
+// ─── Parse raw text extracted from PDF ───────────────────────
+// Handles messy text from pdf.js where structure is lost
+export function parsePDFText(text: string): ParsedTransaction[] {
+  const results: ParsedTransaction[] = [];
+
+  // Find all date + amount patterns in the text
+  // Match lines that have: a date, some text, and an amount
+  const datePattern = /(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4})/g;
+  const amountPattern = /(-?\d{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*€?/g;
+
+  // Split text into chunks that might represent transactions
+  // Look for date occurrences and grab surrounding text
+  const lines = text.split(/\n/);
+
+  for (const line of lines) {
+    const dates = line.match(datePattern);
+    const amounts = line.match(amountPattern);
+
+    if (!dates || !amounts) continue;
+
+    const date = parseDate(dates[0]);
+    const lastAmountStr = amounts[amounts.length - 1];
+    const amount = parseAmount(lastAmountStr);
+
+    if (amount === 0) continue;
+
+    // Extract description: text between date and amount
+    let desc = line;
+    // Remove dates and amounts to get description
+    desc = desc.replace(datePattern, "").replace(amountPattern, "").trim();
+    // Clean up extra spaces
+    desc = desc.replace(/\s{2,}/g, " ").trim();
+    if (!desc || desc.length < 2) desc = "Transação";
+    // Limit length
+    desc = desc.slice(0, 80);
+
+    // Determine type based on sign in original amount string
+    const isNegative = lastAmountStr.trim().startsWith("-");
+    const type = isNegative ? "expense" : "income";
+
+    results.push({
+      description: desc,
+      amount,
+      date,
+      type,
+      category: guessCategory(desc),
+    });
+  }
+
+  return results;
+}
