@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+export const maxDuration = 30; // seconds
+
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const PROMPT = `Extract all transactions from this image. Return ONLY valid JSON array, no markdown, no explanation:
@@ -25,6 +28,11 @@ export async function POST(request: Request) {
 
     if (!image) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
+    }
+
+    // Check base64 size (~4MB limit for Vercel + Gemini)
+    if (image.length > 5_000_000) {
+      return NextResponse.json({ error: "File too large (max ~4MB)" }, { status: 413 });
     }
 
     // Call Gemini API
@@ -57,8 +65,8 @@ export async function POST(request: Request) {
 
     if (!res.ok) {
       const err = await res.text();
-      console.error("Gemini API error:", err);
-      return NextResponse.json({ error: "AI processing failed" }, { status: 502 });
+      console.error("Gemini API error:", res.status, err);
+      return NextResponse.json({ error: `AI processing failed (${res.status})` }, { status: 502 });
     }
 
     const data = await res.json();
