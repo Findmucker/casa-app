@@ -258,9 +258,9 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
       "EXTRACTO", "DEPÓSITOS", "Capital Social", "matriculada",
       "bancobpi", "BPI Direto", "ACTIVOS", "PASSIVOS",
       "Emissão", "NUC", "Período", "Banco BPI",
-      "Rua Tenente", "Lisboa", "Porto", "NIPC", "Reg. Conserv",
+      "Rua Tenente", "NIPC", "Reg. Conserv",
       "www.bancobpi", "TOTAL", "Conta n", "Titular",
-      "SA ", "S.A.", "Pág.", "Página", "SWIFT",
+      "S.A.", "Pág.", "Página", "SWIFT",
     ];
     if (skipPatterns.some(p => desc.includes(p))) continue;
     // Skip lines that are mostly numbers (account numbers, codes)
@@ -285,13 +285,18 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
     desc = desc.replace(/^\d{2}\/\d{2}\s+/, ""); // Remove leading date
     desc = desc.replace(/COMPRA ELEC\.?\s*\d*\/?\d*\s*/gi, "").trim();
     desc = desc.replace(/PAGAMENTO DE SERVICOS\s*/gi, "").trim();
-    desc = desc.replace(/TRANSF\.\s*/gi, "Transferência ").trim();
-    desc = desc.replace(/TRF\s*/gi, "Transferência ").trim();
-    desc = desc.replace(/LEV\.?\s*ATM\s*/gi, "Levantamento ATM").trim();
-    desc = desc.replace(/DD\s*/gi, "Débito Direto ").trim();
+    desc = desc.replace(/^TRF SEPA\+?\s*(INST)?\s*\d*\s*P\/\s*/gi, "Transferência ").trim();
+    desc = desc.replace(/^TRF CR SEPA\+?\s*\d*\s*DE\s*/gi, "Transferência de ").trim();
+    desc = desc.replace(/^TRF\s+/gi, "Transferência ").trim();
+    desc = desc.replace(/^LEV\.?\s*ATM\s*/gi, "Levantamento ATM ").trim();
+    desc = desc.replace(/^DD\s+/gi, "").trim(); // Remove DD prefix, keep merchant name
+    // Remove IBAN patterns
+    desc = desc.replace(/PT\d{10,}\s*/g, "").trim();
     // Remove trailing reference numbers and location codes
     desc = desc.replace(/\s{2,}.*$/, "").trim();
-    desc = desc.replace(/\s+\d{4,}$/, "").trim();
+    desc = desc.replace(/\s+\d{8,}$/, "").trim();
+    // Remove trailing IBAN-like patterns
+    desc = desc.replace(/\s+PT\d{10,}$/, "").trim();
     // Capitalize first letter
     if (desc.length > 0) desc = desc.charAt(0).toUpperCase() + desc.slice(1);
     if (!desc || desc.length < 2) desc = "Movimento BPI";
@@ -332,10 +337,13 @@ function parseCGDPDF(text: string): ParsedTransaction[] {
     const isNegative = match[3].trim().startsWith("-");
 
     // Clean CGD descriptions
+    desc = desc.replace(/^COMPRA\s+/gi, "").trim();
+    desc = desc.replace(/^COBRANCA\s+/gi, "").trim();
     desc = desc.replace(/COMPRA ELECTR[OÓ]NICA\s*/gi, "").trim();
     desc = desc.replace(/PAGAMENTO DE SERVICOS\s*/gi, "").trim();
-    desc = desc.replace(/TRANSF\.\s*/gi, "Transferência ").trim();
-    desc = desc.replace(/TRF\s*/gi, "Transferência ").trim();
+    desc = desc.replace(/^TRF\s+/gi, "Transferência ").trim();
+    desc = desc.replace(/^TFI\s+/gi, "Transferência ").trim();
+    desc = desc.replace(/^DEVOL COMPRA\s+/gi, "Estorno ").trim();
     desc = desc.replace(/LEV\.?\s*MULTIBANCO\s*/gi, "Levantamento ATM").trim();
     desc = desc.replace(/\s+\d{8,}$/, "").trim(); // Remove trailing reference numbers
     if (desc.length > 0) desc = desc.charAt(0).toUpperCase() + desc.slice(1);

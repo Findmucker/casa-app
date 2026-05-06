@@ -315,7 +315,11 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               return (
               <div
                 key={idx}
-                className={`rounded-2xl p-3 mb-2 border shadow-sm space-y-2 ${dup ? "bg-amber-50/80 border-amber-200/60 opacity-60" : "bg-white/80 border-emerald-100/40"}`}
+                className={`rounded-2xl p-3 mb-2 border shadow-sm space-y-2 ${
+                  dup ? "bg-amber-50/80 border-amber-200/60 opacity-60"
+                  : item.type === "expense" ? "bg-red-50/40 border-red-100/50"
+                  : "bg-green-50/40 border-green-100/50"
+                }`}
               >
                 {dup && (
                   <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ Duplicado — será ignorado</div>
