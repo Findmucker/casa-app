@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
 import { parseCSV, type ParsedTransaction } from "@/lib/bankParsers";
-import { pdfToImage } from "@/lib/pdfToImage";
+import { pdfToText, pdfToImage } from "@/lib/pdfToImage";
 
 interface ImportPanelProps {
   onClose: () => void;
@@ -58,11 +58,23 @@ export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
     if (file.type.startsWith("image/") || file.type === "application/pdf") {
       setView("loading");
       try {
+        // PDF: try text extraction first (no AI needed)
+        if (file.type === "application/pdf") {
+          const text = await pdfToText(file);
+          const parsed = parseCSV(text);
+          if (parsed.length > 0) {
+            setItems(parsed);
+            setView("preview");
+            return;
+          }
+          // Text extraction didn't yield results — fall through to AI with image
+        }
+
         let base64: string;
         let mime: string;
 
         if (file.type === "application/pdf") {
-          // Convert PDF to image client-side
+          // Convert PDF to image for AI processing
           const result = await pdfToImage(file);
           base64 = result.base64;
           mime = result.mimeType;

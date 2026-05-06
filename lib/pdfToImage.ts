@@ -1,20 +1,41 @@
 /**
- * Convert PDF file to a single image (or multiple page images merged)
- * Uses pdf.js to render pages to canvas client-side
- * IMPORTANT: This module must only be imported dynamically on the client
+ * PDF utilities — client-side only (uses dynamic imports)
  */
 
 const MAX_PAGES = 5;
 const SCALE = 1.5;
 
 /**
+ * Extract text content from a PDF file (for bank statements → CSV parsing)
+ */
+export async function pdfToText(file: File): Promise<string> {
+  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+  const buffer = await file.arrayBuffer();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pdf = await (pdfjsLib as any).getDocument({ data: buffer }).promise;
+
+  const numPages = Math.min(pdf.numPages, MAX_PAGES);
+  const lines: string[] = [];
+
+  for (let i = 1; i <= numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pageText = content.items.map((item: any) => item.str).join(" ");
+    lines.push(pageText);
+  }
+
+  return lines.join("\n");
+}
+
+/**
  * Renders a PDF file to a single JPEG image (pages stacked vertically)
- * Returns base64-encoded image data (no data: prefix)
+ * Used as fallback when text extraction doesn't yield parseable data
  */
 export async function pdfToImage(file: File): Promise<{ base64: string; mimeType: string }> {
-  // Dynamic import to avoid SSR issues (pdfjs-dist uses DOMMatrix)
   const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  // Point worker to local file in public/
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
   const buffer = await file.arrayBuffer();
@@ -43,7 +64,6 @@ export async function pdfToImage(file: File): Promise<{ base64: string; mimeType
     maxWidth = Math.max(maxWidth, viewport.width);
   }
 
-  // Merge all pages into one tall canvas
   const merged = document.createElement("canvas");
   merged.width = maxWidth;
   merged.height = totalHeight;
