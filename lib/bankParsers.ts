@@ -8,12 +8,21 @@ export interface ParsedTransaction {
 
 function guessCategory(desc: string): string {
   const d = desc.toLowerCase();
-  if (/supermercado|continente|pingo doce|lidl|aldi|mercadona|minipreço/i.test(d)) return "compras";
-  if (/farmácia|farmacia|hospital|clínica|clinica|médico|medico/i.test(d)) return "saude";
-  if (/uber|bolt|taxi|cp |comboio|metro|gasolina|galp|repsol|bp |estacion/i.test(d)) return "transporte";
-  if (/restaurante|café|cafe|mcdonald|burger|pizza|sushi|padaria|pastelaria/i.test(d)) return "restaurantes";
-  if (/cinema|spotify|netflix|hbo|disney|bilhete|concerto|teatro/i.test(d)) return "lazer";
-  if (/renda|aluguer|água|agua|luz|eletricidade|gás|gas|internet|vodafone|meo|nos /i.test(d)) return "casa";
+  // Compras (groceries/shopping)
+  if (/supermercado|continente|pingo doce|lidl|aldi|mercadona|minipreço|intermarche|auchan|e\.leclerc|jumbo|modelo/i.test(d)) return "compras";
+  if (/compras c\.deb|cofidis/i.test(d)) return "compras";
+  // Saúde
+  if (/farmácia|farmacia|hospital|clínica|clinica|médico|medico|dentist|ótica|otica|wells/i.test(d)) return "saude";
+  // Transporte
+  if (/uber(?! eats)|bolt|taxi|cp |comboio|metro|gasolina|galp|repsol|bp |estacion|portagem|via verde|a8|pa obidos|pa a8|brisa/i.test(d)) return "transporte";
+  // Restaurantes
+  if (/restaurante|café|cafe|mcdonald|burger|pizza|sushi|padaria|pastelaria|uber eats|glovo|just eat|fortunity food|cafe restauran|imperio e|lounge b|sardine/i.test(d)) return "restaurantes";
+  // Lazer
+  if (/cinema|spotify|netflix|hbo|disney|bilhete|concerto|teatro|steam|playstation|xbox|gaming|proud earth/i.test(d)) return "lazer";
+  // Casa
+  if (/renda|aluguer|água|agua|luz|eletricidade|gás|gas|internet|vodafone|meo|nos |prestacao|manut conta|via direta|real vida seguros|seguro/i.test(d)) return "casa";
+  // Transferências pessoais — outros
+  if (/trf|tfi|mbway|cxdapp|reembolso/i.test(d)) return "outros";
   return "outros";
 }
 
