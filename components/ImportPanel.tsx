@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
 import { parseCSV, parsePDFText, parsePDFRows, type ParsedTransaction } from "@/lib/bankParsers";
 import { pdfToText, pdfToImage, pdfToRows } from "@/lib/pdfToImage";
+import MiniAvatar from "./MiniAvatar";
 
 interface ImportPanelProps {
   onClose: () => void;
@@ -261,6 +262,25 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               </button>
             </div>
 
+            {/* Owner selector */}
+            <div className="flex items-center gap-3 bg-white/70 rounded-2xl p-3 border border-emerald-100/40">
+              <span className="text-xs text-emerald-500 font-medium whitespace-nowrap">Documento de:</span>
+              <div className="flex gap-2">
+                {memberNames.map((m) => (
+                  <button
+                    key={m.key}
+                    onClick={() => setOwner(m.key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
+                      owner === m.key ? "bg-emerald-200 text-emerald-700 ring-2 ring-emerald-300" : "bg-emerald-50 text-emerald-400"
+                    }`}
+                  >
+                    <MiniAvatar name={m.key} size={20} showEquipBadge={false} />
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {(() => {
               // Group items by category for section headers
               const grouped = items.reduce((acc, item, idx) => {
@@ -364,31 +384,12 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
             })()}
 
             {items.length > 0 && (
-              <div className="mt-4 space-y-3">
-                {/* Owner selector */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-emerald-500 font-medium">👤 Documento de:</span>
-                  <div className="flex gap-1.5">
-                    {memberNames.map((m) => (
-                      <button
-                        key={m.key}
-                        onClick={() => setOwner(m.key)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
-                          owner === m.key ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-400"
-                        }`}
-                      >
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  onClick={handleConfirm}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
-                >
-                  {t("import.confirm")} ({items.filter(i => !isDuplicate(i)).length})
-                </button>
-              </div>
+              <button
+                onClick={handleConfirm}
+                className="w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
+              >
+                {t("import.confirm")} ({items.filter(i => !isDuplicate(i)).length})
+              </button>
             )}
           </div>
         )}
