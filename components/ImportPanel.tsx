@@ -96,8 +96,9 @@ export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
         }
         setItems(data.items);
         setView("preview");
-      } catch {
-        setError(t("import.error"));
+      } catch (err) {
+        console.error("Import processing error:", err);
+        setError(err instanceof Error ? err.message : t("import.error"));
         setView("choose");
       }
       return;
