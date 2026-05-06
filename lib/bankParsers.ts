@@ -6,6 +6,10 @@ export interface ParsedTransaction {
   category: string;
 }
 
+interface PDFRow {
+  items: { str: string; x: number }[];
+}
+
 function guessCategory(desc: string): string {
   const d = desc.toLowerCase();
   // Compras (groceries/shopping)
@@ -208,14 +212,99 @@ export function parseCSV(content: string): ParsedTransaction[] {
   return results;
 }
 
+// ─── Parse PDF using positioned rows (accurate column detection) ──
+export function parsePDFRows(rows: PDFRow[]): ParsedTransaction[] {
+  // Detect BPI by content
+  const allText = rows.map(r => r.items.map(i => i.str).join(" ")).join(" ");
+  if (allText.includes("bancobpi") || allText.includes("BPI") || allText.includes("CONTA VALOR BPI")) {
+    return parseBPIRows(rows);
+  }
+  return [];
+}
+
+function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
+  const results: ParsedTransaction[] = [];
+
+  // Extract year from period
+  const allText = rows.map(r => r.items.map(i => i.str).join(" ")).join(" ");
+  const periodMatch = allText.match(/(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/);
+  const year = periodMatch ? periodMatch[6] : new Date().getFullYear().toString();
+
+  // BPI columns: date at x≈56-82, description at x≈113, amount at x≈487-494, balance at x≈551-559
+  // A transaction row has: a date (DD/MM) at x<100, description at x~113, amount at x>450
+  for (const row of rows) {
+    const items = row.items;
+    if (items.length < 2) continue;
+
+    // Find date item (DD/MM at x < 100)
+    const dateItem = items.find(i => i.x < 100 && /^\d{2}\/\d{2}$/.test(i.str));
+    if (!dateItem) continue;
+
+    // Find amount item (at x > 450, looks like a number)
+    const amountItem = items.find(i => i.x > 450 && i.x < 540 && /^-?[\d ]+,\d{2}$/.test(i.str.trim()));
+    if (!amountItem) continue;
+
+    // Description: items between x=100 and x=450
+    const descItems = items.filter(i => i.x >= 100 && i.x < 450 && i.str.trim());
+    let desc = descItems.map(i => i.str).join(" ").trim();
+
+    // Skip non-transaction rows
+    if (desc.includes("SALDO ANTERIOR") || desc.includes("DESCRIÇÃO")) continue;
+    if (desc.includes("Sede:") || desc.includes("IBAN") || desc.includes("NIB")) continue;
+    if (desc.includes("EXTRACTO") || desc.includes("DEPÓSITOS")) continue;
+    if (desc.length < 3) continue;
+
+    // Parse date
+    const day = dateItem.str.slice(0, 2);
+    const month = dateItem.str.slice(3, 5);
+    const date = `${year}-${month}-${day}`;
+
+    // Parse amount
+    const amountStr = amountItem.str.trim();
+    const amount = parseAmount(amountStr.replace(/\s/g, ""));
+    if (amount === 0) continue;
+
+    const isNegative = amountStr.startsWith("-");
+
+    // Clean description
+    desc = desc.replace(/^\d{2}\/\d{2}\s+/, ""); // Remove leading date
+    desc = desc.replace(/COMPRA ELEC \d+\/\d+\s*/g, "").trim();
+    // Remove location suffixes (after double space or at end)
+    desc = desc.replace(/\s{2,}.*$/, "").trim();
+    if (!desc || desc.length < 2) desc = "Transação";
+
+    results.push({
+      description: desc.slice(0, 80),
+      amount,
+      date,
+      type: isNegative ? "expense" : "income",
+      category: guessCategory(desc),
+    });
+  }
+
+  return results;
+}
+
 // ─── Parse raw text extracted from PDF ───────────────────────
 // Handles messy text from pdf.js where structure is lost
 export function parsePDFText(text: string): ParsedTransaction[] {
+  // Try BPI PDF format first
+  if (text.includes("bancobpi") || text.includes("BPI") || text.includes("CONTA VALOR BPI")) {
+    const bpi = parseBPIPDF(text);
+    if (bpi.length > 0) return bpi;
+  }
+
+  // Try CGD PDF format
+  const cgd = parseCGDPDF(text);
+  if (cgd.length > 0) return cgd;
+
+  return [];
+}
+
+function parseCGDPDF(text: string): ParsedTransaction[] {
   const results: ParsedTransaction[] = [];
 
   // CGD PDF pattern: DD-MM-YYYY   DD-MM-YYYY   DESCRIPTION   -AMOUNT   BALANCE
-  // The text from pdf.js joins items with spaces, so we look for the pattern:
-  // date date description amount balance
   const cgdPattern = /(\d{2}-\d{2}-\d{4})\s+\d{2}-\d{2}-\d{4}\s+(.+?)\s+(-?[\d.,]+)\s+(-?[\d.,]+)(?:\s|$)/g;
 
   let match;
@@ -223,12 +312,8 @@ export function parsePDFText(text: string): ParsedTransaction[] {
     const date = parseDate(match[1]);
     const desc = match[2].trim();
     const amount = parseAmount(match[3]);
-    const balance = parseAmount(match[4]);
 
     if (amount === 0) continue;
-    // Skip if this looks like the balance column was captured as amount
-    // (balance is usually larger than individual transactions)
-    // Use the sign from the original string
     const isNegative = match[3].trim().startsWith("-");
 
     results.push({
@@ -240,35 +325,61 @@ export function parsePDFText(text: string): ParsedTransaction[] {
     });
   }
 
-  if (results.length > 0) return results;
+  return results;
+}
 
-  // Generic fallback: find date + amount patterns in each line
-  const lines = text.split(/\n/);
-  const datePattern = /(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4})/g;
-  const amountPattern = /(-?\d{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*€?/g;
+function parseBPIPDF(text: string): ParsedTransaction[] {
+  const results: ParsedTransaction[] = [];
 
-  for (const line of lines) {
-    const dates = line.match(datePattern);
-    const amounts = line.match(amountPattern);
+  // Extract year from document period (e.g. "De 17/03/2026 a 16/04/2026")
+  const periodMatch = text.match(/(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/);
+  const year = periodMatch ? periodMatch[6] : new Date().getFullYear().toString();
 
-    if (!dates || !amounts) continue;
+  // BPI PDF structure from pdf.js has rows like:
+  // "18/03 | 18/03 | DD MEO, SA 44545936843 | -46,16 | -22,43"
+  // "23/03 | 21/03 | 21/03 COMPRA ELEC 1772576/87 PINGO DOCE   OBIDOS | -5,86 | 1 097,61"
+  // We need to match: DD/MM date, description (with transaction keywords), amount, balance
+  // Key insight: amounts in BPI use space as thousands separator: "1 103,47"
 
-    const date = parseDate(dates[0]);
-    const lastAmountStr = amounts[amounts.length - 1];
-    const amount = parseAmount(lastAmountStr);
+  // Split into transaction chunks — each starts with a DD/MM date pattern at a row boundary
+  // Use a regex that matches: date description amount balance
+  const txPattern = /(\d{2}\/\d{2})\s+(?:\d{2}\/\d{2}\s+)?(.+?)\s+(-?\d[\d ]*,\d{2})\s+(-?\d[\d ]*,\d{2})/g;
 
+  let m;
+  while ((m = txPattern.exec(text)) !== null) {
+    const dateStr = m[1];
+    let desc = m[2].trim();
+    const amountStr = m[3].trim();
+
+    // Skip non-transaction lines
+    if (desc.includes("SALDO ANTERIOR")) continue;
+    if (desc.includes("DATA") && desc.includes("DESCRIÇÃO")) continue;
+    if (desc.includes("Sede:") || desc.includes("Capital Social")) continue;
+    if (desc.includes("IBAN") || desc.includes("NIB") || desc.includes("Pág.")) continue;
+    if (desc.includes("ACTIVOS") || desc.includes("PASSIVOS")) continue;
+    if (desc.includes("EXTRACTO") || desc.includes("DEPÓSITOS À ORDEM")) continue;
+    if (desc.length < 3) continue;
+
+    // Parse date with year
+    const month = dateStr.slice(3, 5);
+    const day = dateStr.slice(0, 2);
+    const date = `${year}-${month}-${day}`;
+
+    // Parse amount (BPI uses space as thousands sep: "1 103,47")
+    const amount = parseAmount(amountStr.replace(/\s/g, ""));
     if (amount === 0) continue;
 
-    let desc = line;
-    desc = desc.replace(/\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}/g, "").replace(/(-?\d{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*€?/g, "").trim();
-    desc = desc.replace(/\s{2,}/g, " ").trim();
-    if (!desc || desc.length < 2) desc = "Transação";
-    desc = desc.slice(0, 80);
+    const isNegative = amountStr.startsWith("-");
 
-    const isNegative = lastAmountStr.trim().startsWith("-");
+    // Clean description: remove "DD/MM COMPRA ELEC XXXXXXX/XX" prefix
+    desc = desc.replace(/^\d{2}\/\d{2}\s+/, "");
+    desc = desc.replace(/COMPRA ELEC \d+\/\d+\s*/g, "").trim();
+    // Remove trailing location after multiple spaces
+    desc = desc.replace(/\s{2,}.*$/, "").trim();
+    if (!desc || desc.length < 2) desc = "Transação";
 
     results.push({
-      description: desc,
+      description: desc.slice(0, 80),
       amount,
       date,
       type: isNegative ? "expense" : "income",

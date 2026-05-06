@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
-import { parseCSV, parsePDFText, type ParsedTransaction } from "@/lib/bankParsers";
-import { pdfToText, pdfToImage } from "@/lib/pdfToImage";
+import { parseCSV, parsePDFText, parsePDFRows, type ParsedTransaction } from "@/lib/bankParsers";
+import { pdfToText, pdfToImage, pdfToRows } from "@/lib/pdfToImage";
 
 interface ImportPanelProps {
   onClose: () => void;
@@ -69,12 +69,14 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
       try {
         // PDF: try text extraction first (no AI needed)
         if (file.type === "application/pdf") {
-          const text = await pdfToText(file);
-          // Try structured CSV parsing first, then raw PDF text parsing
+          const rows = await pdfToRows(file);
+          const text = rows.map(r => r.items.map(i => i.str).join(" ")).join("\n");
+          // Try structured CSV parsing, then position-aware row parsing, then raw text
           const parsed = parseCSV(text);
-          const results = parsed.length > 0 ? parsed : parsePDFText(text);
-          if (results.length > 0) {
-            setItems(results);
+          const results = parsed.length > 0 ? parsed : parsePDFRows(rows);
+          const finalResults = results.length > 0 ? results : parsePDFText(text);
+          if (finalResults.length > 0) {
+            setItems(finalResults);
             setView("preview");
             return;
           }
