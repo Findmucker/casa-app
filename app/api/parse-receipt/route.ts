@@ -56,10 +56,13 @@ export async function POST(request: Request) {
       },
     });
 
+    // Try multiple models with retry — fallback if rate limited
+    const models = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"];
+
     let res: Response | null = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (const model of models) {
       res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -67,12 +70,8 @@ export async function POST(request: Request) {
         }
       );
 
-      if (res.status !== 429) break;
-
-      // Exponential backoff: 10s, 20s
-      const delay = (attempt + 1) * 10_000;
-      console.log(`Gemini rate limited, retrying in ${delay}ms (attempt ${attempt + 1})`);
-      await new Promise((r) => setTimeout(r, delay));
+      if (res.status !== 429 && res.status !== 404) break;
+      console.log(`Model ${model} failed (${res.status}), trying next...`);
     }
 
     if (!res || !res.ok) {
