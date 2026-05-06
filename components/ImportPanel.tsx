@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
 import { parseCSV, parsePDFText, parsePDFRows, type ParsedTransaction } from "@/lib/bankParsers";
-import { pdfToText, pdfToImage, pdfToRows } from "@/lib/pdfToImage";
+import { pdfToRows, pdfToImage } from "@/lib/pdfToImage";
 import MiniAvatar from "./MiniAvatar";
 
 interface ImportPanelProps {
@@ -75,9 +75,8 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
         if (file.type === "application/pdf") {
           const rows = await pdfToRows(file);
           const text = rows.map(r => r.items.map(i => i.str).join(" ")).join("\n");
-          // Try structured CSV parsing, then position-aware row parsing, then raw text
-          const parsed = parseCSV(text);
-          const results = parsed.length > 0 ? parsed : parsePDFRows(rows);
+          // Try position-aware row parsing first (most accurate), then raw text patterns
+          const results = parsePDFRows(rows);
           const finalResults = results.length > 0 ? results : parsePDFText(text);
           if (finalResults.length > 0) {
             setItems(finalResults);
