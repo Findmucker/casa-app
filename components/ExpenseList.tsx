@@ -293,13 +293,35 @@ export default function ExpenseList() {
               viewMonth={viewMonth}
             />
 
-            {/* Expense list */}
+            {/* Expense list grouped by category */}
             <div className="space-y-2">
-              {monthExpenses.map((item) => {
-                const cat = EXPENSE_CATEGORIES.find((c) => c.id === item.category);
-                return (
+              {(() => {
+                const grouped = monthExpenses.reduce((acc, item) => {
+                  const key = item.category || "outros";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(item);
+                  return acc;
+                }, {} as Record<string, typeof monthExpenses>);
+
+                const categoryOrder = ["casa", "compras", "restaurantes", "transporte", "lazer", "saude", "outros"];
+                return categoryOrder
+                  .filter(cat => grouped[cat]?.length)
+                  .map(cat => {
+                    const catInfo = EXPENSE_CATEGORIES.find(c => c.id === cat);
+                    const items = grouped[cat];
+                    const catTotal = items.reduce((s, i) => s + i.amount, 0);
+                    return (
+                      <div key={cat}>
+                        <div className="flex items-center gap-2 mt-3 mb-1.5 px-1">
+                          <span className="text-xs">{catInfo?.emoji || "📦"}</span>
+                          <span className="text-[11px] font-bold text-emerald-500">{catInfo?.label || cat}</span>
+                          <span className="text-[10px] text-emerald-300">({items.length})</span>
+                          <div className="flex-1 h-px bg-emerald-100/60" />
+                          <span className="text-[11px] font-semibold text-emerald-500">{catTotal.toFixed(0)}€</span>
+                        </div>
+                        {items.map((item) => (
                   <div key={item.id} className="bg-white/70 backdrop-blur-sm rounded-2xl p-3 shadow-sm border border-emerald-100/30 flex items-center gap-3">
-                    <span className="text-lg">{cat?.emoji || "📦"}</span>
+                    <span className="text-lg">{catInfo?.emoji || "📦"}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-emerald-800 truncate">{item.name}</p>
                       <div className="flex items-center gap-1.5">
@@ -310,8 +332,11 @@ export default function ExpenseList() {
                     <span className="text-sm font-bold text-emerald-600">{item.amount.toFixed(2)}€</span>
                     <button onClick={() => removeExpense(item.id)} className="w-7 h-7 flex items-center justify-center text-emerald-300 hover:text-red-400 transition-all active:scale-90 text-xs">✕</button>
                   </div>
-                );
-              })}
+                        ))}
+                      </div>
+                    );
+                  });
+              })()}
             </div>
 
             {monthExpenses.length === 0 && (
