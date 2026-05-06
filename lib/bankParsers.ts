@@ -252,6 +252,10 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
     if (desc.includes("SALDO ANTERIOR") || desc.includes("DESCRIÇÃO")) continue;
     if (desc.includes("Sede:") || desc.includes("IBAN") || desc.includes("NIB")) continue;
     if (desc.includes("EXTRACTO") || desc.includes("DEPÓSITOS")) continue;
+    if (desc.includes("Capital Social") || desc.includes("matriculada")) continue;
+    if (desc.includes("bancobpi") || desc.includes("BPI Direto")) continue;
+    if (desc.includes("ACTIVOS") || desc.includes("PASSIVOS")) continue;
+    if (desc.includes("Emissão") || desc.includes("NUC") || desc.includes("Período")) continue;
     if (desc.length < 3) continue;
 
     // Parse date
