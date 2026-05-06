@@ -258,7 +258,33 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               </button>
             </div>
 
-            {items.map((item, idx) => {
+            {(() => {
+              // Group items by category for section headers
+              const grouped = items.reduce((acc, item, idx) => {
+                const key = item.category;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push({ item, idx });
+                return acc;
+              }, {} as Record<string, { item: ParsedTransaction; idx: number }[]>);
+
+              const categoryLabels: Record<string, string> = {
+                casa: "🏠 Casa",
+                compras: "🛒 Compras",
+                restaurantes: "🍽️ Restaurantes",
+                transporte: "🚗 Transporte",
+                lazer: "🎉 Lazer",
+                saude: "🏥 Saúde",
+                outros: "📦 Outros",
+              };
+
+              return Object.entries(grouped).map(([category, entries]) => (
+                <div key={category}>
+                  <div className="flex items-center gap-2 mt-2 mb-1.5">
+                    <span className="text-xs font-bold text-emerald-500">{categoryLabels[category] || category}</span>
+                    <span className="text-[10px] text-emerald-300">({entries.length})</span>
+                    <div className="flex-1 h-px bg-emerald-100/60" />
+                  </div>
+                  {entries.map(({ item, idx }) => {
               const dup = isDuplicate(item);
               return (
               <div
@@ -330,6 +356,9 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               </div>
               );
             })}
+                </div>
+              ));
+            })()}
 
             {items.length > 0 && (
               <button
