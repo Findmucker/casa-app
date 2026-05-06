@@ -167,7 +167,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in-up bg-gradient-to-br from-emerald-50/98 via-teal-50/98 to-green-50/98 backdrop-blur-md overscroll-none" onTouchMove={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in-up bg-gradient-to-br from-emerald-50/98 via-teal-50/98 to-green-50/98 backdrop-blur-md overscroll-none" onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white/60 backdrop-blur-sm border-b border-emerald-100/40">
         <h2 className="text-lg font-bold text-emerald-600">{t("import.title")}</h2>
@@ -263,18 +263,18 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
             </div>
 
             {/* Owner selector */}
-            <div className="flex items-center gap-3 bg-white/70 rounded-2xl p-3 border border-emerald-100/40">
-              <span className="text-xs text-emerald-500 font-medium whitespace-nowrap">Documento de:</span>
-              <div className="flex gap-2">
+            <div className="flex items-center gap-3 bg-white/80 rounded-2xl p-3.5 border border-emerald-200/50 shadow-sm">
+              <span className="text-xs text-emerald-600 font-semibold whitespace-nowrap">📄 De:</span>
+              <div className="flex gap-2 flex-1">
                 {memberNames.map((m) => (
                   <button
                     key={m.key}
                     onClick={() => setOwner(m.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
-                      owner === m.key ? "bg-emerald-200 text-emerald-700 ring-2 ring-emerald-300" : "bg-emerald-50 text-emerald-400"
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all active:scale-95 ${
+                      owner === m.key ? "bg-emerald-500 text-white shadow-sm" : "bg-emerald-50 text-emerald-500 hover:bg-emerald-100"
                     }`}
                   >
-                    <MiniAvatar name={m.key} size={20} showEquipBadge={false} />
+                    <MiniAvatar name={m.key} size={22} showEquipBadge={false} />
                     {m.label}
                   </button>
                 ))}
@@ -301,18 +301,21 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               };
 
               return Object.entries(grouped).map(([category, entries]) => (
-                <div key={category}>
-                  <div className="flex items-center gap-2 mt-2 mb-1.5">
-                    <span className="text-xs font-bold text-emerald-500">{categoryLabels[category] || category}</span>
-                    <span className="text-[10px] text-emerald-300">({entries.length})</span>
-                    <div className="flex-1 h-px bg-emerald-100/60" />
+                <div key={category} className="mb-3">
+                  <div className="flex items-center gap-2 mt-3 mb-2 px-1">
+                    <span className="text-xs font-bold text-emerald-600">{categoryLabels[category] || category}</span>
+                    <span className="text-[10px] text-emerald-300 font-medium">({entries.length})</span>
+                    <div className="flex-1 h-px bg-emerald-200/60" />
+                    <span className="text-[10px] font-semibold text-emerald-500">
+                      {entries.reduce((s, e) => s + e.item.amount, 0).toFixed(0)}€
+                    </span>
                   </div>
                   {entries.map(({ item, idx }) => {
               const dup = isDuplicate(item);
               return (
               <div
                 key={idx}
-                className={`rounded-2xl p-3 border shadow-sm space-y-2 ${dup ? "bg-amber-50/80 border-amber-200/60 opacity-60" : "bg-white/80 border-emerald-100/40"}`}
+                className={`rounded-2xl p-3 mb-2 border shadow-sm space-y-2 ${dup ? "bg-amber-50/80 border-amber-200/60 opacity-60" : "bg-white/80 border-emerald-100/40"}`}
               >
                 {dup && (
                   <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ Duplicado — será ignorado</div>
@@ -321,7 +324,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                   {/* Type toggle */}
                   <button
                     onClick={() => toggleType(idx)}
-                    className={`px-2 py-1 rounded-full text-[10px] font-bold transition-all active:scale-95 ${
+                    className={`shrink-0 px-2 py-1 rounded-full text-[10px] font-bold transition-all active:scale-95 ${
                       item.type === "expense"
                         ? "bg-red-100 text-red-500"
                         : "bg-green-100 text-green-600"
@@ -335,35 +338,37 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                     type="text"
                     value={item.description}
                     onChange={(e) => updateItem(idx, "description", e.target.value)}
-                    className="flex-1 text-sm text-emerald-800 bg-transparent focus:outline-none focus:bg-emerald-50 rounded-lg px-2 py-1 transition-all"
+                    className="flex-1 min-w-0 text-sm text-emerald-800 bg-transparent focus:outline-none focus:bg-emerald-50/50 rounded-lg px-2 py-1 transition-all truncate"
                   />
 
-                  {/* Amount */}
-                  <input
-                    type="number"
-                    value={item.amount}
-                    onChange={(e) => updateItem(idx, "amount", parseFloat(e.target.value) || 0)}
-                    className="w-20 text-sm text-right font-semibold text-emerald-700 bg-transparent focus:outline-none focus:bg-emerald-50 rounded-lg px-2 py-1"
-                  />
-                  <span className="text-xs text-emerald-400">€</span>
+                  {/* Amount with € */}
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <input
+                      type="number"
+                      value={item.amount}
+                      onChange={(e) => updateItem(idx, "amount", parseFloat(e.target.value) || 0)}
+                      className="w-16 text-xs text-right font-semibold text-emerald-700 bg-emerald-50/50 rounded-lg px-1.5 py-1 focus:outline-none focus:bg-emerald-100/50"
+                    />
+                    <span className="text-[10px] text-emerald-400">€</span>
+                  </div>
 
                   {/* Delete */}
                   <button
                     onClick={() => removeItem(idx)}
-                    className="w-7 h-7 flex items-center justify-center text-emerald-300 hover:text-red-400 active:scale-90 transition-all"
+                    className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-emerald-300 hover:text-red-400 hover:bg-red-50 active:scale-90 transition-all text-xs"
                   >
                     ✕
                   </button>
                 </div>
 
                 {/* Category + date row */}
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-1 flex-wrap">
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat.id}
                       onClick={() => updateItem(idx, "category", cat.id)}
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-all active:scale-90 ${
-                        item.category === cat.id ? "bg-emerald-200 scale-110" : "bg-emerald-50"
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] transition-all active:scale-90 ${
+                        item.category === cat.id ? "bg-emerald-200 ring-1 ring-emerald-300 scale-110" : "bg-emerald-50/80"
                       }`}
                     >
                       {cat.emoji}
@@ -373,7 +378,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                     type="date"
                     value={item.date}
                     onChange={(e) => updateItem(idx, "date", e.target.value)}
-                    className="ml-auto text-[11px] text-emerald-500 bg-emerald-50 rounded-lg px-2 py-1 focus:outline-none"
+                    className="ml-auto text-[10px] text-emerald-500 bg-emerald-50/80 rounded-lg px-2 py-1 focus:outline-none"
                   />
                 </div>
               </div>

@@ -18,13 +18,13 @@ function guessCategory(desc: string): string {
   // Saúde
   if (/farmácia|farmacia|hospital|clínica|clinica|médico|medico|dentist|ótica|otica|wells/i.test(d)) return "saude";
   // Transporte
-  if (/uber(?! eats)|bolt(?! food)|taxi|cp |comboio|metro|gasolina|galp(?! energia)|repsol|bp |estacion|portagem|via verde|\ba[0-9]+\b|pa obidos|pa a8|brisa|a5 pa|lev\.? atm/i.test(d)) return "transporte";
+  if (/uber(?! eats)|bolt(?! food)|taxi|cp |comboio|metro|gasolina|galp(?! energia)|repsol|bp |estacion|portagem|via verde|\ba[0-9]+\b|pa obidos|pa a8|brisa|a5 pa|lev\.? atm|levantamento atm/i.test(d)) return "transporte";
   // Restaurantes
   if (/restaurante|café|cafe|mcdonald|burger|pizza|sushi|padaria|pastelaria|uber eats|bolt food|glovo|just eat|fortunity food|cafe restauran|imperio|lounge b|sardine|washoku|doce mar|legenda matinal|quiosque/i.test(d)) return "restaurantes";
   // Lazer
   if (/cinema|spotify|netflix|hbo|disney|bilhete|concerto|teatro|steam|playstation|xbox|gaming|proud earth|\boch\b/i.test(d)) return "lazer";
   // Casa
-  if (/renda|aluguer|água|agua|luz|eletricidade|gás|gas|internet|vodafone|meo|nos |prestacao|manut.?conta|via direta|real vida seguros|seguro|allianz|fidelidade|endesa|edp|galp energia|municipio|imposto.?selo|digi portugal/i.test(d)) return "casa";
+  if (/renda|aluguer|água|agua|luz|eletricidade|gás|gas|internet|vodafone|meo|nos |prestacao|manut.?conta|via direta|real vida seguros|seguro|allianz|fidelidade|endesa|edp|galp energia|municipio|imposto.?selo|digi portugal|débito direto/i.test(d)) return "casa";
   // Transferências pessoais — outros
   if (/trf|tfi|mbway|cxdapp|reembolso|estorno|pagamento a\./i.test(d)) return "outros";
   return "outros";
@@ -240,22 +240,32 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
     const dateItem = items.find(i => i.x < 100 && /^\d{2}\/\d{2}$/.test(i.str));
     if (!dateItem) continue;
 
-    // Find amount item (at x > 450, looks like a number)
+    // Find amount item (at x > 450, looks like a number with optional negative sign)
+    // The negative sign might be a separate item right before the number
     const amountItem = items.find(i => i.x > 450 && i.x < 540 && /^-?[\d ]+,\d{2}$/.test(i.str.trim()));
     if (!amountItem) continue;
+
+    // Check if there's a separate "-" sign item just before the amount (within 15px)
+    const negSignItem = items.find(i => i.x > 440 && i.x < amountItem.x && /^-$/.test(i.str.trim()));
 
     // Description: items between x=100 and x=450
     const descItems = items.filter(i => i.x >= 100 && i.x < 450 && i.str.trim());
     let desc = descItems.map(i => i.str).join(" ").trim();
 
-    // Skip non-transaction rows
-    if (desc.includes("SALDO ANTERIOR") || desc.includes("DESCRIÇÃO")) continue;
-    if (desc.includes("Sede:") || desc.includes("IBAN") || desc.includes("NIB")) continue;
-    if (desc.includes("EXTRACTO") || desc.includes("DEPÓSITOS")) continue;
-    if (desc.includes("Capital Social") || desc.includes("matriculada")) continue;
-    if (desc.includes("bancobpi") || desc.includes("BPI Direto")) continue;
-    if (desc.includes("ACTIVOS") || desc.includes("PASSIVOS")) continue;
-    if (desc.includes("Emissão") || desc.includes("NUC") || desc.includes("Período")) continue;
+    // Skip non-transaction rows — extensive filtering
+    const skipPatterns = [
+      "SALDO ANTERIOR", "DESCRIÇÃO", "Sede:", "IBAN", "NIB",
+      "EXTRACTO", "DEPÓSITOS", "Capital Social", "matriculada",
+      "bancobpi", "BPI Direto", "ACTIVOS", "PASSIVOS",
+      "Emissão", "NUC", "Período", "Banco BPI",
+      "Rua Tenente", "Lisboa", "Porto", "NIPC", "Reg. Conserv",
+      "www.bancobpi", "TOTAL", "Conta n", "Titular",
+      "SA ", "S.A.", "Pág.", "Página", "SWIFT",
+    ];
+    if (skipPatterns.some(p => desc.includes(p))) continue;
+    // Skip lines that are mostly numbers (account numbers, codes)
+    if (/^\d[\d\s./]{6,}$/.test(desc)) continue;
+    // Skip very short descriptions
     if (desc.length < 3) continue;
 
     // Parse date
@@ -268,14 +278,23 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
     const amount = parseAmount(amountStr.replace(/\s/g, ""));
     if (amount === 0) continue;
 
-    const isNegative = amountStr.startsWith("-");
+    // Determine if expense: check for explicit "-" in the amount or a separate "-" item
+    const isNegative = amountStr.startsWith("-") || !!negSignItem;
 
-    // Clean description
+    // Clean description — extract meaningful merchant name
     desc = desc.replace(/^\d{2}\/\d{2}\s+/, ""); // Remove leading date
-    desc = desc.replace(/COMPRA ELEC \d+\/\d+\s*/g, "").trim();
-    // Remove location suffixes (after double space or at end)
+    desc = desc.replace(/COMPRA ELEC\.?\s*\d*\/?\d*\s*/gi, "").trim();
+    desc = desc.replace(/PAGAMENTO DE SERVICOS\s*/gi, "").trim();
+    desc = desc.replace(/TRANSF\.\s*/gi, "Transferência ").trim();
+    desc = desc.replace(/TRF\s*/gi, "Transferência ").trim();
+    desc = desc.replace(/LEV\.?\s*ATM\s*/gi, "Levantamento ATM").trim();
+    desc = desc.replace(/DD\s*/gi, "Débito Direto ").trim();
+    // Remove trailing reference numbers and location codes
     desc = desc.replace(/\s{2,}.*$/, "").trim();
-    if (!desc || desc.length < 2) desc = "Transação";
+    desc = desc.replace(/\s+\d{4,}$/, "").trim();
+    // Capitalize first letter
+    if (desc.length > 0) desc = desc.charAt(0).toUpperCase() + desc.slice(1);
+    if (!desc || desc.length < 2) desc = "Movimento BPI";
 
     results.push({
       description: desc.slice(0, 80),
@@ -306,11 +325,21 @@ function parseCGDPDF(text: string): ParsedTransaction[] {
   let match;
   while ((match = cgdPattern.exec(text)) !== null) {
     const date = parseDate(match[1]);
-    const desc = match[2].trim();
+    let desc = match[2].trim();
     const amount = parseAmount(match[3]);
 
     if (amount === 0) continue;
     const isNegative = match[3].trim().startsWith("-");
+
+    // Clean CGD descriptions
+    desc = desc.replace(/COMPRA ELECTR[OÓ]NICA\s*/gi, "").trim();
+    desc = desc.replace(/PAGAMENTO DE SERVICOS\s*/gi, "").trim();
+    desc = desc.replace(/TRANSF\.\s*/gi, "Transferência ").trim();
+    desc = desc.replace(/TRF\s*/gi, "Transferência ").trim();
+    desc = desc.replace(/LEV\.?\s*MULTIBANCO\s*/gi, "Levantamento ATM").trim();
+    desc = desc.replace(/\s+\d{8,}$/, "").trim(); // Remove trailing reference numbers
+    if (desc.length > 0) desc = desc.charAt(0).toUpperCase() + desc.slice(1);
+    if (!desc || desc.length < 2) desc = "Movimento CGD";
 
     results.push({
       description: desc.slice(0, 80),
