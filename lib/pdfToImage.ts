@@ -13,11 +13,14 @@ const SCALE = 1.5;
  */
 export async function pdfToImage(file: File): Promise<{ base64: string; mimeType: string }> {
   // Dynamic import to avoid SSR issues (pdfjs-dist uses DOMMatrix)
-  const pdfjsLib = await import("pdfjs-dist");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+  // Use legacy build for Node.js/browser compat
+  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  // Disable web worker — run parsing on main thread (fine for ≤5 page PDFs)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "";
 
   const buffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pdf = await (pdfjsLib as any).getDocument({ data: buffer }).promise;
 
   const numPages = Math.min(pdf.numPages, MAX_PAGES);
   const canvases: HTMLCanvasElement[] = [];
