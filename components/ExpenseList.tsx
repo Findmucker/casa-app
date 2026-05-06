@@ -430,7 +430,7 @@ export default function ExpenseList() {
 
       {/* Import panel */}
       {showImport && (
-        <ImportPanel onClose={() => setShowImport(false)} onImport={handleImport} />
+        <ImportPanel onClose={() => setShowImport(false)} onImport={handleImport} existingExpenses={expenses} existingIncome={incomes} />
       )}
     </div>
   );

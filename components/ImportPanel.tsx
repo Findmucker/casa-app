@@ -8,6 +8,8 @@ import { pdfToText, pdfToImage } from "@/lib/pdfToImage";
 interface ImportPanelProps {
   onClose: () => void;
   onImport: (items: ParsedTransaction[]) => Promise<void>;
+  existingExpenses: { name: string; amount: number; date?: string }[];
+  existingIncome: { name: string; amount: number; date?: string }[];
 }
 
 const CATEGORIES = [
@@ -22,7 +24,7 @@ const CATEGORIES = [
 
 type ViewState = "choose" | "loading" | "preview" | "done";
 
-export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
+export default function ImportPanel({ onClose, onImport, existingExpenses, existingIncome }: ImportPanelProps) {
   const { t } = useT();
   const [view, setView] = useState<ViewState>("choose");
   const [items, setItems] = useState<ParsedTransaction[]>([]);
@@ -30,6 +32,13 @@ export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
   const [importedCount, setImportedCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const isDuplicate = (item: ParsedTransaction) => {
+    if (item.type === "expense") {
+      return existingExpenses.some(e => e.name === item.description && e.amount === item.amount && e.date === item.date);
+    }
+    return existingIncome.some(i => i.name === item.description && i.amount === item.amount && i.date === item.date);
+  };
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -247,11 +256,16 @@ export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
               </button>
             </div>
 
-            {items.map((item, idx) => (
+            {items.map((item, idx) => {
+              const dup = isDuplicate(item);
+              return (
               <div
                 key={idx}
-                className="bg-white/80 rounded-2xl p-3 border border-emerald-100/40 shadow-sm space-y-2"
+                className={`rounded-2xl p-3 border shadow-sm space-y-2 ${dup ? "bg-amber-50/80 border-amber-200/60 opacity-60" : "bg-white/80 border-emerald-100/40"}`}
               >
+                {dup && (
+                  <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ Duplicado — será ignorado</div>
+                )}
                 <div className="flex items-center gap-2">
                   {/* Type toggle */}
                   <button
@@ -312,14 +326,15 @@ export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
                   />
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             {items.length > 0 && (
               <button
                 onClick={handleConfirm}
                 className="w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
               >
-                {t("import.confirm")} ({items.length})
+                {t("import.confirm")} ({items.filter(i => !isDuplicate(i)).length})
               </button>
             )}
           </div>
