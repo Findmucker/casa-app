@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
 import { parseCSV, type ParsedTransaction } from "@/lib/bankParsers";
+import { pdfToImage } from "@/lib/pdfToImage";
 
 interface ImportPanelProps {
   onClose: () => void;
@@ -57,15 +58,27 @@ export default function ImportPanel({ onClose, onImport }: ImportPanelProps) {
     if (file.type.startsWith("image/") || file.type === "application/pdf") {
       setView("loading");
       try {
-        const buffer = await file.arrayBuffer();
-        const base64 = btoa(
-          new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-        );
+        let base64: string;
+        let mime: string;
+
+        if (file.type === "application/pdf") {
+          // Convert PDF to image client-side
+          const result = await pdfToImage(file);
+          base64 = result.base64;
+          mime = result.mimeType;
+        } else {
+          // Regular image — encode as base64
+          const buffer = await file.arrayBuffer();
+          base64 = btoa(
+            new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+          );
+          mime = file.type;
+        }
 
         const res = await fetch("/api/parse-receipt", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64, mimeType: file.type }),
+          body: JSON.stringify({ image: base64, mimeType: mime }),
         });
 
         if (!res.ok) {

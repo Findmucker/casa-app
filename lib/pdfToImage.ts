@@ -1,0 +1,62 @@
+/**
+ * Convert PDF file to a single image (or multiple page images merged)
+ * Uses pdf.js to render pages to canvas client-side
+ */
+
+import * as pdfjsLib from "pdfjs-dist";
+
+// Use the worker from the CDN to avoid bundling issues
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
+const MAX_PAGES = 5; // Limit pages to keep image size reasonable
+const SCALE = 1.5; // Render quality (1.5x = good balance of quality vs size)
+
+/**
+ * Renders a PDF file to a single JPEG image (pages stacked vertically)
+ * Returns base64-encoded image data (no data: prefix)
+ */
+export async function pdfToImage(file: File): Promise<{ base64: string; mimeType: string }> {
+  const buffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+
+  const numPages = Math.min(pdf.numPages, MAX_PAGES);
+  const canvases: HTMLCanvasElement[] = [];
+  let totalHeight = 0;
+  let maxWidth = 0;
+
+  // Render each page to a temporary canvas
+  for (let i = 1; i <= numPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale: SCALE });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    const ctx = canvas.getContext("2d")!;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (page as any).render({ canvasContext: ctx, viewport }).promise;
+
+    canvases.push(canvas);
+    totalHeight += viewport.height;
+    maxWidth = Math.max(maxWidth, viewport.width);
+  }
+
+  // Merge all pages into one tall canvas
+  const merged = document.createElement("canvas");
+  merged.width = maxWidth;
+  merged.height = totalHeight;
+  const mergedCtx = merged.getContext("2d")!;
+
+  let y = 0;
+  for (const canvas of canvases) {
+    mergedCtx.drawImage(canvas, 0, y);
+    y += canvas.height;
+  }
+
+  // Convert to JPEG base64 (quality 0.85 for good size/quality ratio)
+  const dataUrl = merged.toDataURL("image/jpeg", 0.85);
+  const base64 = dataUrl.split(",")[1];
+
+  return { base64, mimeType: "image/jpeg" };
+}

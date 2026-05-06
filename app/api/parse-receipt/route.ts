@@ -35,38 +35,50 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "File too large (max ~4MB)" }, { status: 413 });
     }
 
-    // Call Gemini API
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
+    // Call Gemini API with retry for rate limits
+    const geminiBody = JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: PROMPT },
             {
-              parts: [
-                { text: PROMPT },
-                {
-                  inlineData: {
-                    mimeType: mimeType || "image/jpeg",
-                    data: image,
-                  },
-                },
-              ],
+              inlineData: {
+                mimeType: mimeType || "image/jpeg",
+                data: image,
+              },
             },
           ],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 4096,
-          },
-        }),
-      }
-    );
+        },
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 4096,
+      },
+    });
 
-    if (!res.ok) {
-      const err = await res.text();
-      console.error("Gemini API error:", res.status, err);
-      return NextResponse.json({ error: `AI processing failed (${res.status})` }, { status: 502 });
+    let res: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: geminiBody,
+        }
+      );
+
+      if (res.status !== 429) break;
+
+      // Exponential backoff: 2s, 4s
+      const delay = Math.pow(2, attempt + 1) * 1000;
+      console.log(`Gemini rate limited, retrying in ${delay}ms (attempt ${attempt + 1})`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+
+    if (!res || !res.ok) {
+      const err = await res?.text();
+      console.error("Gemini API error:", res?.status, err);
+      return NextResponse.json({ error: `AI processing failed (${res?.status || "unknown"})` }, { status: 502 });
     }
 
     const data = await res.json();
