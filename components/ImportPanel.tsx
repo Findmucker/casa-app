@@ -7,9 +7,11 @@ import { pdfToText, pdfToImage, pdfToRows } from "@/lib/pdfToImage";
 
 interface ImportPanelProps {
   onClose: () => void;
-  onImport: (items: ParsedTransaction[]) => Promise<void>;
+  onImport: (items: ParsedTransaction[], owner: string) => Promise<void>;
   existingExpenses: { name: string; amount: number; date?: string }[];
   existingIncome: { name: string; amount: number; date?: string }[];
+  memberNames: { key: string; label: string }[];
+  currentUser: string;
 }
 
 const CATEGORIES = [
@@ -24,12 +26,13 @@ const CATEGORIES = [
 
 type ViewState = "choose" | "loading" | "preview" | "done";
 
-export default function ImportPanel({ onClose, onImport, existingExpenses, existingIncome }: ImportPanelProps) {
+export default function ImportPanel({ onClose, onImport, existingExpenses, existingIncome, memberNames, currentUser }: ImportPanelProps) {
   const { t } = useT();
   const [view, setView] = useState<ViewState>("choose");
   const [items, setItems] = useState<ParsedTransaction[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState(0);
+  const [owner, setOwner] = useState(currentUser);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -153,7 +156,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   const handleConfirm = async () => {
     setView("loading");
     try {
-      await onImport(items);
+      await onImport(items, owner);
       setImportedCount(items.length);
       setView("done");
     } catch {
@@ -361,12 +364,31 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
             })()}
 
             {items.length > 0 && (
-              <button
-                onClick={handleConfirm}
-                className="w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
-              >
-                {t("import.confirm")} ({items.filter(i => !isDuplicate(i)).length})
-              </button>
+              <div className="mt-4 space-y-3">
+                {/* Owner selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-emerald-500 font-medium">👤 Documento de:</span>
+                  <div className="flex gap-1.5">
+                    {memberNames.map((m) => (
+                      <button
+                        key={m.key}
+                        onClick={() => setOwner(m.key)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
+                          owner === m.key ? "bg-emerald-200 text-emerald-700" : "bg-emerald-50 text-emerald-400"
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={handleConfirm}
+                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
+                >
+                  {t("import.confirm")} ({items.filter(i => !isDuplicate(i)).length})
+                </button>
+              </div>
             )}
           </div>
         )}

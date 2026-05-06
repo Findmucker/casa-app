@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import TabTip from "@/components/TabTip";
 import { useCollection, type ExpenseItem, type IncomeItem, type SavingsGoal } from "@/lib/hooks";
-import { useMemberNames } from "@/lib/context";
+import { useMemberNames, useHouseContext } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
 import ExpenseCharts from "./ExpenseCharts";
 import ImportPanel from "./ImportPanel";
@@ -27,6 +27,7 @@ type SubTab = "expenses" | "income" | "savings";
 export default function ExpenseList() {
   const { t } = useT();
   const memberNames = useMemberNames();
+  const { userName } = useHouseContext();
   const { items: expenses, loading: loadingExpenses, add: addExpense, remove: removeExpense } = useCollection<ExpenseItem>("expenses", "createdAt");
   const { items: incomes, loading: loadingIncome, add: addIncome, remove: removeIncome } = useCollection<IncomeItem>("income", "createdAt");
   const { items: savingsGoals, loading: loadingSavings, add: addSavings, update: updateSavings, remove: removeSavings } = useCollection<SavingsGoal>("savings_goals", "createdAt");
@@ -96,17 +97,17 @@ export default function ExpenseList() {
     setNewIncomeName(""); setNewIncomeAmount(""); setNewIncomeRecurring(false); setShowAdd(false);
   };
 
-  const handleImport = async (items: ParsedTransaction[]) => {
+  const handleImport = async (items: ParsedTransaction[], owner: string) => {
     for (const item of items) {
       // Dedup: skip if same description + amount + date already exists
       if (item.type === "expense") {
         const isDup = expenses.some(e => e.name === item.description && e.amount === item.amount && e.date === item.date);
         if (isDup) continue;
-        await addExpense({ name: item.description, amount: item.amount, category: item.category, paidBy: "ambos", date: item.date });
+        await addExpense({ name: item.description, amount: item.amount, category: item.category, paidBy: owner, date: item.date });
       } else {
         const isDup = incomes.some((i: IncomeItem) => i.name === item.description && i.amount === item.amount && i.date === item.date);
         if (isDup) continue;
-        await addIncome({ name: item.description, amount: item.amount, owner: "ambos", recurring: false, date: item.date });
+        await addIncome({ name: item.description, amount: item.amount, owner, recurring: false, date: item.date });
       }
     }
   };
@@ -455,7 +456,7 @@ export default function ExpenseList() {
 
       {/* Import panel */}
       {showImport && (
-        <ImportPanel onClose={() => setShowImport(false)} onImport={handleImport} existingExpenses={expenses} existingIncome={incomes} />
+        <ImportPanel onClose={() => setShowImport(false)} onImport={handleImport} existingExpenses={expenses} existingIncome={incomes} memberNames={memberNames} currentUser={userName} />
       )}
     </div>
   );
