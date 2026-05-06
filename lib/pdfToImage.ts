@@ -13,10 +13,9 @@ const SCALE = 1.5;
  */
 export async function pdfToImage(file: File): Promise<{ base64: string; mimeType: string }> {
   // Dynamic import to avoid SSR issues (pdfjs-dist uses DOMMatrix)
-  // Use legacy build for Node.js/browser compat
   const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  // Disable web worker — run parsing on main thread (fine for ≤5 page PDFs)
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+  // Point worker to local file in public/
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
   const buffer = await file.arrayBuffer();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
