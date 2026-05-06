@@ -97,7 +97,6 @@ export default function ExpenseList() {
   };
 
   const handleImport = async (items: ParsedTransaction[]) => {
-    let imported = 0;
     for (const item of items) {
       // Dedup: skip if same description + amount + date already exists
       if (item.type === "expense") {
@@ -105,13 +104,11 @@ export default function ExpenseList() {
         if (isDup) continue;
         await addExpense({ name: item.description, amount: item.amount, category: item.category, paidBy: "ambos", date: item.date });
       } else {
-        const isDup = income.some(i => i.name === item.description && i.amount === item.amount && i.date === item.date);
+        const isDup = incomes.some((i: IncomeItem) => i.name === item.description && i.amount === item.amount && i.date === item.date);
         if (isDup) continue;
         await addIncome({ name: item.description, amount: item.amount, owner: "ambos", recurring: false, date: item.date });
       }
-      imported++;
     }
-    return imported;
   };
 
   const handleAddSavings = async () => {
