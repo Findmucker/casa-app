@@ -6,7 +6,9 @@ import { useCollection, type ExpenseItem, type IncomeItem, type SavingsGoal } fr
 import { useMemberNames } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
 import ExpenseCharts from "./ExpenseCharts";
+import ImportPanel from "./ImportPanel";
 import { useT } from "@/lib/i18n";
+import type { ParsedTransaction } from "@/lib/bankParsers";
 
 const EXPENSE_CATEGORIES = [
   { id: "casa", emoji: "🏠", label: "Casa" },
@@ -31,6 +33,7 @@ export default function ExpenseList() {
 
   const [subTab, setSubTab] = useState<SubTab>("expenses");
   const [showAdd, setShowAdd] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -93,6 +96,16 @@ export default function ExpenseList() {
     setNewIncomeName(""); setNewIncomeAmount(""); setNewIncomeRecurring(false); setShowAdd(false);
   };
 
+  const handleImport = async (items: ParsedTransaction[]) => {
+    for (const item of items) {
+      if (item.type === "expense") {
+        await addExpense({ name: item.description, amount: item.amount, category: item.category, paidBy: "ambos", date: item.date });
+      } else {
+        await addIncome({ name: item.description, amount: item.amount, owner: "ambos", recurring: false, date: item.date });
+      }
+    }
+  };
+
   const handleAddSavings = async () => {
     const name = newSavingsName.trim();
     const target = parseFloat(newSavingsTarget);
@@ -115,12 +128,20 @@ export default function ExpenseList() {
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-emerald-100/40">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-bold text-emerald-600">💰 {t("expenses.title")}</h2>
-          <button
-            onClick={() => setShowAdd(!showAdd)}
-            className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 text-white flex items-center justify-center text-lg active:scale-90 transition-all shadow-sm"
-          >
-            +
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-base active:scale-90 transition-all"
+            >
+              📥
+            </button>
+            <button
+              onClick={() => setShowAdd(!showAdd)}
+              className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 text-white flex items-center justify-center text-lg active:scale-90 transition-all shadow-sm"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         {/* Month nav */}
@@ -401,6 +422,11 @@ export default function ExpenseList() {
           </>
         )}
       </div>
+
+      {/* Import panel */}
+      {showImport && (
+        <ImportPanel onClose={() => setShowImport(false)} onImport={handleImport} />
+      )}
     </div>
   );
 }

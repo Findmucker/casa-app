@@ -77,6 +77,16 @@ export const pt = {
   "projects.funded": "Financiado",
   "projects.savingsProgress": "Poupado",
 
+  "import.title": "Importar transações",
+  "import.takePhoto": "Tirar foto",
+  "import.chooseFile": "Escolher ficheiro",
+  "import.analyzing": "A analisar...",
+  "import.preview": "Pré-visualização",
+  "import.confirm": "Confirmar importação",
+  "import.added": "Transações adicionadas",
+  "import.error": "Erro ao processar ficheiro",
+  "import.noItems": "Nenhuma transação encontrada",
+
   // Habits
   "habits.title": "Rotinas",
   "habits.allDone": "Tudo feito hoje!",

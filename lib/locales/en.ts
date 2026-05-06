@@ -79,6 +79,16 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "projects.funded": "Funded",
   "projects.savingsProgress": "Saved",
 
+  "import.title": "Import transactions",
+  "import.takePhoto": "Take photo",
+  "import.chooseFile": "Choose file",
+  "import.analyzing": "Analyzing...",
+  "import.preview": "Preview",
+  "import.confirm": "Confirm import",
+  "import.added": "Transactions added",
+  "import.error": "Error processing file",
+  "import.noItems": "No transactions found",
+
   // Habits
   "habits.title": "Habits",
   "habits.allDone": "All done today!",
