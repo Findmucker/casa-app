@@ -56,8 +56,8 @@ export async function POST(request: Request) {
       },
     });
 
-    // Try multiple models with retry — fallback if rate limited
-    const models = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"];
+    // Call Gemini API with retry for rate limits
+    const models = ["gemini-2.0-flash", "gemini-2.0-flash-lite"];
 
     let res: Response | null = null;
     for (const model of models) {
@@ -70,8 +70,13 @@ export async function POST(request: Request) {
         }
       );
 
+      // If success or non-retryable error, stop
       if (res.status !== 429 && res.status !== 404) break;
       console.log(`Model ${model} failed (${res.status}), trying next...`);
+    }
+
+    if (res && res.status === 429) {
+      return NextResponse.json({ error: "Rate limited — please wait 1 minute and try again" }, { status: 429 });
     }
 
     if (!res || !res.ok) {
