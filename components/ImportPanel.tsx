@@ -167,7 +167,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in-up bg-gradient-to-br from-emerald-50/98 via-teal-50/98 to-green-50/98 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in-up bg-gradient-to-br from-emerald-50/98 via-teal-50/98 to-green-50/98 backdrop-blur-md overscroll-none" onTouchMove={(e) => e.stopPropagation()}>
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white/60 backdrop-blur-sm border-b border-emerald-100/40">
         <h2 className="text-lg font-bold text-emerald-600">{t("import.title")}</h2>
