@@ -1,21 +1,21 @@
 /**
  * Convert PDF file to a single image (or multiple page images merged)
  * Uses pdf.js to render pages to canvas client-side
+ * IMPORTANT: This module must only be imported dynamically on the client
  */
 
-import * as pdfjsLib from "pdfjs-dist";
-
-// Use the worker from the CDN to avoid bundling issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-
-const MAX_PAGES = 5; // Limit pages to keep image size reasonable
-const SCALE = 1.5; // Render quality (1.5x = good balance of quality vs size)
+const MAX_PAGES = 5;
+const SCALE = 1.5;
 
 /**
  * Renders a PDF file to a single JPEG image (pages stacked vertically)
  * Returns base64-encoded image data (no data: prefix)
  */
 export async function pdfToImage(file: File): Promise<{ base64: string; mimeType: string }> {
+  // Dynamic import to avoid SSR issues (pdfjs-dist uses DOMMatrix)
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
   const buffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
@@ -24,7 +24,6 @@ export async function pdfToImage(file: File): Promise<{ base64: string; mimeType
   let totalHeight = 0;
   let maxWidth = 0;
 
-  // Render each page to a temporary canvas
   for (let i = 1; i <= numPages; i++) {
     const page = await pdf.getPage(i);
     const viewport = page.getViewport({ scale: SCALE });
@@ -54,7 +53,6 @@ export async function pdfToImage(file: File): Promise<{ base64: string; mimeType
     y += canvas.height;
   }
 
-  // Convert to JPEG base64 (quality 0.85 for good size/quality ratio)
   const dataUrl = merged.toDataURL("image/jpeg", 0.85);
   const base64 = dataUrl.split(",")[1];
 
