@@ -204,14 +204,39 @@ export function parseCSV(content: string): ParsedTransaction[] {
 export function parsePDFText(text: string): ParsedTransaction[] {
   const results: ParsedTransaction[] = [];
 
-  // Find all date + amount patterns in the text
-  // Match lines that have: a date, some text, and an amount
+  // CGD PDF pattern: DD-MM-YYYY   DD-MM-YYYY   DESCRIPTION   -AMOUNT   BALANCE
+  // The text from pdf.js joins items with spaces, so we look for the pattern:
+  // date date description amount balance
+  const cgdPattern = /(\d{2}-\d{2}-\d{4})\s+\d{2}-\d{2}-\d{4}\s+(.+?)\s+(-?[\d.,]+)\s+(-?[\d.,]+)(?:\s|$)/g;
+
+  let match;
+  while ((match = cgdPattern.exec(text)) !== null) {
+    const date = parseDate(match[1]);
+    const desc = match[2].trim();
+    const amount = parseAmount(match[3]);
+    const balance = parseAmount(match[4]);
+
+    if (amount === 0) continue;
+    // Skip if this looks like the balance column was captured as amount
+    // (balance is usually larger than individual transactions)
+    // Use the sign from the original string
+    const isNegative = match[3].trim().startsWith("-");
+
+    results.push({
+      description: desc.slice(0, 80),
+      amount,
+      date,
+      type: isNegative ? "expense" : "income",
+      category: guessCategory(desc),
+    });
+  }
+
+  if (results.length > 0) return results;
+
+  // Generic fallback: find date + amount patterns in each line
+  const lines = text.split(/\n/);
   const datePattern = /(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4})/g;
   const amountPattern = /(-?\d{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*€?/g;
-
-  // Split text into chunks that might represent transactions
-  // Look for date occurrences and grab surrounding text
-  const lines = text.split(/\n/);
 
   for (const line of lines) {
     const dates = line.match(datePattern);
@@ -225,25 +250,19 @@ export function parsePDFText(text: string): ParsedTransaction[] {
 
     if (amount === 0) continue;
 
-    // Extract description: text between date and amount
     let desc = line;
-    // Remove dates and amounts to get description
-    desc = desc.replace(datePattern, "").replace(amountPattern, "").trim();
-    // Clean up extra spaces
+    desc = desc.replace(/\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}/g, "").replace(/(-?\d{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*€?/g, "").trim();
     desc = desc.replace(/\s{2,}/g, " ").trim();
     if (!desc || desc.length < 2) desc = "Transação";
-    // Limit length
     desc = desc.slice(0, 80);
 
-    // Determine type based on sign in original amount string
     const isNegative = lastAmountStr.trim().startsWith("-");
-    const type = isNegative ? "expense" : "income";
 
     results.push({
       description: desc,
       amount,
       date,
-      type,
+      type: isNegative ? "expense" : "income",
       category: guessCategory(desc),
     });
   }
