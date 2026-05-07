@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
       // If success or non-retryable error, stop
       if (res.status !== 429 && res.status !== 404) break;
-      console.log(`Model ${model} failed (${res.status}), trying next...`);
+      console.warn(`Model ${model} unavailable (${res.status}), trying next...`);
     }
 
     if (res && res.status === 429) {

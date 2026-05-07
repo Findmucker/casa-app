@@ -3,26 +3,14 @@
 import { useMemo } from "react";
 import { useSharedCollections } from "@/lib/hooks";
 import { getToday } from "@/lib/notifications";
+import { useT } from "@/lib/i18n";
 
 interface DashboardSummaryProps {
   onNavigate: (tab: string) => void;
 }
 
-function getMotivation(weeklyPct: number): { text: string; emoji: string } {
-  if (weeklyPct >= 80) return { text: "Semana incrível!", emoji: "🏆" };
-  if (weeklyPct >= 60) return { text: "Bom ritmo!", emoji: "💪" };
-  if (weeklyPct >= 30) return { text: "Vamos lá!", emoji: "🚀" };
-  return { text: "Uma coisa de cada vez", emoji: "🌱" };
-}
-
-function getTimeGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour >= 6 && hour < 12) return "esta manhã";
-  if (hour >= 12 && hour < 19) return "esta tarde";
-  return "esta noite";
-}
-
 export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
+  const { t } = useT();
   const { shopping, coisinhas, projects, habits, checks, expenses } = useSharedCollections();
 
   const today = getToday();
@@ -68,7 +56,20 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
     };
   }, [shopping, coisinhas, projects, habits, checks, expenses, today, currentMonth]);
 
-  const motivation = getMotivation(stats.weeklyPct);
+  const motivation = useMemo(() => {
+    if (stats.weeklyPct >= 80) return { text: t("dashboard.motivation.amazing"), emoji: "🏆" };
+    if (stats.weeklyPct >= 60) return { text: t("dashboard.motivation.good"), emoji: "💪" };
+    if (stats.weeklyPct >= 30) return { text: t("dashboard.motivation.goForIt"), emoji: "🚀" };
+    return { text: t("dashboard.motivation.oneStep"), emoji: "🌱" };
+  }, [stats.weeklyPct, t]);
+
+  const timeGreeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 6 && hour < 12) return t("dashboard.thisMorning");
+    if (hour >= 12 && hour < 19) return t("dashboard.thisAfternoon");
+    return t("dashboard.thisEvening");
+  }, [t]);
+
   const habitsComplete = stats.totalHabits > 0 && stats.todayChecks >= stats.totalHabits;
 
   return (
@@ -77,14 +78,14 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
       <div className="relative px-5 pt-5 pb-4">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-purple-400 font-medium">O que fazer {getTimeGreeting()}</p>
+            <p className="text-xs text-purple-400 font-medium">{t("dashboard.whatToDo")} {timeGreeting}</p>
             <h2 className="text-lg font-bold text-rose-600 mt-0.5 flex items-center gap-2">
               {motivation.emoji} {motivation.text}
             </h2>
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-rose-500">{stats.weeklyPct}%</p>
-            <p className="text-[9px] text-purple-400">semanal</p>
+            <p className="text-[9px] text-purple-400">{t("dashboard.weekly")}</p>
           </div>
         </div>
 
@@ -97,18 +98,18 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
             <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
           </div>
         </div>
-        <p className="text-[10px] text-purple-400 mt-1">{stats.weeklyDone} tarefas feitas esta semana</p>
+        <p className="text-[10px] text-purple-400 mt-1">{stats.weeklyDone} {t("dashboard.weeklyDone")}</p>
       </div>
 
       {/* Urgent alerts */}
       {stats.urgentShopping > 0 && (
         <div className="mx-4 mb-3 p-3 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 border border-red-200/50">
           <p className="text-xs font-bold text-red-500 flex items-center gap-1">
-            🚨 Urgente
+            🚨 {t("dashboard.urgent")}
           </p>
           <div className="flex gap-3 mt-1">
             <button onClick={() => onNavigate("shopping")} className="text-[11px] text-red-600 font-medium hover:underline">
-              {stats.urgentShopping} comprinha{stats.urgentShopping > 1 ? "s" : ""}
+              {stats.urgentShopping} {stats.urgentShopping > 1 ? t("dashboard.shoppingItemsPlural") : t("dashboard.shoppingItems")}
             </button>
           </div>
         </div>
@@ -129,17 +130,17 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
               <span className="text-xl">{habitsComplete ? "✅" : "🧘"}</span>
               <div className="text-left">
                 <p className={`text-xs font-bold ${habitsComplete ? "text-emerald-600" : "text-purple-600"}`}>
-                  {habitsComplete ? "Hábitos completos!" : "Rotinazinhas de hoje"}
+                  {habitsComplete ? t("dashboard.habitsComplete") : t("dashboard.habitsToday")}
                 </p>
                 <p className="text-[10px] text-gray-500">
-                  {stats.todayChecks}/{stats.totalHabits} feitos
+                  {stats.todayChecks}/{stats.totalHabits} {t("dashboard.habitsDone")}
                 </p>
               </div>
             </div>
             {stats.maxStreak > 0 && (
               <div className="text-right">
                 <p className="text-sm font-bold text-orange-500">🔥 {stats.maxStreak}</p>
-                <p className="text-[9px] text-gray-400">streak</p>
+                <p className="text-[9px] text-gray-400">{t("dashboard.streak")}</p>
               </div>
             )}
           </div>
@@ -168,10 +169,10 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
         >
           <div className="flex items-center justify-between">
             <span className="text-2xl">🛒</span>
-            {stats.shoppingPending > 5 && <span className="text-[9px] bg-pink-200 text-pink-600 px-1.5 py-0.5 rounded-full font-bold">muitas!</span>}
+            {stats.shoppingPending > 5 && <span className="text-[9px] bg-pink-200 text-pink-600 px-1.5 py-0.5 rounded-full font-bold">{t("dashboard.tooMany")}</span>}
           </div>
           <p className="text-xl font-bold text-gray-800 mt-1.5">{stats.shoppingPending}</p>
-          <p className="text-[11px] text-gray-500">comprinhas por fazer</p>
+          <p className="text-[11px] text-gray-500">{t("dashboard.shoppingPending")}</p>
           {stats.shoppingDone > 0 && (
             <div className="mt-2 h-1 bg-pink-100 rounded-full overflow-hidden">
               <div className="h-full bg-pink-400 rounded-full" style={{ width: `${(stats.shoppingDone / (stats.shoppingDone + stats.shoppingPending)) * 100}%` }} />
@@ -186,10 +187,10 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
         >
           <div className="flex items-center justify-between">
             <span className="text-2xl">🪴</span>
-            {stats.coisinhasPending > 5 && <span className="text-[9px] bg-purple-200 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">muitas!</span>}
+            {stats.coisinhasPending > 5 && <span className="text-[9px] bg-purple-200 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">{t("dashboard.tooMany")}</span>}
           </div>
           <p className="text-xl font-bold text-gray-800 mt-1.5">{stats.coisinhasPending}</p>
-          <p className="text-[11px] text-gray-500">coisinhas pendentes</p>
+          <p className="text-[11px] text-gray-500">{t("dashboard.coisinhasPending")}</p>
           {stats.coisinhasDone > 0 && (
             <div className="mt-2 h-1 bg-purple-100 rounded-full overflow-hidden">
               <div className="h-full bg-purple-400 rounded-full" style={{ width: `${(stats.coisinhasDone / (stats.coisinhasDone + stats.coisinhasPending)) * 100}%` }} />
@@ -204,9 +205,9 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
         >
           <span className="text-2xl">🏠</span>
           <p className="text-xl font-bold text-gray-800 mt-1.5">{stats.projectsInProgress}</p>
-          <p className="text-[11px] text-gray-500">em progresso</p>
+          <p className="text-[11px] text-gray-500">{t("dashboard.projectsInProgress")}</p>
           {stats.projectsDone > 0 && (
-            <p className="text-[9px] text-emerald-500 mt-1 font-medium">✓ {stats.projectsDone} concluídos</p>
+            <p className="text-[9px] text-emerald-500 mt-1 font-medium">✓ {stats.projectsDone} {t("dashboard.projectsDone")}</p>
           )}
         </button>
 
@@ -217,7 +218,7 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
         >
           <span className="text-2xl">💰</span>
           <p className="text-xl font-bold text-gray-800 mt-1.5">{stats.monthExpenses.toFixed(0)}€</p>
-          <p className="text-[11px] text-gray-500">gastos este mês</p>
+          <p className="text-[11px] text-gray-500">{t("dashboard.monthExpenses")}</p>
         </button>
       </div>
 

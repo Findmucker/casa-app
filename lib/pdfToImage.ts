@@ -47,14 +47,6 @@ export async function pdfToRows(file: File): Promise<PDFRow[]> {
 }
 
 /**
- * Extract text content from a PDF file (simple join for CSV-like parsing)
- */
-export async function pdfToText(file: File): Promise<string> {
-  const rows = await pdfToRows(file);
-  return rows.map(r => r.items.map(i => i.str).join(" ")).join("\n");
-}
-
-/**
  * Renders a PDF file to a single JPEG image (pages stacked vertically)
  * Used as fallback when text extraction doesn't yield parseable data
  */

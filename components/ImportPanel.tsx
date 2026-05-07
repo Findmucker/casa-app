@@ -201,7 +201,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               <span className="text-3xl">📸</span>
               <div className="text-left">
                 <p className="text-sm font-semibold text-emerald-700">{t("import.takePhoto")}</p>
-                <p className="text-xs text-emerald-400">Recibo, fatura, extrato</p>
+                <p className="text-xs text-emerald-400">{t("import.photoHint")}</p>
               </div>
             </button>
 
@@ -212,7 +212,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               <span className="text-3xl">📄</span>
               <div className="text-left">
                 <p className="text-sm font-semibold text-emerald-700">{t("import.chooseFile")}</p>
-                <p className="text-xs text-emerald-400">CSV, PDF, imagem</p>
+                <p className="text-xs text-emerald-400">{t("import.fileHint")}</p>
               </div>
             </button>
 
@@ -263,7 +263,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
 
             {/* Owner selector */}
             <div className="flex items-center gap-3 bg-white/80 rounded-2xl p-3.5 border border-emerald-200/50 shadow-sm">
-              <span className="text-xs text-emerald-600 font-semibold whitespace-nowrap">📄 De:</span>
+              <span className="text-xs text-emerald-600 font-semibold whitespace-nowrap">📄 {t("import.owner")}:</span>
               <div className="flex gap-2 flex-1">
                 {memberNames.map((m) => (
                   <button
@@ -321,7 +321,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                 }`}
               >
                 {dup && (
-                  <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ Duplicado — será ignorado</div>
+                  <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ {t("import.duplicate")}</div>
                 )}
                 <div className="flex items-center gap-2">
                   {/* Type toggle */}

@@ -106,20 +106,13 @@ export async function GET() {
           try {
             await adm.messaging().send({
               token,
-              notification: {
+              data: {
                 title: `${habit.emoji || "💊"} ${habit.name}`,
                 body: "Não te esqueças da tua rotina! 🏡",
+                tag: `habit-${habitDoc.id}`,
               },
-              data: { tag: `habit-${habitDoc.id}` },
               webpush: {
                 headers: { Urgency: "high" },
-                notification: {
-                  icon: "/icon-192.png",
-                  badge: "/icon-192.png",
-                  tag: `habit-${habitDoc.id}`, // collapses repeated notifications
-                  renotify: true as unknown as undefined,
-                  vibrate: [200, 100, 200] as unknown as number[],
-                },
               },
             });
             sent++;
@@ -153,12 +146,8 @@ export async function GET() {
               try {
                 await adm.messaging().send({
                   token: tokenDoc.data()!.token,
-                  notification: {
-                    title: `📅 Evento amanhã!`,
-                    body: `"${event.title}" é amanhã`,
-                  },
-                  data: { tag: `event-reminder-${eventDoc.id}` },
-                  webpush: { headers: { Urgency: "high" }, notification: { icon: "/icon-192.png", badge: "/icon-192.png", tag: `event-reminder-${eventDoc.id}` } },
+                  data: { title: `📅 Evento amanhã!`, body: `"${event.title}" é amanhã`, tag: `event-reminder-${eventDoc.id}` },
+                  webpush: { headers: { Urgency: "high" } },
                 });
                 sent++;
               } catch { /* skip */ }
@@ -192,12 +181,8 @@ export async function GET() {
               try {
                 await adm.messaging().send({
                   token: tokenDoc.data()!.token,
-                  notification: {
-                    title: `🎂 Parabéns!`,
-                    body: `Hoje é o aniversário de ${member.name}!`,
-                  },
-                  data: { tag: `birthday-${member.name}` },
-                  webpush: { headers: { Urgency: "high" }, notification: { icon: "/icon-192.png", badge: "/icon-192.png", tag: `birthday-${member.name}` } },
+                  data: { title: `🎂 Parabéns!`, body: `Hoje é o aniversário de ${member.name}!`, tag: `birthday-${member.name}` },
+                  webpush: { headers: { Urgency: "high" } },
                 });
                 sent++;
               } catch { /* skip */ }
