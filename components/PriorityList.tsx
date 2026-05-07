@@ -138,36 +138,40 @@ export default function PriorityList() {
     <div className="flex flex-col h-full">
       <TabTip tabId="small" emoji="🪄" titleKey="tutorial.coisinhas.title" tips={["tutorial.coisinhas.tip1", "tutorial.coisinhas.tip2", "tutorial.coisinhas.tip3", "tutorial.coisinhas.tip4"]} />
       {/* Add form */}
-      <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40 space-y-2">
+      <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40">
         <div className="flex gap-2">
-          <button
-            onClick={() => setNewAssignee(cycleAssignee(newAssignee))}
-            className="w-12 h-12 flex-shrink-0 rounded-2xl bg-pink-50 border border-pink-200/60 flex items-center justify-center transition-all active:scale-90 hover:bg-pink-100"
-            title={memberNames.find((m) => m.key === newAssignee)?.label || "Ambos"}
-          >
-            {newAssignee !== "ambos" ? <MiniAvatar name={newAssignee} size={28} showEquipBadge={false} /> : <span className="text-xl">👫</span>}
-          </button>
-          <AutocompleteInput
-            value={newName}
-            onChange={setNewName}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            placeholder={t("priority.placeholder")}
-            suggestions={nameSuggestions}
-            className="flex-1 min-w-0 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
-          />
-        </div>
-        <div className="flex gap-2 items-center">
-          <input
-            type="number"
-            value={newPrice}
-            onChange={(e) => setNewPrice(e.target.value)}
-            placeholder={t("priority.price")}
-            className="w-20 rounded-xl border border-pink-200/60 bg-white/80 px-3 py-2.5 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
-          />
+          {/* Left: inputs stacked */}
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setNewAssignee(cycleAssignee(newAssignee))}
+                className="w-12 h-12 flex-shrink-0 rounded-2xl bg-pink-50 border border-pink-200/60 flex items-center justify-center transition-all active:scale-90 hover:bg-pink-100"
+                title={memberNames.find((m) => m.key === newAssignee)?.label || "Ambos"}
+              >
+                {newAssignee !== "ambos" ? <MiniAvatar name={newAssignee} size={28} showEquipBadge={false} /> : <span className="text-xl">👫</span>}
+              </button>
+              <AutocompleteInput
+                value={newName}
+                onChange={setNewName}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                placeholder={t("priority.placeholder")}
+                suggestions={nameSuggestions}
+                className="flex-1 min-w-0 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
+              />
+            </div>
+            <input
+              type="number"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+              placeholder={t("priority.price")}
+              className="w-full rounded-xl border border-pink-200/60 bg-white/80 px-4 py-2.5 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
+            />
+          </div>
+          {/* Right: add button spanning both rows */}
           <button
             onClick={handleAdd}
             disabled={!newName.trim()}
-            className="flex-1 rounded-2xl bg-gradient-to-r from-pink-400 to-rose-400 py-2.5 text-white font-semibold active:scale-95 transition-all disabled:opacity-30 shadow-sm shadow-pink-200/50"
+            className="w-14 shrink-0 rounded-2xl bg-gradient-to-r from-pink-400 to-rose-400 text-white text-2xl font-semibold active:scale-95 transition-all disabled:opacity-30 shadow-sm shadow-pink-200/50 flex items-center justify-center"
           >
             +
           </button>
