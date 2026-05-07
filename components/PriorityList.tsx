@@ -140,25 +140,24 @@ export default function PriorityList() {
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40">
         <div className="flex gap-2">
-          {/* Left: inputs stacked */}
+          {/* Left: assignee spanning both rows */}
+          <button
+            onClick={() => setNewAssignee(cycleAssignee(newAssignee))}
+            className="w-14 shrink-0 rounded-2xl bg-pink-50 border border-pink-200/60 flex items-center justify-center transition-all active:scale-90 hover:bg-pink-100"
+            title={memberNames.find((m) => m.key === newAssignee)?.label || "Ambos"}
+          >
+            {newAssignee !== "ambos" ? <MiniAvatar name={newAssignee} size={32} showEquipBadge={false} /> : <span className="text-2xl">👫</span>}
+          </button>
+          {/* Center: inputs stacked */}
           <div className="flex-1 min-w-0 space-y-2">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setNewAssignee(cycleAssignee(newAssignee))}
-                className="w-12 h-12 flex-shrink-0 rounded-2xl bg-pink-50 border border-pink-200/60 flex items-center justify-center transition-all active:scale-90 hover:bg-pink-100"
-                title={memberNames.find((m) => m.key === newAssignee)?.label || "Ambos"}
-              >
-                {newAssignee !== "ambos" ? <MiniAvatar name={newAssignee} size={28} showEquipBadge={false} /> : <span className="text-xl">👫</span>}
-              </button>
-              <AutocompleteInput
-                value={newName}
-                onChange={setNewName}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                placeholder={t("priority.placeholder")}
-                suggestions={nameSuggestions}
-                className="flex-1 min-w-0 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
-              />
-            </div>
+            <AutocompleteInput
+              value={newName}
+              onChange={setNewName}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              placeholder={t("priority.placeholder")}
+              suggestions={nameSuggestions}
+              className="w-full rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
+            />
             <input
               type="number"
               value={newPrice}
