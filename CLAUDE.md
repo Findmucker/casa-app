@@ -322,3 +322,62 @@ When removing a feature entirely:
 7. Run `npx tsc --noEmit`
 8. Commit, merge, close issue
 
+## Import Panel & PDF Parsing
+
+### Architecture
+- PDF parsing is 100% client-side (no AI needed for bank statements)
+- Flow: `pdfToRows()` → `parsePDFRows()` (position-based) → `parsePDFText()` (regex fallback) → AI (last resort for photos)
+- **NEVER** run `parseCSV()` on raw PDF text — its generic fallback matches garbage and hijacks the pipeline
+- CSV parsing is only for actual `.csv` file uploads
+
+### BPI PDF Format
+- Columns by X position: date (x<100, DD/MM), description (x=100-450), amount (x>450 & <540), balance (x>550)
+- Amounts include `-` sign as part of the string (not separate item)
+- Negative = expense, positive = income
+- Thousands separator is **space** (not dot): `1 470,13`
+- Filter garbage: Capital Social, SA, NIPC, bancobpi, IBAN, NIB, Sede:, page numbers, account numbers
+- **Do NOT filter** city names (Lisboa, Porto) or "SA " generically — they appear in real merchant names like "MEO, SA"
+- Year extracted from period header: `DD/MM/YYYY a DD/MM/YYYY`
+
+### CGD PDF Format
+- Uses full dates: DD-MM-YYYY
+- Pattern: `date date description amount balance` on same line
+- Amounts: negative = expense, dot for thousands, comma for decimals
+- Text-based regex parsing works reliably (unlike BPI which needs position-based)
+
+### Description Cleaning
+- Strip bank jargon prefixes: COMPRA, COBRANCA, COMPRA ELECTRONICA, PAGAMENTO DE SERVICOS
+- Clean transfer prefixes: TRF SEPA+, TRF CR SEPA+, TFI → "Transferência"
+- Remove IBANs (PT followed by 10+ digits)
+- Remove trailing reference numbers (8+ digits)
+- DD prefix → just remove it (keep merchant name after it)
+- Always capitalize first letter
+- Fallback: "Movimento BPI" / "Movimento CGD" (never generic "Transação")
+
+### Testing PDF Parsers Locally
+```bash
+node --experimental-strip-types -e "
+import { parsePDFRows } from './lib/bankParsers.ts';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import * as fs from 'fs';
+// ... use new Uint8Array(fs.readFileSync(...))
+"
+```
+
+## FCM Notifications
+
+- **Always use data-only messages** (no `notification` field) — the service worker handles display via `onBackgroundMessage`
+- Using `notification` field causes duplicate display (browser auto-shows + SW manual show)
+- Both `send-notification` route and `cron/habits` route must follow this pattern
+- Token stored in `fcm_tokens/{memberName}` (lowercase)
+
+## Common Mistakes to Avoid
+
+1. **Don't say "fixed" without testing on real data** — always run parsers against the actual PDF files locally
+2. **Don't add overly broad skip filters** — "SA ", "Lisboa", "Porto" match real merchant names
+3. **Don't forget to test both expense AND income detection** — a parser returning only one type is broken
+4. **parseCSV generic fallback is dangerous** — it matches any line with a number pattern, returns garbage as income
+5. **pdfjs-dist requires `new Uint8Array(buffer)`** in Node.js, not raw Buffer
+6. **Touch event propagation**: Full-screen overlays (z-50) must stop ALL touch events (start/move/end) to prevent dashboard swipe detection
+7. **i18n**: Never hardcode Portuguese in components — always add keys to pt.ts first, then en.ts
+
