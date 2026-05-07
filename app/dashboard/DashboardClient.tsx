@@ -37,7 +37,7 @@ import { db } from "@/lib/firebase";
 const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "calendar", "events", "weather"] as const;
 
 interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; equipped?: EquippedItems; }
-const TAB_EMOJIS = ["✨", "🛒", "🧹", "🔧", "🧘", "💰", "📅", "🎉", "🌤️"];
+const TAB_EMOJIS = ["✨", "🛒", "🪄", "🏡", "🧘", "💰", "🗓️", "🎉", "🌤️"];
 const TAB_LABEL_KEYS = [
   "tabs.home", "tabs.shopping", "tabs.small", "tabs.big", "tabs.habits",
   "tabs.expenses", "tabs.calendar", "tabs.events", "tabs.weather",

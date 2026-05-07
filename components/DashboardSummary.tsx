@@ -186,7 +186,7 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
           style={{ animationDelay: "60ms" }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-2xl">🪴</span>
+            <span className="text-2xl">🪄</span>
             {stats.coisinhasPending > 5 && <span className="text-[9px] bg-purple-200 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">{t("dashboard.tooMany")}</span>}
           </div>
           <p className="text-xl font-bold text-gray-800 mt-1.5">{stats.coisinhasPending}</p>
@@ -203,7 +203,7 @@ export default function DashboardSummary({ onNavigate }: DashboardSummaryProps) 
           className="bg-gradient-to-br from-blue-50 to-cyan-100 rounded-2xl p-3.5 border border-blue-200/40 text-left transition-all active:scale-[0.96] hover:shadow-md animate-fade-in-up"
           style={{ animationDelay: "120ms" }}
         >
-          <span className="text-2xl">🏠</span>
+          <span className="text-2xl">🏡</span>
           <p className="text-xl font-bold text-gray-800 mt-1.5">{stats.projectsInProgress}</p>
           <p className="text-[11px] text-gray-500">{t("dashboard.projectsInProgress")}</p>
           {stats.projectsDone > 0 && (

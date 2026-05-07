@@ -13,11 +13,11 @@ import type { ParsedTransaction } from "@/lib/bankParsers";
 const EXPENSE_CATEGORIES = [
   { id: "casa", emoji: "🏠", label: "Casa" },
   { id: "compras", emoji: "🛒", label: "Compras" },
-  { id: "restaurantes", emoji: "🍽️", label: "Restaurantes" },
+  { id: "restaurantes", emoji: "🍜", label: "Restaurantes" },
   { id: "transporte", emoji: "🚗", label: "Transporte" },
   { id: "lazer", emoji: "🎉", label: "Lazer" },
-  { id: "saude", emoji: "🏥", label: "Saúde" },
-  { id: "outros", emoji: "📦", label: "Outros" },
+  { id: "saude", emoji: "💊", label: "Saúde" },
+  { id: "outros", emoji: "🌸", label: "Outros" },
 ];
 
 const SAVINGS_EMOJIS = ["🎯", "✈️", "🚗", "🏠", "💍", "🎓", "💻", "🎮", "👶", "🐾"];
@@ -314,7 +314,7 @@ export default function ExpenseList() {
                     return (
                       <div key={cat}>
                         <div className="flex items-center gap-2 mt-3 mb-1.5 px-1">
-                          <span className="text-xs">{catInfo?.emoji || "📦"}</span>
+                          <span className="text-xs">{catInfo?.emoji || "🌸"}</span>
                           <span className="text-[11px] font-bold text-emerald-500">{catInfo?.label || cat}</span>
                           <span className="text-[10px] text-emerald-300">({items.length})</span>
                           <div className="flex-1 h-px bg-emerald-100/60" />
@@ -322,7 +322,7 @@ export default function ExpenseList() {
                         </div>
                         {items.map((item) => (
                   <div key={item.id} className="bg-white/70 backdrop-blur-sm rounded-2xl p-3 shadow-sm border border-emerald-100/30 flex items-center gap-3">
-                    <span className="text-lg">{catInfo?.emoji || "📦"}</span>
+                    <span className="text-lg">{catInfo?.emoji || "🌸"}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-emerald-800 truncate">{item.name}</p>
                       <div className="flex items-center gap-1.5">

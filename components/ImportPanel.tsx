@@ -18,11 +18,11 @@ interface ImportPanelProps {
 const CATEGORIES = [
   { id: "casa", emoji: "🏠" },
   { id: "compras", emoji: "🛒" },
-  { id: "restaurantes", emoji: "🍽️" },
+  { id: "restaurantes", emoji: "🍜" },
   { id: "transporte", emoji: "🚗" },
   { id: "lazer", emoji: "🎉" },
-  { id: "saude", emoji: "🏥" },
-  { id: "outros", emoji: "📦" },
+  { id: "saude", emoji: "💊" },
+  { id: "outros", emoji: "🌸" },
 ];
 
 type ViewState = "choose" | "loading" | "preview" | "done";
@@ -238,7 +238,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
         {/* Loading view */}
         {view === "loading" && (
           <div className="flex flex-col items-center justify-center pt-20">
-            <div className="text-5xl mb-4 animate-bounce-gentle">🤖</div>
+            <div className="text-5xl mb-4 animate-bounce-gentle">✨</div>
             <p className="text-sm font-semibold text-emerald-600">{t("import.analyzing")}</p>
             <div className="mt-4 w-32 h-1.5 rounded-full bg-emerald-100 overflow-hidden">
               <div className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-teal-400 animate-pulse" style={{ width: "70%" }} />
@@ -263,7 +263,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
 
             {/* Owner selector */}
             <div className="flex items-center gap-3 bg-white/80 rounded-2xl p-3.5 border border-emerald-200/50 shadow-sm">
-              <span className="text-xs text-emerald-600 font-semibold whitespace-nowrap">📄 {t("import.owner")}:</span>
+              <span className="text-xs text-emerald-600 font-semibold whitespace-nowrap">👤 {t("import.owner")}:</span>
               <div className="flex gap-2 flex-1">
                 {memberNames.map((m) => (
                   <button
@@ -292,11 +292,11 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               const categoryLabels: Record<string, string> = {
                 casa: "🏠 Casa",
                 compras: "🛒 Compras",
-                restaurantes: "🍽️ Restaurantes",
+                restaurantes: "🍜 Restaurantes",
                 transporte: "🚗 Transporte",
                 lazer: "🎉 Lazer",
-                saude: "🏥 Saúde",
-                outros: "📦 Outros",
+                saude: "💊 Saúde",
+                outros: "🌸 Outros",
               };
 
               return Object.entries(grouped).map(([category, entries]) => (
