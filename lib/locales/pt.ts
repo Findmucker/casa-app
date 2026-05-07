@@ -62,7 +62,7 @@ export const pt = {
   "priority.placeholder": "Coisinha nova...",
   "priority.empty": "Nenhuma coisinha por agora!",
   "priority.emptyHint": "Adiciona algo em cima",
-  "priority.price": "€",
+  "priority.price": "Preço €",
   "priority.expandAll": "Expandir tudo",
   "priority.collapseAll": "Minimizar tudo",
   "priority.notes": "Notas...",
