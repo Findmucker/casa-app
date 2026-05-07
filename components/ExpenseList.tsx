@@ -139,7 +139,7 @@ export default function ExpenseList() {
               onClick={() => setShowImport(true)}
               className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-base active:scale-90 transition-all"
             >
-              📥
+              🪄
             </button>
             <button
               onClick={() => setShowAdd(!showAdd)}
