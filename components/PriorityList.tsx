@@ -129,14 +129,14 @@ export default function PriorityList() {
   const removeWithUndo = useCallback((item: SmallPriorityItem) => {
     const data = { name: item.name, done: item.done, order: item.order, assignee: item.assignee, category: item.category, notes: item.notes, price: item.price };
     remove(item.id);
-    pushUndo(`"${item.name}" apagado`, async () => {
+    pushUndo(`"${item.name}" ${t("priority.deleted")}`, async () => {
       await add(data as Omit<SmallPriorityItem, "id" | "createdAt">);
     });
   }, [remove, add, pushUndo]);
 
   return (
     <div className="flex flex-col h-full">
-      <TabTip tabId="small" emoji="🧹" titleKey="tutorial.coisinhas.title" tips={["tutorial.coisinhas.tip1", "tutorial.coisinhas.tip2", "tutorial.coisinhas.tip3", "tutorial.coisinhas.tip4"]} />
+      <TabTip tabId="small" emoji="🪄" titleKey="tutorial.coisinhas.title" tips={["tutorial.coisinhas.tip1", "tutorial.coisinhas.tip2", "tutorial.coisinhas.tip3", "tutorial.coisinhas.tip4"]} />
       {/* Add form */}
       <div className="p-4 bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-pink-100/40 space-y-2">
         <div className="flex gap-2">
@@ -153,8 +153,18 @@ export default function PriorityList() {
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder={t("priority.placeholder")}
             suggestions={nameSuggestions}
-            className="flex-1 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
+            className="flex-1 min-w-0 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
           />
+          <div className="flex items-center gap-0.5 shrink-0">
+            <input
+              type="number"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+              placeholder={t("priority.price")}
+              className="w-14 rounded-xl border border-pink-200/60 bg-white/80 px-2 py-3 text-sm text-right text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
+            />
+            <span className="text-xs text-pink-300">€</span>
+          </div>
           <button
             onClick={handleAdd}
             disabled={!newName.trim()}
@@ -163,27 +173,20 @@ export default function PriorityList() {
             +
           </button>
         </div>
-        <input
-          type="number"
-          value={newPrice}
-          onChange={(e) => setNewPrice(e.target.value)}
-          placeholder={t("priority.price")}
-          className="w-full rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-2 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
-        />
       </div>
 
       {/* Items grouped by category */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
         {loading && (
           <div className="text-center text-pink-300 py-12 animate-pulse-soft">
-            <div className="text-3xl mb-2">🪴</div>
+            <div className="text-3xl mb-2">🪄</div>
             <p className="text-sm">{t("common.loading")}</p>
           </div>
         )}
 
         {!loading && visibleItems.length === 0 && (
           <div className="text-center text-pink-300 py-12">
-            <div className="text-5xl mb-3 animate-float">🪴</div>
+            <div className="text-5xl mb-3 animate-float">🪄</div>
             <p className="text-sm">{t("priority.empty")}</p>
             <p className="text-xs text-pink-200 mt-1">{t("priority.emptyHint")}</p>
           </div>
@@ -212,7 +215,7 @@ export default function PriorityList() {
           const isComplete = catDone === catItems.length;
 
           return (
-            <div key={cat} className="mb-3">
+            <div key={cat} className="mb-3 animate-fade-in-up">
               {/* Category header */}
               <button
                 onClick={() => {
@@ -246,28 +249,35 @@ export default function PriorityList() {
                   {catItems.map((item, idx) => (
                     <SwipeableRow key={item.id} onSwipeRight={() => handleToggleDone(item)} onSwipeLeft={() => removeWithUndo(item)}>
                     <div
-                      className={`bg-white/70 backdrop-blur-sm rounded-2xl p-3 shadow-sm shadow-pink-100/30 border border-pink-100/30 transition-all hover:shadow-md ${
+                      className={`bg-white/70 backdrop-blur-sm rounded-2xl p-3 shadow-sm shadow-pink-100/30 border border-pink-100/30 transition-all hover:shadow-md animate-fade-in-up ${
                         item.done ? "opacity-50" : ""
                       }`}
+                      style={{ animationDelay: `${idx * 30}ms` }}
                     >
                       <div className="flex items-center gap-2">
-                        {/* Drag handle */}
-                        <button
-                          onClick={() => {
-                            if (idx > 0) moveItem(item, "up", catItems);
-                          }}
-                          onDoubleClick={() => {
-                            if (idx < catItems.length - 1) moveItem(item, "down", catItems);
-                          }}
-                          aria-label="Reordenar"
-                          className="w-6 h-8 flex items-center justify-center text-pink-300 hover:text-pink-500 active:scale-90 cursor-grab active:cursor-grabbing select-none"
-                        >⠿</button>
+                        {/* Reorder buttons */}
+                        <div className="flex flex-col gap-0.5 shrink-0">
+                          <button
+                            onClick={() => idx > 0 && moveItem(item, "up", catItems)}
+                            aria-label={t("priority.reorder")}
+                            className={`w-5 h-4 flex items-center justify-center text-[9px] rounded transition-all active:scale-90 ${
+                              idx > 0 ? "text-pink-400 hover:text-pink-600 hover:bg-pink-50" : "text-pink-200 cursor-default"
+                            }`}
+                          >▲</button>
+                          <button
+                            onClick={() => idx < catItems.length - 1 && moveItem(item, "down", catItems)}
+                            aria-label={t("priority.reorder")}
+                            className={`w-5 h-4 flex items-center justify-center text-[9px] rounded transition-all active:scale-90 ${
+                              idx < catItems.length - 1 ? "text-pink-400 hover:text-pink-600 hover:bg-pink-50" : "text-pink-200 cursor-default"
+                            }`}
+                          >▼</button>
+                        </div>
 
                         {/* Checkbox */}
                         <div className="relative">
                           <button
                             onClick={() => handleToggleDone(item)}
-                            aria-label={item.done ? `Desmarcar ${item.name}` : `Marcar ${item.name} como feito`}
+                            aria-label={item.done ? `${t("priority.uncheck")} ${item.name}` : `${t("priority.markDone")} ${item.name}`}
                             className={`h-7 w-7 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-xs transition-all active:scale-90 ${
                               item.done
                                 ? "bg-gradient-to-r from-pink-300 to-rose-300 border-pink-300 text-white"
@@ -324,7 +334,7 @@ export default function PriorityList() {
                         {/* Delete */}
                         <button
                           onClick={() => removeWithUndo(item)}
-                          aria-label={`Apagar ${item.name}`}
+                          aria-label={`${t("priority.delete")} ${item.name}`}
                           className="w-8 h-8 flex items-center justify-center rounded-lg text-pink-300 hover:text-red-400 transition-all active:scale-90 text-sm"
                         >✕</button>
                       </div>
@@ -352,7 +362,7 @@ export default function PriorityList() {
                             type="number"
                             value={editPrice}
                             onChange={(e) => setEditPrice(e.target.value)}
-                            placeholder="Preço (opcional)"
+                            placeholder={t("priority.price")}
                             className="rounded-xl border border-pink-200/60 bg-white px-3 py-1.5 text-xs text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
                           />
                           <div className="flex gap-1.5">
@@ -368,7 +378,7 @@ export default function PriorityList() {
                           <textarea
                             value={notesText}
                             onChange={(e) => setNotesText(e.target.value)}
-                            placeholder="Notas..."
+                            placeholder={t("priority.notes")}
                             className="w-full rounded-xl border border-pink-200/60 bg-white/80 px-3 py-2 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 resize-none transition-all"
                             rows={3}
                             autoFocus

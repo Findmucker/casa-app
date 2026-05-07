@@ -64,9 +64,15 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "priority.placeholder": "New task...",
   "priority.empty": "No tasks for now!",
   "priority.emptyHint": "Add something above",
-  "priority.price": "Estimated price (optional)",
+  "priority.price": "€",
   "priority.expandAll": "Expand all",
   "priority.collapseAll": "Collapse all",
+  "priority.notes": "Notes...",
+  "priority.deleted": "deleted",
+  "priority.reorder": "Reorder",
+  "priority.uncheck": "Uncheck",
+  "priority.markDone": "Mark as done",
+  "priority.delete": "Delete",
 
   // Projects
   "projects.title": "Projects",

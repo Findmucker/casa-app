@@ -62,9 +62,15 @@ export const pt = {
   "priority.placeholder": "Coisinha nova...",
   "priority.empty": "Nenhuma coisinha por agora!",
   "priority.emptyHint": "Adiciona algo em cima",
-  "priority.price": "Preço estimado (opcional)",
+  "priority.price": "€",
   "priority.expandAll": "Expandir tudo",
   "priority.collapseAll": "Minimizar tudo",
+  "priority.notes": "Notas...",
+  "priority.deleted": "apagado",
+  "priority.reorder": "Reordenar",
+  "priority.uncheck": "Desmarcar",
+  "priority.markDone": "Marcar como feito",
+  "priority.delete": "Apagar",
 
   // Projects
   "projects.title": "Projetos",
