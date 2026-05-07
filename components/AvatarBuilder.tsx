@@ -110,6 +110,9 @@ const SLOT_INFO: { key: AvatarSlot; label: string; emoji: string }[] = [
   { key: "animal", label: "Animal", emoji: "🐾" },
   { key: "eyes", label: "Olhos", emoji: "👁️" },
   { key: "mouth", label: "Boca", emoji: "👄" },
+  { key: "top", label: "Roupa Cima", emoji: "👕" },
+  { key: "bottom", label: "Roupa Baixo", emoji: "👖" },
+  { key: "accessory", label: "Acessórios", emoji: "🎀" },
   { key: "background", label: "Fundo", emoji: "🎨" },
   { key: "effect", label: "Efeitos", emoji: "✨" },
 ];
