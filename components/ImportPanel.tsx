@@ -209,7 +209,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               onClick={() => fileInputRef.current?.click()}
               className="w-full p-5 rounded-[28px] bg-white/80 border border-emerald-100/40 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
             >
-              <span className="text-3xl">🗂️</span>
+              <span className="text-3xl">📜</span>
               <div className="text-left">
                 <p className="text-sm font-semibold text-emerald-700">{t("import.chooseFile")}</p>
                 <p className="text-xs text-emerald-400">{t("import.fileHint")}</p>
