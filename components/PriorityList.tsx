@@ -155,20 +155,22 @@ export default function PriorityList() {
             suggestions={nameSuggestions}
             className="flex-1 min-w-0 rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
           />
-          <div className="flex items-center gap-0.5 shrink-0">
+        </div>
+        <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-1 shrink-0">
             <input
               type="number"
               value={newPrice}
               onChange={(e) => setNewPrice(e.target.value)}
               placeholder={t("priority.price")}
-              className="w-14 rounded-xl border border-pink-200/60 bg-white/80 px-2 py-3 text-sm text-right text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
+              className="w-16 rounded-xl border border-pink-200/60 bg-white/80 px-2 py-2.5 text-sm text-right text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
             />
             <span className="text-xs text-pink-300">€</span>
           </div>
           <button
             onClick={handleAdd}
             disabled={!newName.trim()}
-            className="rounded-2xl bg-gradient-to-r from-pink-400 to-rose-400 px-5 py-3 text-white font-semibold hover:from-pink-500 hover:to-rose-500 active:scale-95 transition-all disabled:opacity-30 shadow-sm shadow-pink-200/50"
+            className="flex-1 rounded-2xl bg-gradient-to-r from-pink-400 to-rose-400 px-5 py-2.5 text-white font-semibold hover:from-pink-500 hover:to-rose-500 active:scale-95 transition-all disabled:opacity-30 shadow-sm shadow-pink-200/50"
           >
             +
           </button>
