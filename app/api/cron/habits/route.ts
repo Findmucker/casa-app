@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getAdmin() {
   const admin = (await import("firebase-admin")).default;
@@ -26,7 +26,17 @@ async function getAdmin() {
  * - Today is an active day for the habit
  * - Habit is not yet checked today
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Auth check — require CRON_SECRET for external callers
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    if (token !== cronSecret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   const adm = await getAdmin();
   if (!adm) {
     return NextResponse.json({ error: "Firebase Admin not configured" }, { status: 503 });

@@ -380,4 +380,19 @@ import * as fs from 'fs';
 5. **pdfjs-dist requires `new Uint8Array(buffer)`** in Node.js, not raw Buffer
 6. **Touch event propagation**: Full-screen overlays (z-50) must stop ALL touch events (start/move/end) to prevent dashboard swipe detection
 7. **i18n**: Never hardcode Portuguese in components — always add keys to pt.ts first, then en.ts
+8. **Never close GitHub issues without explicit user permission** — even if code exists, verify it's actually accessible in the UI before marking done
+9. **"Code exists" ≠ "Feature is implemented"** — always check that the feature is reachable from the UI (e.g., SLOT_INFO had 5 tabs but TOP/BOTTOM/ACCESSORY styles existed unused)
+10. **Never claim something works without verifying the full user flow** — trace from UI entry point to the actual rendered output
+11. **Use MiniAvatar** whenever showing a member name/avatar (standing instruction) — never bare text or initials
+12. **Icons must be cute/fofinho** — no sterile/industrial emojis (🏥→💊, 📦→🌸, 🔧→🏡). Match the soft, warm, playful app aesthetic
+13. **Windows encoding**: Python print with unicode arrows (→) fails on cp1252 — use ASCII alternatives in shell scripts
+
+## Issue Management Rules
+
+- **NEVER close issues without explicit user permission**
+- Before marking an issue as done, verify the feature is **accessible and working in the UI** — not just that code exists
+- When code exists but isn't wired up, the issue stays OPEN
+- Comment on issues with branch references, don't close them unilaterally
+- Keep aspirational (TBD) issues open unless user decides to trim backlog
+- When updating epics, only mark sub-issues as done if they are genuinely complete end-to-end
 

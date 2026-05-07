@@ -1,0 +1,20 @@
+name: Habit Reminders Cron
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  trigger-habits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call habit cron endpoint
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/habits")
+          echo "Response: $response"
+          if [ "$response" != "200" ]; then
+            echo "::warning::Cron endpoint returned $response"
+          fi
