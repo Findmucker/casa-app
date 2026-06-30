@@ -3,17 +3,18 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import EventList from "@/components/EventList";
-import { validateShareId } from "@/lib/share";
+import { getEventShare, type EventShare } from "@/lib/share";
+import { HouseIdContext } from "@/lib/hooks";
 
 export default function PublicEventsPage() {
   const params = useParams();
   const shareId = params.shareId as string;
-  const [valid, setValid] = useState<boolean | null>(null);
+  const [share, setShare] = useState<EventShare | null | undefined>(undefined);
   const [guestName, setGuestName] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState("");
 
   useEffect(() => {
-    validateShareId(shareId).then(setValid);
+    getEventShare(shareId).then(setShare);
     const saved = localStorage.getItem("casa-guest-name");
     if (saved) setGuestName(saved); // eslint-disable-line react-hooks/set-state-in-effect
   }, [shareId]);
@@ -25,7 +26,7 @@ export default function PublicEventsPage() {
     setGuestName(name);
   };
 
-  if (valid === null) {
+  if (share === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
         <div className="text-3xl animate-pulse">🎉</div>
@@ -33,7 +34,7 @@ export default function PublicEventsPage() {
     );
   }
 
-  if (!valid) {
+  if (!share) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
         <div className="text-center space-y-3">
@@ -98,7 +99,9 @@ export default function PublicEventsPage() {
 
       {/* Events */}
       <main className="flex-1">
-        <EventList isPublic guestName={guestName} />
+        <HouseIdContext.Provider value={share.houseId}>
+          <EventList isPublic guestName={guestName} />
+        </HouseIdContext.Provider>
       </main>
     </div>
   );

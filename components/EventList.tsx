@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import TabTip from "@/components/TabTip";
-import { useCollection } from "@/lib/hooks";
+import { HouseIdContext, useCollection } from "@/lib/hooks";
 import { getOrCreateShareId } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -85,9 +85,10 @@ interface EventListProps {
 
 export default function EventList({ isPublic = false, guestName }: EventListProps) {
   const houseCtx = useHouseContextSafe();
+  const houseId = useContext(HouseIdContext);
   const userName = houseCtx?.userName || guestName || "";
   const members = houseCtx?.members || [];
-  const { items: events, loading, add, update, remove } =
+  const { items: events, loading, error, add, update, remove } =
     useCollection<CasaEvent>("events");
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
@@ -138,7 +139,8 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
 
   const handleShare = async () => {
     try {
-      const shareId = await getOrCreateShareId();
+      if (!houseId) throw new Error("Missing house id for event sharing");
+      const shareId = await getOrCreateShareId(houseId);
       const url = `${window.location.origin}/eventos/${shareId}`;
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -161,10 +163,11 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     // Copy items from old event (reset done to false)
     // We need to get the items from the original event subcollection
     try {
-      const itemsSnap = await getDocs(collection(db, `events/${event.id}/items`));
+      if (!houseId) throw new Error("Missing house id for event clone");
+      const itemsSnap = await getDocs(collection(db, "houses", houseId, "events", event.id, "items"));
       const { addDoc, serverTimestamp } = await import("firebase/firestore");
       // Find the new event ID (it's the last active one with this title)
-      const eventsSnap = await getDocs(collection(db, "events"));
+      const eventsSnap = await getDocs(collection(db, "houses", houseId, "events"));
       const allEvents = eventsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const newest = allEvents
         .filter((e) => (e as CasaEvent).title === `${event.title} (cópia)`)
@@ -173,7 +176,7 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
       if (newest) {
         for (const itemDoc of itemsSnap.docs) {
           const data = itemDoc.data();
-          await addDoc(collection(db, `events/${newest.id}/items`), {
+          await addDoc(collection(db, "houses", houseId, "events", newest.id, "items"), {
             name: data.name,
             type: data.type,
             done: false,
@@ -201,6 +204,15 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     return (
       <div className="py-4 text-center text-pink-300 text-sm animate-pulse">
         A carregar eventos...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="m-4 rounded-2xl border border-red-100 bg-red-50/80 p-4 text-center text-sm text-red-500">
+        Não foi possível aceder aos eventos no Firebase.
+        <p className="mt-1 break-all text-xs text-red-400">{error}</p>
       </div>
     );
   }
