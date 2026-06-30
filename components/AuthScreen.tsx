@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n";
 interface AuthScreenProps {
   onLogin: (email: string, password: string) => Promise<void>;
   onRegister: (name: string, email: string, password: string, birthDate: string) => Promise<void>;
-  onGoogle: () => Promise<void>;
+  onGoogle: (email: string, password: string) => Promise<void>;
 }
 
 export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreenProps) {
@@ -152,7 +152,7 @@ export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreen
             setError("");
             setLoading(true);
             try {
-              await onGoogle();
+              await onGoogle(email, password);
             } catch (e: unknown) {
               const msg = e instanceof Error ? e.message : "Erro desconhecido";
               if (msg.includes("unauthorized-domain")) setError("Domínio não autorizado no Firebase Authentication");

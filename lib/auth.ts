@@ -10,7 +10,9 @@ import {
   signInWithRedirect,
   signOut,
   linkWithPopup,
+  linkWithCredential,
   fetchSignInMethodsForEmail,
+  GoogleAuthProvider,
   type User,
 } from "firebase/auth";
 import { arrayUnion, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
@@ -148,7 +150,7 @@ export function useAuth() {
     return cred;
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (passwordForExistingAccount?: string) => {
     const provider = createGoogleProvider();
     const currentUser = auth.currentUser;
 
@@ -185,10 +187,23 @@ export function useAuth() {
 
       if (code === "auth/account-exists-with-different-credential" && linkedEmail) {
         const methods = await fetchSignInMethodsForEmail(auth, linkedEmail);
-        if (methods.includes("password")) {
-          throw new Error("Esta conta já existe com email/password. Entra primeiro com email/password e depois carrega no botão Google para ligar o Google sem perder os dados.");
+        const googleCredential = GoogleAuthProvider.credentialFromError(error as Parameters<typeof GoogleAuthProvider.credentialFromError>[0]);
+
+        if (methods.includes("password") && googleCredential) {
+          if (!passwordForExistingAccount) {
+            throw new Error("Esta conta já existe com email/password. Escreve a password dessa conta e carrega novamente no botão Google para ligar o Google sem perder os dados.");
+          }
+
+          const cred = await signInWithEmailAndPassword(auth, linkedEmail, passwordForExistingAccount);
+          await linkWithCredential(cred.user, googleCredential);
+          await ensureUserDoc(cred.user);
+          return cred;
         }
-        throw new Error("Esta conta já existe com outro método de login. Entra primeiro com esse método e depois liga o Google no botão Google.");
+
+        if (methods.includes("password")) {
+          throw new Error("Esta conta já existe com email/password. Entra primeiro com email/password e depois liga Google em Perfil → Google.");
+        }
+        throw new Error("Esta conta já existe com outro método de login. Entra primeiro com esse método e depois liga Google em Perfil → Google.");
       }
 
       if (code === "auth/provider-already-linked") {
@@ -211,7 +226,9 @@ export function useAuth() {
 
   const logout = () => signOut(auth);
 
-  return { user, loading, login, register, loginWithGoogle, linkGoogleAccount: loginWithGoogle, logout };
+  const linkGoogleAccount = () => loginWithGoogle();
+
+  return { user, loading, login, register, loginWithGoogle, linkGoogleAccount, logout };
 }
 
 // ─── Birth date migration for existing users ────────────────────
