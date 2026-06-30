@@ -28,53 +28,61 @@ export function useAuth() {
     const userRef = doc(db, "users", firebaseUser.uid);
     const userDoc = await getDoc(userRef);
 
-    if (!userDoc.exists()) {
-      const fallbackProfile = {
-        name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
-        email: firebaseUser.email?.toLowerCase() || null,
-        birthDate: null,
-        avatar: "👤",
-        houseId: null as string | null,
-        createdAt: serverTimestamp(),
-      };
+    const fallbackProfile = {
+      name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+      email: firebaseUser.email?.toLowerCase() || null,
+      birthDate: null,
+      avatar: "👤",
+      houseId: null as string | null,
+      createdAt: serverTimestamp(),
+    };
 
-      if (firebaseUser.email) {
-        const normalizedEmail = firebaseUser.email.toLowerCase();
-        const matchingUsers = await getDocs(query(collection(db, "users"), where("email", "==", normalizedEmail)));
-        const legacyMatchingUsers =
-          normalizedEmail === firebaseUser.email
-            ? { docs: [] }
-            : await getDocs(query(collection(db, "users"), where("email", "==", firebaseUser.email)));
-        const existingUser = [...matchingUsers.docs, ...legacyMatchingUsers.docs].find((snap) => snap.id !== firebaseUser.uid);
+    const findExistingUserByEmail = async () => {
+      if (!firebaseUser.email) return null;
 
-        if (existingUser) {
-          const existingProfile = existingUser.data();
-          await setDoc(userRef, {
-            ...fallbackProfile,
-            ...existingProfile,
-            email: firebaseUser.email.toLowerCase(),
-            linkedUid: existingUser.id,
-            linkedAt: serverTimestamp(),
-          });
+      const normalizedEmail = firebaseUser.email.toLowerCase();
+      const matchingUsers = await getDocs(query(collection(db, "users"), where("email", "==", normalizedEmail)));
+      const legacyMatchingUsers =
+        normalizedEmail === firebaseUser.email
+          ? { docs: [] }
+          : await getDocs(query(collection(db, "users"), where("email", "==", firebaseUser.email)));
 
-          if (typeof existingProfile.houseId === "string") {
-            const houseRef = doc(db, "houses", existingProfile.houseId);
-            const houseSnap = await getDoc(houseRef);
-            if (houseSnap.exists()) {
-              const members = houseSnap.data().members;
-              if (Array.isArray(members)) {
-                await updateDoc(houseRef, {
-                  members: members.map((member) =>
-                    member && typeof member === "object" && "uid" in member && member.uid === existingUser.id
-                      ? { ...member, uid: firebaseUser.uid }
-                      : member,
-                  ),
-                });
-              }
-            }
+      return [...matchingUsers.docs, ...legacyMatchingUsers.docs].find((snap) => snap.id !== firebaseUser.uid) || null;
+    };
+
+    const connectExistingProfile = async (existingUser: NonNullable<Awaited<ReturnType<typeof findExistingUserByEmail>>>) => {
+      const existingProfile = existingUser.data();
+      await setDoc(userRef, {
+        ...fallbackProfile,
+        ...existingProfile,
+        email: firebaseUser.email?.toLowerCase() || existingProfile.email || null,
+        linkedUid: existingUser.id,
+        linkedAt: serverTimestamp(),
+      }, { merge: true });
+
+      if (typeof existingProfile.houseId === "string") {
+        const houseRef = doc(db, "houses", existingProfile.houseId);
+        const houseSnap = await getDoc(houseRef);
+        if (houseSnap.exists()) {
+          const members = houseSnap.data().members;
+          if (Array.isArray(members)) {
+            await updateDoc(houseRef, {
+              members: members.map((member) =>
+                member && typeof member === "object" && "uid" in member && member.uid === existingUser.id
+                  ? { ...member, uid: firebaseUser.uid }
+                  : member,
+              ),
+            });
           }
-          return;
         }
+      }
+    };
+
+    if (!userDoc.exists()) {
+      const existingUser = await findExistingUserByEmail();
+      if (existingUser) {
+        await connectExistingProfile(existingUser);
+        return;
       }
 
       const housesSnap = await getDocs(collection(db, "houses"));
@@ -98,8 +106,20 @@ export function useAuth() {
       return;
     }
 
-    if (userDoc.data().birthDate === undefined) {
-      await updateDoc(userRef, { birthDate: null });
+    const currentProfile = userDoc.data();
+    const existingUser = await findExistingUserByEmail();
+    if (existingUser && !currentProfile.houseId) {
+      await connectExistingProfile(existingUser);
+      return;
+    }
+
+    const updates: Record<string, unknown> = {};
+    if (currentProfile.birthDate === undefined) updates.birthDate = null;
+    if (firebaseUser.email && currentProfile.email !== firebaseUser.email.toLowerCase()) {
+      updates.email = firebaseUser.email.toLowerCase();
+    }
+    if (Object.keys(updates).length > 0) {
+      await updateDoc(userRef, updates);
     }
   }, []);
 
