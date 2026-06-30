@@ -10,6 +10,7 @@ import {
   signInWithRedirect,
   signOut,
   linkWithPopup,
+  fetchSignInMethodsForEmail,
   type User,
 } from "firebase/auth";
 import { arrayUnion, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
@@ -27,23 +28,28 @@ export function useAuth() {
     if (!userDoc.exists()) {
       const fallbackProfile = {
         name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
-        email: firebaseUser.email,
+        email: firebaseUser.email?.toLowerCase() || null,
         birthDate: null,
         avatar: "👤",
-        houseId: null,
+        houseId: null as string | null,
         createdAt: serverTimestamp(),
       };
 
       if (firebaseUser.email) {
-        const matchingUsers = await getDocs(query(collection(db, "users"), where("email", "==", firebaseUser.email)));
-        const existingUser = matchingUsers.docs.find((snap) => snap.id !== firebaseUser.uid);
+        const normalizedEmail = firebaseUser.email.toLowerCase();
+        const matchingUsers = await getDocs(query(collection(db, "users"), where("email", "==", normalizedEmail)));
+        const legacyMatchingUsers =
+          normalizedEmail === firebaseUser.email
+            ? { docs: [] }
+            : await getDocs(query(collection(db, "users"), where("email", "==", firebaseUser.email)));
+        const existingUser = [...matchingUsers.docs, ...legacyMatchingUsers.docs].find((snap) => snap.id !== firebaseUser.uid);
 
         if (existingUser) {
           const existingProfile = existingUser.data();
           await setDoc(userRef, {
             ...fallbackProfile,
             ...existingProfile,
-            email: firebaseUser.email,
+            email: firebaseUser.email.toLowerCase(),
             linkedUid: existingUser.id,
             linkedAt: serverTimestamp(),
           });
@@ -68,6 +74,23 @@ export function useAuth() {
         }
       }
 
+      const housesSnap = await getDocs(collection(db, "houses"));
+      for (const house of housesSnap.docs) {
+        const members = house.data().members;
+        if (!Array.isArray(members)) continue;
+
+        const member = members.find(
+          (item) => item && typeof item === "object" && "uid" in item && item.uid === firebaseUser.uid,
+        );
+        if (member && typeof member === "object") {
+          fallbackProfile.houseId = house.id;
+          if ("name" in member && typeof member.name === "string" && member.name.trim()) {
+            fallbackProfile.name = member.name;
+          }
+          break;
+        }
+      }
+
       await setDoc(userRef, fallbackProfile);
       return;
     }
@@ -87,14 +110,28 @@ export function useAuth() {
       });
 
     const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
+      if (!u) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      ensureUserDoc(u)
+        .catch((error) => {
+          console.error("User profile recovery error:", error);
+        })
+        .finally(() => {
+          setUser(u);
+          setLoading(false);
+        });
     });
     return () => unsub();
   }, [ensureUserDoc]);
 
   const login = async (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    await ensureUserDoc(cred.user);
+    return cred;
   };
 
   const register = async (name: string, email: string, password: string, birthDate?: string) => {
@@ -102,7 +139,7 @@ export function useAuth() {
     // Create user doc
     await setDoc(doc(db, "users", cred.user.uid), {
       name,
-      email,
+      email: email.toLowerCase(),
       birthDate: birthDate || null,
       avatar: "👤",
       houseId: null,
@@ -117,6 +154,11 @@ export function useAuth() {
 
     try {
       if (currentUser?.email) {
+        if (currentUser.providerData.some((providerData) => providerData.providerId === "google.com")) {
+          await ensureUserDoc(currentUser);
+          return null;
+        }
+
         const cred = await linkWithPopup(currentUser, provider);
         await ensureUserDoc(cred.user);
         return cred;
@@ -141,6 +183,23 @@ export function useAuth() {
         throw new Error("A conta Google selecionada usa um email diferente da conta atual.");
       }
 
+      if (code === "auth/account-exists-with-different-credential" && linkedEmail) {
+        const methods = await fetchSignInMethodsForEmail(auth, linkedEmail);
+        if (methods.includes("password")) {
+          throw new Error("Esta conta já existe com email/password. Entra primeiro com email/password e depois carrega no botão Google para ligar o Google sem perder os dados.");
+        }
+        throw new Error("Esta conta já existe com outro método de login. Entra primeiro com esse método e depois liga o Google no botão Google.");
+      }
+
+      if (code === "auth/provider-already-linked") {
+        if (currentUser) await ensureUserDoc(currentUser);
+        return null;
+      }
+
+      if (code === "auth/credential-already-in-use" || code === "auth/email-already-in-use") {
+        throw new Error("Esta conta Google já está ligada a outra sessão. Sai da conta atual e entra diretamente com Google.");
+      }
+
       if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
         await signInWithRedirect(auth, provider);
         return null;
@@ -152,7 +211,7 @@ export function useAuth() {
 
   const logout = () => signOut(auth);
 
-  return { user, loading, login, register, loginWithGoogle, logout };
+  return { user, loading, login, register, loginWithGoogle, linkGoogleAccount: loginWithGoogle, logout };
 }
 
 // ─── Birth date migration for existing users ────────────────────
@@ -186,8 +245,16 @@ export function useHouse(uid: string | null) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!uid) { setLoading(false); return; } // eslint-disable-line react-hooks/set-state-in-effect
+    if (!uid) {
+      setHouseId(null);
+      setHouse(null);
+      setLoading(false);
+      return;
+    }
 
+    setHouseId(null);
+    setHouse(null);
+    setLoading(true);
     let unsubHouse: (() => void) | null = null;
 
     const load = async () => {
