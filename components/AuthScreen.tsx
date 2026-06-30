@@ -148,7 +148,19 @@ export default function AuthScreen({ onLogin, onRegister, onGoogle }: AuthScreen
         </div>
 
         <button
-          onClick={onGoogle}
+          onClick={async () => {
+            setError("");
+            setLoading(true);
+            try {
+              await onGoogle();
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : "Erro desconhecido";
+              if (msg.includes("unauthorized-domain")) setError("Domínio não autorizado no Firebase Authentication");
+              else if (msg.includes("operation-not-allowed")) setError("Login Google não está ativo no Firebase");
+              else setError(msg);
+              setLoading(false);
+            }
+          }}
           disabled={loading}
           className="w-full rounded-2xl border border-pink-200/60 bg-white/80 py-3 text-sm font-medium text-rose-600 hover:bg-pink-50 active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2"
         >
