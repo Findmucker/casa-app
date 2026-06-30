@@ -211,7 +211,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 1. Create project in [Firebase Console](https://console.firebase.google.com)
 2. Enable Firestore Database
 3. Enable Authentication → Email/Password + Google
-4. (Optional) Enable Cloud Messaging for push notifications
+4. In Authentication → Settings → Authorized domains, add every domain that will serve the app (for example `localhost`, your Vercel preview/production domains, and any custom domain)
+5. (Optional) Enable Cloud Messaging for push notifications
 
 ### 4. Run locally
 
