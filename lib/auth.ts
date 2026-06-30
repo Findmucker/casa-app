@@ -1,29 +1,60 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  getRedirectResult,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   type User,
 } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
-import { auth, googleProvider, db } from "./firebase";
+import { auth, createGoogleProvider, db } from "./firebase";
 
 // ─── useAuth ────────────────────────────────────────────────────
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const ensureUserDoc = useCallback(async (firebaseUser: User) => {
+    const userRef = doc(db, "users", firebaseUser.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+        email: firebaseUser.email,
+        birthDate: null,
+        avatar: "👤",
+        houseId: null,
+        createdAt: serverTimestamp(),
+      });
+      return;
+    }
+
+    if (userDoc.data().birthDate === undefined) {
+      await updateDoc(userRef, { birthDate: null });
+    }
+  }, []);
+
   useEffect(() => {
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) await ensureUserDoc(result.user);
+      })
+      .catch((error) => {
+        console.error("Google redirect login error:", error);
+      });
+
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
     });
     return () => unsub();
-  }, []);
+  }, [ensureUserDoc]);
 
   const login = async (email: string, password: string) => {
     return signInWithEmailAndPassword(auth, email, password);
@@ -44,19 +75,22 @@ export function useAuth() {
   };
 
   const loginWithGoogle = async () => {
-    const cred = await signInWithPopup(auth, googleProvider);
-    // Create user doc if doesn't exist
-    const userDoc = await getDoc(doc(db, "users", cred.user.uid));
-    if (!userDoc.exists()) {
-      await setDoc(doc(db, "users", cred.user.uid), {
-        name: cred.user.displayName || "User",
-        email: cred.user.email,
-        avatar: "👤",
-        houseId: null,
-        createdAt: serverTimestamp(),
-      });
+    const provider = createGoogleProvider();
+
+    try {
+      const cred = await signInWithPopup(auth, provider);
+      await ensureUserDoc(cred.user);
+      return cred;
+    } catch (error) {
+      const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
+
+      if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+        await signInWithRedirect(auth, provider);
+        return null;
+      }
+
+      throw error;
     }
-    return cred;
   };
 
   const logout = () => signOut(auth);
