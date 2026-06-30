@@ -41,7 +41,7 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
   const [boxesOpened, setBoxesOpened] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"stats" | "inventory" | "avatar" | "settings">("stats");
-  const { user } = useAuth();
+  const { user, linkGoogleAccount } = useAuth();
   const { houseId } = useHouseContext();
 
   useEffect(() => {
@@ -201,7 +201,7 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
       ) : activeTab === "avatar" ? (
         <AvatarBuilder owner={user?.displayName || user?.email || "user"} onSave={(config) => setAvatarConfig(config)} />
       ) : (
-        <SettingsTab user={user} houseId={houseId} />
+        <SettingsTab user={user} houseId={houseId} onLinkGoogle={linkGoogleAccount} />
       )}
     </div>
   );
@@ -376,7 +376,7 @@ function StatsTab({ stats, rpgStats, currentBadges }: { stats: GameStats; rpgSta
 
 // ─── Settings Tab ──────────────────────────────────────────────
 
-function SettingsTab({ user, houseId }: { user: User | null; houseId: string }) {
+function SettingsTab({ user, houseId, onLinkGoogle }: { user: User | null; houseId: string; onLinkGoogle: () => Promise<unknown> }) {
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [newPassword, setNewPassword] = useState("");
@@ -443,6 +443,21 @@ function SettingsTab({ user, houseId }: { user: User | null; houseId: string }) 
       setTimeout(() => setStatus(null), 3000);
     } catch (e) {
       setStatus(`❌ Erro: ${e}`);
+    }
+    setSaving(false);
+  };
+
+
+  const handleLinkGoogle = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      await onLinkGoogle();
+      setStatus("✨ Google ligado à tua conta!");
+      setTimeout(() => setStatus(null), 3000);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setStatus(`❌ Erro: ${message}`);
     }
     setSaving(false);
   };
@@ -539,6 +554,22 @@ function SettingsTab({ user, houseId }: { user: User | null; houseId: string }) 
             Alterar password
           </button>
         </div>
+      </div>
+
+
+      {/* Google linking */}
+      <div className="pt-2 border-t border-purple-200/40">
+        <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2">Google</h3>
+        <button
+          onClick={handleLinkGoogle}
+          disabled={saving || user?.providerData.some((providerData) => providerData.providerId === "google.com")}
+          className="w-full rounded-xl bg-white/80 border border-purple-200/40 py-2.5 text-sm font-medium text-rose-600 hover:bg-pink-50 disabled:opacity-40 transition-all active:scale-95"
+        >
+          {user?.providerData.some((providerData) => providerData.providerId === "google.com") ? "Google já ligado" : "Ligar Google a esta conta"}
+        </button>
+        <p className="mt-2 text-[11px] text-purple-500 text-center">
+          Entra com email/password primeiro e liga Google aqui para manter a mesma casa e dados.
+        </p>
       </div>
 
       {/* Status message */}

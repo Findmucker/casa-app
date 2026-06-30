@@ -64,7 +64,7 @@ function HomeInner() {
       <AuthScreen
         onLogin={async (email, pw) => { await login(email, pw); }}
         onRegister={async (name, email, pw, birthDate) => { await register(name, email, pw, birthDate); setUserName(name); }}
-        onGoogle={async () => { await loginWithGoogle(); }}
+        onGoogle={async (_email, pw) => { await loginWithGoogle(pw); }}
       />
     );
   }

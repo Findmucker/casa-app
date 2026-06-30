@@ -105,7 +105,7 @@ export default function InvitePage() {
         <AuthScreen
           onLogin={async (email, pw) => { await login(email, pw); }}
           onRegister={async (name, email, pw) => { await register(name, email, pw); }}
-          onGoogle={async () => { await loginWithGoogle(); }}
+          onGoogle={async (_email, pw) => { await loginWithGoogle(pw); }}
         />
       </div>
     );
