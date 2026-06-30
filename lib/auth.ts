@@ -9,9 +9,10 @@ import {
   signInWithPopup,
   signInWithRedirect,
   signOut,
+  linkWithPopup,
   type User,
 } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { auth, createGoogleProvider, db } from "./firebase";
 
 // ─── useAuth ────────────────────────────────────────────────────
@@ -24,14 +25,50 @@ export function useAuth() {
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
-      await setDoc(userRef, {
+      const fallbackProfile = {
         name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
         email: firebaseUser.email,
         birthDate: null,
         avatar: "👤",
         houseId: null,
         createdAt: serverTimestamp(),
-      });
+      };
+
+      if (firebaseUser.email) {
+        const matchingUsers = await getDocs(query(collection(db, "users"), where("email", "==", firebaseUser.email)));
+        const existingUser = matchingUsers.docs.find((snap) => snap.id !== firebaseUser.uid);
+
+        if (existingUser) {
+          const existingProfile = existingUser.data();
+          await setDoc(userRef, {
+            ...fallbackProfile,
+            ...existingProfile,
+            email: firebaseUser.email,
+            linkedUid: existingUser.id,
+            linkedAt: serverTimestamp(),
+          });
+
+          if (typeof existingProfile.houseId === "string") {
+            const houseRef = doc(db, "houses", existingProfile.houseId);
+            const houseSnap = await getDoc(houseRef);
+            if (houseSnap.exists()) {
+              const members = houseSnap.data().members;
+              if (Array.isArray(members)) {
+                await updateDoc(houseRef, {
+                  members: members.map((member) =>
+                    member && typeof member === "object" && "uid" in member && member.uid === existingUser.id
+                      ? { ...member, uid: firebaseUser.uid }
+                      : member,
+                  ),
+                });
+              }
+            }
+          }
+          return;
+        }
+      }
+
+      await setDoc(userRef, fallbackProfile);
       return;
     }
 
@@ -76,13 +113,33 @@ export function useAuth() {
 
   const loginWithGoogle = async () => {
     const provider = createGoogleProvider();
+    const currentUser = auth.currentUser;
 
     try {
+      if (currentUser?.email) {
+        const cred = await linkWithPopup(currentUser, provider);
+        await ensureUserDoc(cred.user);
+        return cred;
+      }
+
       const cred = await signInWithPopup(auth, provider);
       await ensureUserDoc(cred.user);
       return cred;
     } catch (error) {
       const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
+      const linkedEmail =
+        typeof error === "object" &&
+        error !== null &&
+        "customData" in error &&
+        typeof error.customData === "object" &&
+        error.customData !== null &&
+        "email" in error.customData
+          ? String(error.customData.email)
+          : null;
+
+      if (currentUser?.email && linkedEmail && currentUser.email.toLowerCase() !== linkedEmail.toLowerCase()) {
+        throw new Error("A conta Google selecionada usa um email diferente da conta atual.");
+      }
 
       if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
         await signInWithRedirect(auth, provider);
