@@ -15,6 +15,7 @@ import {
   searchHouses,
 } from "@/lib/friends";
 import MiniAvatar from "@/components/MiniAvatar";
+import { authenticatedFetch } from "@/lib/api";
 
 interface FriendsPanelProps {
   onClose: () => void;
@@ -82,7 +83,7 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
       if (houseSnap.exists()) {
         const targetMembers: { name: string }[] = houseSnap.data().members || [];
         for (const m of targetMembers) {
-          fetch("/api/send-notification", {
+          authenticatedFetch("/api/send-notification", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -108,7 +109,7 @@ export default function FriendsPanel({ onClose }: FriendsPanelProps) {
       if (houseSnap.exists()) {
         const fromMembers: { name: string }[] = houseSnap.data().members || [];
         for (const m of fromMembers) {
-          fetch("/api/send-notification", {
+          authenticatedFetch("/api/send-notification", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

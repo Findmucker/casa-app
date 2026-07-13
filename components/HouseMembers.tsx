@@ -8,6 +8,7 @@ import { getLevel, getTitle } from "@/lib/gamification";
 import { type AvatarConfig } from "./AvatarBuilder";
 import MiniAvatar from "./MiniAvatar";
 import { useT } from "@/lib/i18n";
+import { authenticatedFetch } from "@/lib/api";
 
 interface HouseMembersProps {
   onClose: () => void;
@@ -100,7 +101,10 @@ export default function HouseMembers({ onClose, initialMessageTo }: HouseMembers
       const houseRef = doc(db, "houses", houseId);
       const memberObj = members.find((m) => m.uid === userId);
       if (memberObj) {
-        await updateDoc(houseRef, { members: arrayRemove(memberObj) });
+        await updateDoc(houseRef, {
+          members: arrayRemove(memberObj),
+          memberUids: arrayRemove(userId),
+        });
       }
       // Reload to go back to house setup
       window.location.reload();
@@ -114,7 +118,7 @@ export default function HouseMembers({ onClose, initialMessageTo }: HouseMembers
     setSending(true);
     setMsgStatus(null);
     try {
-      const res = await fetch("/api/send-notification", {
+      const res = await authenticatedFetch("/api/send-notification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

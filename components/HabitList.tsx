@@ -29,7 +29,7 @@ function isActiveToday(days?: number[]): boolean {
 export default function HabitList() {
   const { t } = useT();
   const memberNames = useMemberNames();
-  const { userName } = useHouseContext();
+  const { userId, userName } = useHouseContext();
   const { items: habits, loading, error, add, update, remove } = useCollection<HabitItem>("habits", "createdAt");
   const { items: checks, loading: checksLoading, add: addCheck } = useCollection<HabitCheck>("habit_checks", "createdAt");
   const [newName, setNewName] = useState("");
@@ -147,7 +147,7 @@ export default function HabitList() {
   };
 
   const enableNotifications = async () => {
-    const ok = await registerPushToken(userName.toLowerCase());
+    const ok = await registerPushToken(userId);
     setNotificationsEnabled(ok);
   };
 

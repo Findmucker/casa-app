@@ -16,8 +16,9 @@ import {
 
   type User,
 } from "firebase/auth";
-import { arrayUnion, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayUnion, doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { auth, createGoogleProvider, db } from "./firebase";
+import { authenticatedFetch } from "./api";
 
 // ─── useAuth ────────────────────────────────────────────────────
 export function useAuth() {
@@ -37,82 +38,12 @@ export function useAuth() {
       createdAt: serverTimestamp(),
     };
 
-    const findExistingUserByEmail = async () => {
-      if (!firebaseUser.email) return null;
-
-      const normalizedEmail = firebaseUser.email.toLowerCase();
-      const matchingUsers = await getDocs(query(collection(db, "users"), where("email", "==", normalizedEmail)));
-      const legacyMatchingUsers =
-        normalizedEmail === firebaseUser.email
-          ? { docs: [] }
-          : await getDocs(query(collection(db, "users"), where("email", "==", firebaseUser.email)));
-
-      return [...matchingUsers.docs, ...legacyMatchingUsers.docs].find((snap) => snap.id !== firebaseUser.uid) || null;
-    };
-
-    const connectExistingProfile = async (existingUser: NonNullable<Awaited<ReturnType<typeof findExistingUserByEmail>>>) => {
-      const existingProfile = existingUser.data();
-      await setDoc(userRef, {
-        ...fallbackProfile,
-        ...existingProfile,
-        email: firebaseUser.email?.toLowerCase() || existingProfile.email || null,
-        linkedUid: existingUser.id,
-        linkedAt: serverTimestamp(),
-      }, { merge: true });
-
-      if (typeof existingProfile.houseId === "string") {
-        const houseRef = doc(db, "houses", existingProfile.houseId);
-        const houseSnap = await getDoc(houseRef);
-        if (houseSnap.exists()) {
-          const members = houseSnap.data().members;
-          if (Array.isArray(members)) {
-            await updateDoc(houseRef, {
-              members: members.map((member) =>
-                member && typeof member === "object" && "uid" in member && member.uid === existingUser.id
-                  ? { ...member, uid: firebaseUser.uid }
-                  : member,
-              ),
-            });
-          }
-        }
-      }
-    };
-
     if (!userDoc.exists()) {
-      const existingUser = await findExistingUserByEmail();
-      if (existingUser) {
-        await connectExistingProfile(existingUser);
-        return;
-      }
-
-      const housesSnap = await getDocs(collection(db, "houses"));
-      for (const house of housesSnap.docs) {
-        const members = house.data().members;
-        if (!Array.isArray(members)) continue;
-
-        const member = members.find(
-          (item) => item && typeof item === "object" && "uid" in item && item.uid === firebaseUser.uid,
-        );
-        if (member && typeof member === "object") {
-          fallbackProfile.houseId = house.id;
-          if ("name" in member && typeof member.name === "string" && member.name.trim()) {
-            fallbackProfile.name = member.name;
-          }
-          break;
-        }
-      }
-
       await setDoc(userRef, fallbackProfile);
       return;
     }
 
     const currentProfile = userDoc.data();
-    const existingUser = await findExistingUserByEmail();
-    if (existingUser && !currentProfile.houseId) {
-      await connectExistingProfile(existingUser);
-      return;
-    }
-
     const updates: Record<string, unknown> = {};
     if (currentProfile.birthDate === undefined) updates.birthDate = null;
     if (firebaseUser.email && currentProfile.email !== firebaseUser.email.toLowerCase()) {
@@ -341,6 +272,7 @@ export async function createHouse(uid: string, userName: string, houseName: stri
   const houseRef = await addDoc(collection(db, "houses"), {
     name: houseName,
     members: [{ uid, name: userName, avatar: "👤", role: "admin" }],
+    memberUids: [uid],
     createdAt: serverTimestamp(),
   });
   // Update user with houseId
@@ -355,21 +287,22 @@ export async function joinHouse(uid: string, userName: string, inviteCode: strin
   const { houseId, expiresAt } = inviteSnap.data();
   if (expiresAt && new Date(expiresAt) < new Date()) return false;
 
-  // Get existing members before joining (for notification)
-  const houseSnap = await getDoc(doc(db, "houses", houseId));
-  const existingMembers: { name: string }[] = houseSnap.exists() ? (houseSnap.data().members || []) : [];
-
   // Add user to house members
   await updateDoc(doc(db, "houses", houseId), {
     members: arrayUnion({ uid, name: userName, avatar: "👤", role: "member" }),
+    memberUids: arrayUnion(uid),
   });
   // Update user with houseId
   await updateDoc(doc(db, "users", uid), { houseId });
 
+  // The house becomes readable after the user's profile points to it.
+  const houseSnap = await getDoc(doc(db, "houses", houseId));
+  const existingMembers: { name: string }[] = houseSnap.exists() ? (houseSnap.data().members || []) : [];
+
   // Notify existing members that someone joined
   for (const m of existingMembers) {
     if (m.name.toLowerCase() === userName.toLowerCase()) continue;
-    fetch("/api/send-notification", {
+    authenticatedFetch("/api/send-notification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -389,8 +322,11 @@ export async function createInvite(houseId: string, createdBy: string): Promise<
   const expires = new Date();
   expires.setDate(expires.getDate() + 7);
 
+  const houseSnap = await getDoc(doc(db, "houses", houseId));
+
   await setDoc(doc(db, "invites", code), {
     houseId,
+    houseName: houseSnap.data()?.name || "Casa",
     createdBy,
     expiresAt: expires.toISOString(),
   });

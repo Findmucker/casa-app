@@ -82,7 +82,7 @@ const HELP_SECTIONS: HelpSection[] = [
 
 export default function HelpPanel({ onClose }: HelpPanelProps) {
   const { t } = useT();
-  const { userName } = useHouseContext();
+  const { userId } = useHouseContext();
   const [search, setSearch] = useState("");
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [notifStatus, setNotifStatus] = useState<{ permission: string; hasToken: boolean | null }>({ permission: "unknown", hasToken: null });
@@ -93,14 +93,14 @@ export default function HelpPanel({ onClose }: HelpPanelProps) {
     setNotifStatus((s) => ({ ...s, permission: perm }));
 
     // Check if FCM token exists in Firestore
-    if (userName) {
-      getDoc(doc(db, "fcm_tokens", userName.toLowerCase())).then((snap) => {
+    if (userId) {
+      getDoc(doc(db, "fcm_tokens", userId)).then((snap) => {
         setNotifStatus((s) => ({ ...s, hasToken: snap.exists() }));
       }).catch(() => {
         setNotifStatus((s) => ({ ...s, hasToken: false }));
       });
     }
-  }, [userName]);
+  }, [userId]);
 
   const filteredSections = useMemo(() => {
     if (!search.trim()) return HELP_SECTIONS;

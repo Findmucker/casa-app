@@ -415,15 +415,6 @@ function SettingsTab({ user, houseId, onLinkGoogle }: { user: User | null; house
           await setDoc(newRef, oldSnap.data());
           await deleteDoc(oldRef);
         }
-        // Update FCM token key
-        const oldTokenRef = doc(db, "fcm_tokens", oldName.toLowerCase());
-        const oldTokenSnap = await getDoc(oldTokenRef);
-        if (oldTokenSnap.exists()) {
-          const { setDoc, deleteDoc } = await import("firebase/firestore");
-          const newTokenRef = doc(db, "fcm_tokens", displayName.toLowerCase());
-          await setDoc(newTokenRef, oldTokenSnap.data());
-          await deleteDoc(oldTokenRef);
-        }
       }
 
       setStatus("✨ Perfil atualizado!");

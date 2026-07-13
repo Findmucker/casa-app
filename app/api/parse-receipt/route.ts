@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { verifyFirebaseRequest } from "@/lib/firebase-admin";
 
 export const runtime = "nodejs";
 export const maxDuration = 30; // seconds
@@ -20,6 +21,10 @@ Rules:
 
 export async function POST(request: Request) {
   try {
+    if (!await verifyFirebaseRequest(request)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     if (!GEMINI_API_KEY) {
       return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 503 });
     }

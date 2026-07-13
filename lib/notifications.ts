@@ -3,13 +3,14 @@
 import { getFCMToken } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import { authenticatedFetch } from "./api";
 
 /**
  * Send a push notification to a specific member (by lowercase name).
  * Fire-and-forget — errors are silently ignored.
  */
 export function sendPushToMember(to: string, title: string, body: string, tag = "general") {
-  fetch("/api/send-notification", {
+  authenticatedFetch("/api/send-notification", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ to: to.toLowerCase(), title, body, tag }),
@@ -59,7 +60,7 @@ export function notify(title: string, body: string) {
  * Register the Service Worker and save the FCM token to Firestore.
  * This enables real push notifications even when the app is closed.
  */
-export async function registerPushToken(owner: string): Promise<boolean> {
+export async function registerPushToken(uid: string): Promise<boolean> {
   if (typeof window === "undefined") return false;
   if (!("serviceWorker" in navigator)) return false;
 
@@ -77,7 +78,8 @@ export async function registerPushToken(owner: string): Promise<boolean> {
     if (!token) return false;
 
     // Save token to Firestore (keyed by owner so each person has their token)
-    await setDoc(doc(db, "fcm_tokens", owner), {
+    await setDoc(doc(db, "fcm_tokens", uid), {
+      uid,
       token,
       updatedAt: new Date().toISOString(),
     });

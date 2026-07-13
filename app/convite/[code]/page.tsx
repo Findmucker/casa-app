@@ -23,9 +23,7 @@ export default function InvitePage() {
         if (!inviteSnap.exists()) { setStatus("invalid"); return; }
         const data = inviteSnap.data();
         if (data.expiresAt && new Date(data.expiresAt) < new Date()) { setStatus("invalid"); return; }
-        // Get house name
-        const houseSnap = await getDoc(doc(db, "houses", data.houseId));
-        if (houseSnap.exists()) setHouseName(houseSnap.data().name);
+        if (typeof data.houseName === "string") setHouseName(data.houseName);
         setStatus("valid");
       } catch {
         setStatus("invalid");

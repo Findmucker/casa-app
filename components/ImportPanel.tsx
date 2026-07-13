@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
 import { parseCSV, parsePDFText, parsePDFRows, type ParsedTransaction } from "@/lib/bankParsers";
 import { pdfToRows, pdfToImage } from "@/lib/pdfToImage";
+import { authenticatedFetch } from "@/lib/api";
 import MiniAvatar from "./MiniAvatar";
 
 interface ImportPanelProps {
@@ -103,7 +104,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
           mime = file.type;
         }
 
-        const res = await fetch("/api/parse-receipt", {
+        const res = await authenticatedFetch("/api/parse-receipt", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: base64, mimeType: mime }),

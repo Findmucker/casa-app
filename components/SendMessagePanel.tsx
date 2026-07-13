@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useHouseContext } from "@/lib/context";
 import { useT } from "@/lib/i18n";
+import { authenticatedFetch } from "@/lib/api";
 
 interface SendMessagePanelProps {
   onClose: () => void;
@@ -41,7 +42,7 @@ export default function SendMessagePanel({ onClose }: SendMessagePanelProps) {
     let lastError = "";
     for (const member of otherMembers) {
       try {
-        const res = await fetch("/api/send-notification", {
+        const res = await authenticatedFetch("/api/send-notification", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

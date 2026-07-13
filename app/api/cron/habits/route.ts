@@ -1,22 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-async function getAdmin() {
-  const admin = (await import("firebase-admin")).default;
-  if (!admin.apps.length) {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-
-    if (!projectId || !clientEmail || !privateKey) {
-      return null;
-    }
-
-    admin.initializeApp({
-      credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
-    });
-  }
-  return admin;
-}
+import { getFirebaseAdmin } from "@/lib/firebase-admin";
 
 /**
  * Habit reminder cron — runs every 10 minutes.
@@ -29,15 +12,17 @@ async function getAdmin() {
 export async function GET(request: NextRequest) {
   // Auth check — require CRON_SECRET for external callers
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-    if (token !== cronSecret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!cronSecret) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
   }
 
-  const adm = await getAdmin();
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.replace(/^Bearer\s+/i, "");
+  if (token !== cronSecret) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const adm = await getFirebaseAdmin();
   if (!adm) {
     return NextResponse.json({ error: "Firebase Admin not configured" }, { status: 503 });
   }
@@ -94,21 +79,23 @@ export async function GET(request: NextRequest) {
 
         // Determine who to notify
         const assignee = habit.assignee;
-        const targets: string[] = [];
+        const membersSnap = await db.collection("houses").doc(houseId).get();
+        const members: Array<{ uid?: string; name: string }> = membersSnap.data()?.members || [];
+        const targets: Array<{ uid?: string; name: string }> = [];
 
         if (!assignee || assignee === "ambos") {
           // Send to all house members
-          const membersSnap = await db.collection("houses").doc(houseId).get();
-          const members: Array<{ name: string }> = membersSnap.data()?.members || [];
-          for (const member of members) {
-            targets.push(member.name.toLowerCase());
-          }
+          targets.push(...members);
         } else {
-          targets.push(assignee.toLowerCase());
+          const member = members.find((item) => item.name.toLowerCase() === assignee.toLowerCase());
+          if (member) targets.push(member);
         }
 
         for (const target of targets) {
-          const tokenDoc = await db.collection("fcm_tokens").doc(target).get();
+          let tokenDoc = await db.collection("fcm_tokens").doc(target.uid || target.name.toLowerCase()).get();
+          if (!tokenDoc.exists && target.uid) {
+            tokenDoc = await db.collection("fcm_tokens").doc(target.name.toLowerCase()).get();
+          }
           if (!tokenDoc.exists) continue;
 
           const { token } = tokenDoc.data()!;
@@ -127,7 +114,7 @@ export async function GET(request: NextRequest) {
             });
             sent++;
           } catch (e) {
-            console.error(`Failed to send habit reminder to ${target}:`, e);
+            console.error(`Failed to send habit reminder to ${target.name}:`, e);
           }
         }
       }
@@ -142,7 +129,7 @@ export async function GET(request: NextRequest) {
 
       for (const houseDoc of housesSnap.docs) {
         const houseId = houseDoc.id;
-        const houseMembers: Array<{ name: string }> = houseDoc.data().members || [];
+        const houseMembers: Array<{ uid?: string; name: string }> = houseDoc.data().members || [];
 
         try {
           const eventsSnap = await db.collection("houses").doc(houseId).collection("events")
@@ -151,7 +138,10 @@ export async function GET(request: NextRequest) {
           for (const eventDoc of eventsSnap.docs) {
             const event = eventDoc.data();
             for (const member of houseMembers) {
-              const tokenDoc = await db.collection("fcm_tokens").doc(member.name.toLowerCase()).get();
+              let tokenDoc = await db.collection("fcm_tokens").doc(member.uid || member.name.toLowerCase()).get();
+              if (!tokenDoc.exists && member.uid) {
+                tokenDoc = await db.collection("fcm_tokens").doc(member.name.toLowerCase()).get();
+              }
               if (!tokenDoc.exists) continue;
               try {
                 await adm.messaging().send({
@@ -186,7 +176,10 @@ export async function GET(request: NextRequest) {
             // Notify all OTHER members of the same house
             for (const other of houseMembers) {
               if (other.name === member.name) continue;
-              const tokenDoc = await db.collection("fcm_tokens").doc(other.name.toLowerCase()).get();
+              let tokenDoc = await db.collection("fcm_tokens").doc(other.uid || other.name.toLowerCase()).get();
+              if (!tokenDoc.exists && other.uid) {
+                tokenDoc = await db.collection("fcm_tokens").doc(other.name.toLowerCase()).get();
+              }
               if (!tokenDoc.exists) continue;
               try {
                 await adm.messaging().send({

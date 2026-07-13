@@ -160,10 +160,10 @@ function DashboardInner() {
 
   // Auto-register push token if permission already granted
   useEffect(() => {
-    if (user?.displayName && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      registerPushToken(user.displayName.toLowerCase());
+    if (user?.uid && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      registerPushToken(user.uid);
     }
-  }, [user?.displayName]);
+  }, [user?.uid]);
 
   // Swipe detection
   const touchStart = useRef<{ x: number; y: number } | null>(null);
