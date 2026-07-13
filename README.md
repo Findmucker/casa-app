@@ -65,10 +65,12 @@ A household management PWA for couples and families — organize shopping, tasks
 - Assign responsible members
 - Auto weather forecast for upcoming events
 - Share with friends via public link
+- Public links expose only the selected event snapshot
 - Clone past events
 
 ### Weather Widget
 - 7-day forecast (Open-Meteo API)
+- Device geolocation with an explicit Óbidos fallback when permission is unavailable
 - Temperature, wind, precipitation
 - Expandable hourly view
 - Integrated in Calendar and Events

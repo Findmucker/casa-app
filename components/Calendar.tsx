@@ -8,6 +8,7 @@ import { useHouseContext } from "@/lib/context";
 import { useFriends } from "@/lib/friends";
 import { useT } from "@/lib/i18n";
 import { getWeatherInfo } from "@/lib/weather";
+import { createForecastUrl, getWeatherLocation, weatherLocationKey } from "@/lib/weather-location";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CasaEvent } from "./EventList";
@@ -86,16 +87,20 @@ interface DayWeather {
 }
 
 // Cache weather data in memory
-let weatherCache: { data: Record<string, DayWeather>; fetchedAt: number } | null = null;
+let weatherCache: { data: Record<string, DayWeather>; fetchedAt: number; locationKey: string } | null = null;
 
 async function fetchWeather7Days(): Promise<Record<string, DayWeather>> {
-  if (weatherCache && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
+  const location = await getWeatherLocation();
+  const locationKey = weatherLocationKey(location);
+  if (weatherCache && weatherCache.locationKey === locationKey && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
     return weatherCache.data;
   }
   try {
-    const res = await fetch(
-      "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=Europe/Lisbon&forecast_days=7"
-    );
+    const res = await fetch(createForecastUrl(location, {
+      daily: "temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max",
+      forecast_days: 7,
+    }));
+    if (!res.ok) throw new Error(`Weather request failed (${res.status})`);
     const json = await res.json();
     const result: Record<string, DayWeather> = {};
     for (let i = 0; i < json.daily.time.length; i++) {
@@ -106,7 +111,7 @@ async function fetchWeather7Days(): Promise<Record<string, DayWeather>> {
         precipProb: json.daily.precipitation_probability_max[i],
       };
     }
-    weatherCache = { data: result, fetchedAt: Date.now() };
+    weatherCache = { data: result, fetchedAt: Date.now(), locationKey };
     return result;
   } catch {
     return {};

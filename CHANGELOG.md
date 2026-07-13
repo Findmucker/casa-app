@@ -15,12 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI now validates the actual production branch, `master`.
 - Contributor, branching, architecture, and cron documentation now match the live
   deployment model.
+- Weather forecasts use the device's current coordinates when permission is granted;
+  the Óbidos fallback is now identified explicitly.
+- Event links contain a public snapshot of only the selected event and its items,
+  instead of attempting to expose the house event collection.
 
 ### Fixed
 - Google sign-in reconciles an existing same-email profile and preserves house data.
 - Swipe actions on list rows no longer propagate to dashboard tab navigation.
 - Failed habit creation remains visible and surfaces the Firestore error instead of
   silently closing the form.
+- Event sharing now opens the event that was selected rather than a house-wide view.
 
 ## [0.8.7] - 2026-05-05
 

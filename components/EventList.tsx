@@ -3,10 +3,11 @@
 import { useState, useEffect, useContext } from "react";
 import TabTip from "@/components/TabTip";
 import { HouseIdContext, useCollection } from "@/lib/hooks";
-import { getOrCreateShareId } from "@/lib/share";
+import { createEventShare } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getWeatherInfo } from "@/lib/weather";
+import { createForecastUrl, getWeatherLocation, weatherLocationKey } from "@/lib/weather-location";
 import { useHouseContextSafe } from "@/lib/context";
 import { notifyOtherMembers } from "@/lib/notifications";
 
@@ -20,17 +21,21 @@ interface DateWeather {
 }
 
 // Cache weather data in memory
-let weatherCache: { data: Record<string, DateWeather>; fetchedAt: number } | null = null;
+let weatherCache: { data: Record<string, DateWeather>; fetchedAt: number; locationKey: string } | null = null;
 
 async function fetchWeatherForDates(): Promise<Record<string, DateWeather>> {
+  const location = await getWeatherLocation();
+  const locationKey = weatherLocationKey(location);
   // Cache for 30 minutes
-  if (weatherCache && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
+  if (weatherCache && weatherCache.locationKey === locationKey && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
     return weatherCache.data;
   }
   try {
-    const res = await fetch(
-      "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=Europe/Lisbon&forecast_days=7"
-    );
+    const res = await fetch(createForecastUrl(location, {
+      daily: "temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max",
+      forecast_days: 7,
+    }));
+    if (!res.ok) throw new Error(`Weather request failed (${res.status})`);
     const json = await res.json();
     const result: Record<string, DateWeather> = {};
     for (let i = 0; i < json.daily.time.length; i++) {
@@ -41,7 +46,7 @@ async function fetchWeatherForDates(): Promise<Record<string, DateWeather>> {
         precipProb: json.daily.precipitation_probability_max[i],
       };
     }
-    weatherCache = { data: result, fetchedAt: Date.now() };
+    weatherCache = { data: result, fetchedAt: Date.now(), locationKey };
     return result;
   } catch {
     return {};
@@ -81,9 +86,10 @@ export interface CasaEvent {
 interface EventListProps {
   isPublic?: boolean;
   guestName?: string;
+  sharedEventId?: string;
 }
 
-export default function EventList({ isPublic = false, guestName }: EventListProps) {
+export default function EventList({ isPublic = false, guestName, sharedEventId }: EventListProps) {
   const houseCtx = useHouseContextSafe();
   const houseId = useContext(HouseIdContext);
   const userName = houseCtx?.userName || guestName || "";
@@ -95,7 +101,7 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
   const [date, setDate] = useState("");
   const [guests, setGuests] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedEventId, setCopiedEventId] = useState<string | null>(null);
 
   // In public mode, only show events the guest is registered in
   // In app mode (not public), show all
@@ -137,14 +143,26 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     }
   };
 
-  const handleShare = async () => {
+  const handleShare = async (event: CasaEvent, items: EventItem[]) => {
     try {
       if (!houseId) throw new Error("Missing house id for event sharing");
-      const shareId = await getOrCreateShareId(houseId);
+      const shareId = await createEventShare(houseId, {
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        guests: event.guests,
+        participants: event.participants || [],
+        items: items.map(({ name, type, done, assignee }) => ({
+          name,
+          type,
+          done,
+          ...(assignee ? { assignee } : {}),
+        })),
+      });
       const url = `${window.location.origin}/eventos/${shareId}`;
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedEventId(event.id);
+      setTimeout(() => setCopiedEventId((current) => current === event.id ? null : current), 2000);
     } catch (e) {
       console.error("Share error:", e);
     }
@@ -189,8 +207,9 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
     }
   };
 
-  const activeEvents = events.filter((e) => !e.done);
-  const pastEvents = events.filter((e) => e.done);
+  const visibleEvents = sharedEventId ? events.filter((event) => event.id === sharedEventId) : events;
+  const activeEvents = visibleEvents.filter((e) => !e.done);
+  const pastEvents = visibleEvents.filter((e) => e.done);
 
   // In public mode, split into "my events" (registered) and "available" (not registered)
   const myEvents = isPublic && currentUser
@@ -231,25 +250,12 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
           )}
         </h3>
         <div className="flex items-center gap-2">
-          {/* Share button (only in app, not public page) */}
-          {!isPublic && (
-            <button
-              onClick={handleShare}
-              className={`px-2.5 py-1.5 rounded-full text-[11px] font-medium transition-all active:scale-90 ${
-                copied
-                  ? "bg-green-100 text-green-600"
-                  : "bg-purple-50 text-purple-400 hover:bg-purple-100"
-              }`}
-            >
-              {copied ? "✓ Copiado!" : "🔗 Partilhar"}
-            </button>
-          )}
-          <button
+          {!isPublic && <button
             onClick={() => setShowCreate(!showCreate)}
             className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-sm font-bold hover:bg-purple-200 active:scale-90 transition-all"
           >
             {showCreate ? "×" : "+"}
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -300,6 +306,8 @@ export default function EventList({ isPublic = false, guestName }: EventListProp
           onMarkDone={() => update(event.id, { done: true })}
           onDelete={() => remove(event.id)}
           onUpdateEvent={(data) => update(event.id, data)}
+          onShare={isPublic ? undefined : (items) => handleShare(event, items)}
+          shareCopied={copiedEventId === event.id}
         />
       ))}
 
@@ -537,6 +545,8 @@ interface EventCardProps {
   onMarkDone: () => void;
   onDelete: () => void;
   onUpdateEvent: (data: Partial<CasaEvent>) => void;
+  onShare?: (items: EventItem[]) => void;
+  shareCopied?: boolean;
 }
 
 function EventCard({
@@ -546,6 +556,8 @@ function EventCard({
   onMarkDone,
   onDelete,
   onUpdateEvent,
+  onShare,
+  shareCopied = false,
 }: EventCardProps) {
   const { items, add, update, remove } = useCollection<EventItem>(
     `events/${event.id}/items`
@@ -664,6 +676,15 @@ function EventCard({
             )}
           </div>
         </div>
+        {onShare && (
+          <button
+            onClick={() => onShare(items)}
+            aria-label={`Partilhar ${event.title}`}
+            className={`px-2 py-1 rounded-full text-[10px] font-medium transition-all active:scale-90 ${shareCopied ? "bg-green-100 text-green-600" : "bg-purple-50 text-purple-400 hover:bg-purple-100"}`}
+          >
+            {shareCopied ? "✓ Copiado" : "🔗 Partilhar"}
+          </button>
+        )}
         <button
           onClick={onToggleExpand}
           className={`text-pink-300 text-xs transition-transform ${

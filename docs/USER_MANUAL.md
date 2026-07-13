@@ -163,6 +163,10 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 
 ## Tempo (Meteorologia)
 
+A previsão usa a localização atual do dispositivo quando autorizada. Se a permissão
+for recusada ou a geolocalização não estiver disponível, a aplicação mostra
+explicitamente `Óbidos (predefinição)`.
+
 - Previsao a 7 dias via Open-Meteo API (gratuita)
 - Temperatura, vento, precipitacao
 - Vista horaria expandivel por dia (tap para expandir)

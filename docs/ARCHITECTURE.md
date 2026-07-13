@@ -15,6 +15,9 @@ User profiles live at `users/{uid}`. Household data belongs under
 when their UID is present in that house's member list. Public event access uses a
 share document rather than exposing arbitrary house IDs.
 
+New event-share documents contain a read-only snapshot of the selected event and
+its items. Public pages never query the private `houses/{houseId}/events` collection.
+
 ## Client data flow
 
 `HouseIdContext` identifies the active tenant. `useCollection` creates real-time

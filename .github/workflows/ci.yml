@@ -44,6 +44,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -79,8 +83,6 @@ jobs:
         with:
           script: |
             const { execSync } = require('child_process');
-            const fs = require('fs');
-
             // Get changed files count
             const files = execSync('git diff --name-only origin/${{ github.base_ref }}...HEAD').toString().trim().split('\n');
             const tsFiles = files.filter(f => f.match(/\.(tsx?|jsx?)$/));
