@@ -13,11 +13,11 @@ npm run dev
 
 ## Workflow
 
-1. **Pick an issue** from [GitHub Issues](https://github.com/Findmucker/casa-app/issues) (#88–#97 are good starting points)
-2. **Create a branch** from `develop`:
+1. **Pick or create an issue** in [GitHub Issues](https://github.com/Findmucker/casa-app/issues).
+2. **Create a short-lived branch** from `master`:
    ```bash
-   git checkout develop && git pull
-   git checkout -b feature/issue-XX-description
+   git checkout master && git pull
+   git checkout -b fix/issue-XX-description
    ```
 3. **Develop** and verify quality gates pass:
    ```bash
@@ -30,20 +30,16 @@ npm run dev
    ```bash
    git commit -m "feat: add savings progress bar"
    ```
-5. **Push and open PR** targeting `develop`:
+5. **Push and open a PR** targeting `master`:
    ```bash
-   git push -u origin feature/issue-XX-description
-   gh pr create --base develop
+   git push -u origin fix/issue-XX-description
+   gh pr create --base master
    ```
 
 ## Branching Strategy
 
-```
-feature/* ──PR──► develop ──PR──► master
-                    │                │
-                    ▼                ▼
-             Preview Deploy    Production Deploy
-```
+All production changes flow through a pull request into `master`. Vercel creates
+preview deployments for working branches and deploys `master` to production.
 
 See [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) for full details.
 
@@ -53,9 +49,13 @@ See [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) for full details.
 |--------|-------|
 | `feature/` | New functionality |
 | `fix/` | Bug fix |
+| `refactor/` | Behavior-preserving code change |
+| `test/` | Test-only change |
 | `chore/` | Maintenance, deps |
+| `ci/` | Workflow and automation change |
 | `i18n/` | Translations |
 | `docs/` | Documentation |
+| `codex/` | Codex-assisted changes |
 | `hotfix/` | Urgent production fix (branch from `master`) |
 
 ### Commit messages

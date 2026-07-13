@@ -48,7 +48,7 @@ export default function HabitList() {
   // Check notification permission
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      setNotificationsEnabled(true); // eslint-disable-line react-hooks/set-state-in-effect
+      setNotificationsEnabled(true);
     }
   }, []);
 
@@ -85,7 +85,6 @@ export default function HabitList() {
       timerIds.current.forEach((id) => cancelNotification(id));
       timerIds.current = [];
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [habits, notificationsEnabled]);
 
   const getStreak = useCallback((habitId: string) => {
@@ -132,7 +131,7 @@ export default function HabitList() {
   const handleAdd = async () => {
     const name = newName.trim();
     if (!name) return;
-    await add({
+    const habitId = await add({
       name,
       emoji: newEmoji,
       reminderTime: newTime || undefined,
@@ -140,6 +139,8 @@ export default function HabitList() {
       days: newDays.length > 0 ? newDays : undefined,
       streak: 0,
     });
+    if (!habitId) return;
+
     setNewName("");
     setNewTime("");
     setNewAssignee("ambos");
@@ -315,7 +316,7 @@ export default function HabitList() {
         {error && (
           <div className="text-center text-red-400 py-12">
             <div className="text-3xl mb-2">⚠️</div>
-            <p className="text-sm font-medium">Erro ao carregar rotinas</p>
+            <p className="text-sm font-medium">Não foi possível carregar ou guardar as rotinas</p>
             <p className="text-xs text-red-300 mt-1 px-4 break-all">{error}</p>
           </div>
         )}

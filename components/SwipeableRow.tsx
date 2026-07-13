@@ -36,7 +36,7 @@ export default function SwipeableRow({
   const triggered = absX > 100;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div className="relative overflow-hidden rounded-2xl" data-swipe-action>
       {/* Background action indicators */}
       {showRight && (
         <div className={`absolute inset-0 ${rightColor} rounded-2xl flex items-center pl-4 transition-opacity ${triggered ? "opacity-100" : "opacity-60"}`}>

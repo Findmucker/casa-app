@@ -4,7 +4,7 @@ A household management PWA for couples and families — organize shopping, tasks
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Version:** 0.8.7
+**Release model:** rolling deployment from `master` to production. See [CHANGELOG.md](CHANGELOG.md) for notable changes.
 
 ## Features
 
@@ -35,7 +35,7 @@ A household management PWA for couples and families — organize shopping, tasks
 - **Weekday selector** — define which days a habit is active
 - **Person filter** — filter habits by house member (no redundant "Ambos" button)
 - Assign to person (dynamic by house members)
-- **Repeating notifications** — reminder every 10 min until completed
+- **Reliable notifications** — server-side reminders with delayed-run recovery and duplicate suppression
 - Push notifications via FCM
 
 ### Finances (Finanças)
@@ -99,9 +99,8 @@ A household management PWA for couples and families — organize shopping, tasks
 - **Back button navigation** — device/browser back closes panels instead of leaving the app
 - Push notifications via Firebase Cloud Messaging (FCM) using **data-only messages** (no duplicates)
 - **Service worker with `skipWaiting` + cache purge** for reliable updates
-- **Periodic background sync** — self-triggers habit cron every 10min (Android/Chrome)
 - **Smart notification routing** — tapping a notification opens the correct tab automatically
-- Repeating habit reminders (client-side, every 10 min)
+- Foreground client reminders as a best-effort fallback to the server scheduler
 - **In-app Help panel** with notification permission status debug
 - **Smart notifications** for key actions:
   - 🔥 Urgent shopping items
@@ -172,14 +171,13 @@ A household management PWA for couples and families — organize shopping, tasks
 - **CI/CD:** GitHub Actions with quality gates (typecheck, lint, build, tests, PR validation)
 - **Multi-tenant:** Each house has isolated data, invites by link
 
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for runtime boundaries, data
+ownership, and notification flow.
+
 ## Branching Strategy
 
-```
-feature/* ──PR──► develop ──PR──► master
-                    │                │
-                    ▼                ▼
-             Preview Deploy    Production Deploy
-```
+Create a short-lived working branch from `master`, open a pull request back to
+`master`, and merge only after the quality gates pass.
 
 See [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) for full details.
 
@@ -205,6 +203,10 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
+
+Copy the complete template from [`.env.local.example`](.env.local.example). Server-side
+notifications also require Firebase Admin credentials, `CRON_SECRET`, and the FCM
+VAPID key. Never commit real credentials.
 
 ### 3. Firebase setup
 
@@ -242,7 +244,7 @@ casa-app/
 │   ├── dashboard/page.tsx    # Main dashboard with all tabs
 │   ├── convite/[code]/       # Public invite acceptance page
 │   ├── api/send-notification/ # POST endpoint for FCM push
-│   ├── api/cron/habits/      # Cron endpoint for habit reminders
+│   ├── api/cron/habits/      # Authenticated, idempotent reminder endpoint
 │   └── globals.css           # Animations and global styles
 ├── components/
 │   ├── AuthScreen.tsx        # Login/register (email + Google)
@@ -272,12 +274,13 @@ casa-app/
 │   │   ├── pt.ts             # Portuguese dictionary
 │   │   └── en.ts             # English dictionary
 │   ├── gamification.ts       # Points, badges, loot, inventory
-│   ├── notifications.ts      # Push notifications + reminders
+│   ├── notifications.ts      # FCM registration and client notification helpers
+│   ├── habit-reminder-time.ts # Lisbon-time reminder occurrence calculation
 │   ├── categories.ts         # Categories + auto-classification
 │   └── weather.ts            # WMO codes + weather helpers
 └── public/
     ├── manifest.json         # PWA manifest
-    └── sw.js                 # Service worker (skipWaiting + cache purge)
+    └── firebase-messaging-sw.js # Firebase messaging service worker
 ```
 
 ## Firestore Collections
@@ -300,14 +303,17 @@ casa-app/
 | `houses/{houseId}/gamification` | Points, badges, stats |
 | `gamification/{owner}` | RPG profile: inventory, equipped, avatar, lootBoxes |
 | `fcm_tokens/{owner}` | FCM tokens for push notifications |
+| `notification_deliveries/{id}` | Reminder leases and delivery deduplication |
 
 ## Deploy
 
-Connected to Vercel via GitHub with Firebase backend. Merges to `master` auto-deploy via CI/CD pipeline.
+Connected to Vercel via GitHub with Firebase as the backend. Updates to `master`
+deploy automatically. GitHub Actions runs the reminder scheduler; Vercel's daily
+cron remains a fallback. See [docs/CRON_SETUP.md](docs/CRON_SETUP.md).
 
 ### CI/CD Pipeline (GitHub Actions)
 
-On every PR — quality gates must pass:
+On every pull request to `master` and every push to `master`:
 - TypeScript typecheck
 - ESLint
 - Build verification
@@ -324,7 +330,7 @@ npx vercel --prod
 
 ## GitHub Issues
 
-Active issues are tracked at [GitHub Issues](https://github.com/Findmucker/casa-app/issues) (#88–#97 cover upcoming improvements).
+Active bugs and planned improvements are tracked in [GitHub Issues](https://github.com/Findmucker/casa-app/issues).
 
 ## License
 

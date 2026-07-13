@@ -204,9 +204,11 @@ export function useCollection<T extends { id: string }>(
         ...data,
         createdAt: serverTimestamp(),
       });
+      setError(null);
       return docRef.id;
     } catch (e) {
       console.error("Add error:", e);
+      setError(e instanceof Error ? e.message : "Não foi possível guardar os dados.");
       return null;
     }
   };
@@ -248,7 +250,7 @@ export function useLazyCollection<T extends { id: string }>(
 
   useEffect(() => {
     if (!enabled) {
-      setItems([]); // eslint-disable-line react-hooks/set-state-in-effect
+      setItems([]);
       return;
     }
 

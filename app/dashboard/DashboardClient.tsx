@@ -189,6 +189,10 @@ function DashboardInner() {
   }, [activeTab, showPanel]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest("[data-swipe-action]")) {
+      touchStart.current = null;
+      return;
+    }
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
 

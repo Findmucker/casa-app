@@ -85,7 +85,7 @@ export default function PriorityList() {
       done: !item.done,
       completedAt: !item.done ? new Date().toISOString().split("T")[0] : undefined,
     });
-  }, [update, visibleItems]);
+  }, [update]);
 
   const handleAdd = async () => {
     const name = newName.trim();
@@ -132,7 +132,7 @@ export default function PriorityList() {
     pushUndo(`"${item.name}" ${t("priority.deleted")}`, async () => {
       await add(data as Omit<SmallPriorityItem, "id" | "createdAt">);
     });
-  }, [remove, add, pushUndo]);
+  }, [remove, add, pushUndo, t]);
 
   return (
     <div className="flex flex-col h-full">
