@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [master]
   push:
-    branches: [develop, main]
+    branches: [master]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -44,6 +44,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -66,9 +70,9 @@ jobs:
       - name: Check branch naming
         run: |
           BRANCH="${{ github.head_ref }}"
-          if ! echo "$BRANCH" | grep -qE '^(feature|fix|hotfix|chore|i18n|docs)/'; then
+          if ! echo "$BRANCH" | grep -qE '^(codex|feature|fix|hotfix|refactor|test|chore|ci|i18n|docs)/'; then
             echo "⚠️  Branch name '$BRANCH' doesn't follow convention."
-            echo "   Expected: feature/, fix/, hotfix/, chore/, i18n/, docs/"
+            echo "   Expected: codex/, feature/, fix/, hotfix/, refactor/, test/, chore/, ci/, i18n/, docs/"
             echo "   (This is a warning, not blocking)"
           else
             echo "✅ Branch name is valid: $BRANCH"
@@ -79,8 +83,6 @@ jobs:
         with:
           script: |
             const { execSync } = require('child_process');
-            const fs = require('fs');
-
             // Get changed files count
             const files = execSync('git diff --name-only origin/${{ github.base_ref }}...HEAD').toString().trim().split('\n');
             const tsFiles = files.filter(f => f.match(/\.(tsx?|jsx?)$/));

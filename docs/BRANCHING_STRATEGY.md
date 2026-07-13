@@ -1,132 +1,51 @@
 # Branching Strategy
 
-> Last updated: 2026-05-02
+> Last updated: 2026-07-13
 
-## Main Branches
-
-| Branch | Purpose | Deploy |
-|--------|---------|--------|
-| `master` | Stable production | Vercel Production (auto) |
-| `develop` | Feature integration | Vercel Preview (auto) |
-
-## Working Branches
-
-| Prefix | Usage | Example |
-|--------|-------|---------|
-| `feature/` | New functionality | `feature/friends-system` |
-| `fix/` | Bug fix | `fix/pwa-cache-stale` |
-| `hotfix/` | Urgent production fix | `hotfix/login-crash` |
-| `chore/` | Maintenance, deps, docs | `chore/update-dependencies` |
-| `i18n/` | Translations and localization | `i18n/wire-calendar-strings` |
-| `docs/` | Documentation only | `docs/update-readme` |
+`master` is the single long-lived branch and the source of production deploys.
+Work happens on short-lived branches and returns to `master` through pull requests.
 
 ## Workflow
 
-```
-feature/*  ──PR──►  develop  ──PR──►  master
-    │                  │                │
-    │                  ▼                ▼
-    │           Preview Deploy    Production Deploy
-    ▼
-  Local dev
-```
+1. Update `master`: `git checkout master && git pull`.
+2. Create a branch such as `fix/issue-117-habit-feedback` or
+   `feature/issue-68-home-widgets`.
+3. Make focused commits using Conventional Commits.
+4. Run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`.
+5. Open a pull request targeting `master`.
+6. Merge only after the quality gates pass, then delete the working branch.
 
-### 1. Create a working branch
+Vercel creates previews for pull requests and deploys `master` to production.
 
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feature/issue-XX-description
-```
+## Branch names
 
-### 2. Develop and commit
+| Prefix | Use |
+|---|---|
+| `feature/` | New user-facing capability |
+| `fix/` | Bug fix |
+| `hotfix/` | Urgent production fix |
+| `refactor/` | Behavior-preserving code change |
+| `test/` | Test-only change |
+| `docs/` | Documentation-only change |
+| `chore/` | Maintenance or dependencies |
+| `ci/` | Workflow and automation change |
+| `codex/` | Codex-assisted work |
 
-```bash
-git add <files>
-git commit -m "feat: short description of what was done"
-```
+## Commit and pull-request titles
 
-### 3. Push and Pull Request → develop
+Use `type(scope): short description`, for example:
 
-```bash
-git push -u origin feature/issue-XX-description
-gh pr create --base develop --title "feat: description" --body "..."
-```
+- `fix(habits): surface failed writes`
+- `refactor(ui): isolate row swipe gestures`
+- `docs: document reminder operations`
 
-### 4. Merge to master (release)
+Allowed types are `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`,
+`test`, `i18n`, and `ci`.
 
-When `develop` is stable and tested:
+## Protection expectations
 
-```bash
-gh pr create --base master --head develop --title "release: v0.X.0"
-```
-
-## Commit Convention
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-| Prefix | When to use |
-|--------|-------------|
-| `feat:` | New feature |
-| `fix:` | Bug fix |
-| `chore:` | Maintenance, deps |
-| `docs:` | Documentation |
-| `style:` | Formatting (no logic change) |
-| `refactor:` | Refactoring without behavior change |
-| `perf:` | Performance improvement |
-| `i18n:` | Translations |
-| `ci:` | CI/CD pipeline changes |
-
-## Rules
-
-1. **Never commit directly to `master`** — always via PR from `develop`
-2. **Never commit directly to `develop`** — always via PR from a working branch
-3. **Hotfixes** are the exception: branch from `master`, PR to `master`, then cherry-pick to `develop`
-4. **Delete branch** after PR merge
-5. **Squash merge** for feature PRs (keep history clean on develop)
-6. **Merge commit** from develop → master (preserve release history)
-
-## CI/CD Quality Gates
-
-All PRs must pass before merge:
-- TypeScript typecheck
-- ESLint (zero warnings)
-- Build verification
-- Test suite
-- PR title validation (conventional commits format)
-- Branch naming validation
-- Auto-labeling based on changed files
-
-## Branch Protections (GitHub)
-
-### Branch `master`
-- ✅ Require PR before merge
-- ✅ Require 1 approval (or self-approve for solo dev)
-- ✅ Require status checks (build + typecheck)
-- ❌ Allow force push
-
-### Branch `develop`
-- ✅ Require PR before merge
-- ✅ Require status checks (build + typecheck)
-- ❌ Allow force push
-
-## Versioning
-
-Follow [SemVer](https://semver.org/):
-
-- **MAJOR** (1.0.0) — breaking changes, total redesign
-- **MINOR** (0.8.0) — new feature
-- **PATCH** (0.7.1) — bug fix
-
-Current version: **v0.8.0**
-
-## Setup
-
-```bash
-# Create develop branch from master
-git checkout master
-git checkout -b develop
-git push -u origin develop
-
-# Vercel preview is automatic for develop branch
-```
+- Pull requests to `master` run type checking, ESLint, tests with coverage, and a
+  production build.
+- Force pushes to `master` should remain disabled.
+- Secrets must stay in Vercel, Firebase, or GitHub Actions secret storage.
+- Hotfixes still use a branch and pull request; urgency does not bypass validation.

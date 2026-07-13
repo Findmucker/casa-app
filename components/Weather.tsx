@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import TabTip from "@/components/TabTip";
 import { getWeatherInfo } from "@/lib/weather";
+import {
+  createForecastUrl,
+  DEFAULT_WEATHER_LOCATION,
+  type WeatherLocation,
+  watchWeatherLocation,
+} from "@/lib/weather-location";
 
 interface CurrentWeather {
   temperature: number;
@@ -51,14 +57,24 @@ export default function Weather() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
+  const [location, setLocation] = useState<WeatherLocation>(DEFAULT_WEATHER_LOCATION);
 
   useEffect(() => {
-    const fetchWeather = async () => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let requestGeneration = 0;
+
+    const fetchWeather = async (nextLocation: WeatherLocation) => {
+      const generation = ++requestGeneration;
       try {
-        const res = await fetch(
-          "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&current=temperature_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&timezone=Europe/Lisbon&forecast_days=7"
-        );
+        const res = await fetch(createForecastUrl(nextLocation, {
+          current: "temperature_2m,wind_speed_10m,weather_code",
+          daily: "temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max",
+          hourly: "temperature_2m,weather_code,precipitation_probability,wind_speed_10m",
+          forecast_days: 7,
+        }));
+        if (!res.ok) throw new Error(`Weather request failed (${res.status})`);
         const data = await res.json();
+        if (generation !== requestGeneration) return;
 
         setCurrent({
           temperature: Math.round(data.current.temperature_2m),
@@ -83,16 +99,26 @@ export default function Weather() {
           windspeed: Math.round(data.hourly.wind_speed_10m[i]),
         }));
         setHourly(hours);
+        setLocation(nextLocation);
+        setError("");
       } catch {
+        if (generation !== requestGeneration) return;
         setError("Sem ligação");
       } finally {
-        setLoading(false);
+        if (generation === requestGeneration) setLoading(false);
       }
     };
 
-    fetchWeather();
-    const interval = setInterval(fetchWeather, 15 * 60 * 1000);
-    return () => clearInterval(interval);
+    const stopWatching = watchWeatherLocation((nextLocation) => {
+      void fetchWeather(nextLocation);
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => void fetchWeather(nextLocation), 15 * 60 * 1000);
+    });
+
+    return () => {
+      stopWatching();
+      if (interval) clearInterval(interval);
+    };
   }, []);
 
   if (loading) {
@@ -131,7 +157,7 @@ export default function Weather() {
       {/* Current weather */}
       <div className="p-6 bg-white/60 backdrop-blur-sm border-b border-pink-100/40 animate-fade-in-up">
         <p className="text-xs text-pink-400 font-medium mb-3 uppercase tracking-wider">
-          📍 Óbidos — agora
+          📍 {location.label} — agora
         </p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

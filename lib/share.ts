@@ -15,21 +15,40 @@ function generateId(length = 12): string {
 export interface EventShare {
   shareId: string;
   houseId: string;
+  eventId?: string;
+  event?: SharedEventSnapshot;
 }
 
-export async function getOrCreateShareId(houseId: string): Promise<string> {
+export interface SharedEventItem {
+  name: string;
+  type: "compra" | "todo";
+  done: boolean;
+  assignee?: string;
+}
+
+export interface SharedEventSnapshot {
+  id: string;
+  title: string;
+  date: string;
+  guests: number;
+  participants: string[];
+  items: SharedEventItem[];
+}
+
+export async function createEventShare(
+  houseId: string,
+  event: SharedEventSnapshot
+): Promise<string> {
   if (!houseId) throw new Error("Missing house id for event sharing");
-
-  const houseShareRef = doc(db, "event_share_houses", houseId);
-  const houseShareSnap = await getDoc(houseShareRef);
-
-  if (houseShareSnap.exists() && houseShareSnap.data().shareId) {
-    return houseShareSnap.data().shareId as string;
-  }
+  if (!event.id) throw new Error("Missing event id for event sharing");
 
   const shareId = generateId();
-  await setDoc(houseShareRef, { shareId, houseId });
-  await setDoc(doc(db, "event_shares", shareId), { shareId, houseId });
+  await setDoc(doc(db, "event_shares", shareId), {
+    shareId,
+    houseId,
+    eventId: event.id,
+    event,
+  });
   return shareId;
 }
 
@@ -38,7 +57,12 @@ export async function getEventShare(id: string): Promise<EventShare | null> {
   if (shareSnap.exists()) {
     const data = shareSnap.data();
     if (typeof data.houseId === "string" && data.houseId) {
-      return { shareId: id, houseId: data.houseId };
+      return {
+        shareId: id,
+        houseId: data.houseId,
+        eventId: typeof data.eventId === "string" ? data.eventId : undefined,
+        event: data.event as SharedEventSnapshot | undefined,
+      };
     }
   }
 

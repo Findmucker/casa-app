@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import EventList from "@/components/EventList";
-import { getEventShare, type EventShare } from "@/lib/share";
+import { getEventShare, type EventShare, type SharedEventSnapshot } from "@/lib/share";
 import { HouseIdContext } from "@/lib/hooks";
 
 export default function PublicEventsPage() {
@@ -16,7 +16,7 @@ export default function PublicEventsPage() {
   useEffect(() => {
     getEventShare(shareId).then(setShare);
     const saved = localStorage.getItem("casa-guest-name");
-    if (saved) setGuestName(saved); // eslint-disable-line react-hooks/set-state-in-effect
+    if (saved) setGuestName(saved);
   }, [shareId]);
 
   const handleSetName = () => {
@@ -44,6 +44,10 @@ export default function PublicEventsPage() {
         </div>
       </div>
     );
+  }
+
+  if (share.event) {
+    return <SharedEventView event={share.event} />;
   }
 
   // Ask for name if not set
@@ -100,9 +104,81 @@ export default function PublicEventsPage() {
       {/* Events */}
       <main className="flex-1">
         <HouseIdContext.Provider value={share.houseId}>
-          <EventList isPublic guestName={guestName} />
+          <EventList isPublic guestName={guestName} sharedEventId={share.eventId} />
         </HouseIdContext.Provider>
       </main>
     </div>
+  );
+}
+
+function SharedEventView({ event }: { event: SharedEventSnapshot }) {
+  const compras = event.items.filter((item) => item.type === "compra");
+  const tarefas = event.items.filter((item) => item.type === "todo");
+  const formattedDate = event.date
+    ? new Date(`${event.date}T00:00:00`).toLocaleDateString("pt-PT", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 px-4 py-8">
+      <article className="mx-auto max-w-lg rounded-3xl border border-purple-100 bg-white/80 p-6 shadow-lg shadow-pink-100/40 backdrop-blur-sm">
+        <p className="text-xs font-semibold uppercase tracking-wider text-purple-400">🎉 Evento partilhado</p>
+        <h1 className="mt-2 text-2xl font-bold text-rose-700">{event.title}</h1>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs text-purple-500">
+          {formattedDate && <span className="rounded-full bg-purple-50 px-3 py-1">📅 {formattedDate}</span>}
+          {(event.participants.length > 0 || event.guests > 0) && (
+            <span className="rounded-full bg-purple-50 px-3 py-1">
+              👥 {event.participants.length}{event.guests > event.participants.length ? `/${event.guests}` : ""}
+            </span>
+          )}
+        </div>
+
+        {event.participants.length > 0 && (
+          <section className="mt-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-pink-400">Participantes</h2>
+            <p className="mt-2 text-sm text-rose-600">{event.participants.join(", ")}</p>
+          </section>
+        )}
+
+        <SharedItemSection title="🛒 Compras" items={compras} />
+        <SharedItemSection title="✅ Tarefas" items={tarefas} />
+
+        {event.items.length === 0 && (
+          <p className="mt-6 rounded-2xl bg-pink-50 px-4 py-3 text-center text-sm text-pink-400">
+            Ainda não existem compras ou tarefas neste evento.
+          </p>
+        )}
+      </article>
+    </main>
+  );
+}
+
+function SharedItemSection({
+  title,
+  items,
+}: {
+  title: string;
+  items: SharedEventSnapshot["items"];
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <section className="mt-6">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-pink-400">{title}</h2>
+      <ul className="mt-2 space-y-2">
+        {items.map((item, index) => (
+          <li
+            key={`${item.type}-${item.name}-${index}`}
+            className={`flex items-center justify-between rounded-2xl bg-pink-50/70 px-4 py-3 text-sm ${item.done ? "text-pink-300 line-through" : "text-rose-600"}`}
+          >
+            <span>{item.done ? "✓ " : ""}{item.name}</span>
+            {item.assignee && <span className="text-xs text-purple-400">{item.assignee}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

@@ -28,7 +28,7 @@ export default function ProjectList() {
     "priorities_big",
     "order"
   );
-  const { items: savingsGoals, add: addSavings, update: updateSavings } = useCollection<SavingsGoal>("savings_goals", "createdAt");
+  const { items: savingsGoals, add: addSavings } = useCollection<SavingsGoal>("savings_goals", "createdAt");
   const [newName, setNewName] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubtask, setNewSubtask] = useState("");

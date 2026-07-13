@@ -23,7 +23,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem("casa-locale") as Locale | null;
     if (saved && (saved === "pt" || saved === "en")) {
-      setLocaleState(saved); // eslint-disable-line react-hooks/set-state-in-effect
+      setLocaleState(saved);
     }
   }, []);
 

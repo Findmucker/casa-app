@@ -26,7 +26,7 @@ export default function Gamification({ onClose }: GamificationProps) {
       }
     });
     return () => unsub();
-  }, []);
+  }, [userName]);
 
   if (!stats) return null;
 

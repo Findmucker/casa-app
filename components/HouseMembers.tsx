@@ -94,7 +94,7 @@ export default function HouseMembers({ onClose, initialMessageTo }: HouseMembers
       const target = memberData.find((m) => m.name === initialMessageTo);
       if (target) setMessageTo(target);
     }
-  }, [initialMessageTo, memberData]);
+  }, [initialMessageTo, memberData, messageTo]);
 
   const handleLeavehouse = async () => {
     try {

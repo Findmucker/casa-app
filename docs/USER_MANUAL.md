@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Ultima atualizacao: 5 de Maio de 2026 | Versao 0.8.7
+> Última atualização: 13 de julho de 2026 | Deploy contínuo
 
 ## O que e a app?
 
@@ -88,7 +88,7 @@ O ecra inicial mostra:
 - **Selector de dias da semana** — define em que dias o habito esta ativo
 - **Filtro por pessoa** — filtra habitos por membro da casa (Todos / nome individual)
 - **Atribui a pessoa** responsavel (dinamico por membros da casa)
-- **Notificacoes repetidas** — lembrete a cada 10 min enquanto nao completo (max 2h)
+- **Notificações fiáveis** — o servidor recupera execuções atrasadas e impede envios duplicados para a mesma rotina e pessoa
 - **Push notifications reais** — recebe lembretes mesmo com a app fechada (via FCM)
 - Pontos de gamificacao por cada check (+2 pontos)
 
@@ -163,6 +163,10 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 
 ## Tempo (Meteorologia)
 
+A previsão usa a localização atual do dispositivo quando autorizada. Se a permissão
+for recusada ou a geolocalização não estiver disponível, a aplicação mostra
+explicitamente `Óbidos (predefinição)`.
+
 - Previsao a 7 dias via Open-Meteo API (gratuita)
 - Temperatura, vento, precipitacao
 - Vista horaria expandivel por dia (tap para expandir)
@@ -188,7 +192,7 @@ A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 - Ao tocar numa notificacao, a app abre diretamente na **tab correta** (ex: notificacao de compras abre a tab Compras, notificacao de evento abre Eventos)
 
 ### Tipos de notificacao
-- **Lembretes de habitos** — recebe lembrete na hora configurada (repetido a cada 10 min ate completar)
+- **Lembretes de hábitos** — recebe o lembrete configurado mesmo quando o scheduler se atrasa; depois de concluída, a rotina deixa de ser elegível nesse dia
 - **Mensagens de membros** — recebe mensagens enviadas por outros membros da casa
 - **Item urgente nas compras** — quando alguem marca um item como urgente 🔥
 - **Novo evento criado** — quando alguem cria um evento na casa
