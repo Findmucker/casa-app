@@ -12,8 +12,10 @@ import {
   doc,
   serverTimestamp,
   getDocs,
+  deleteField,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { omitUndefinedValues } from "./firestore-values";
 
 // Context for multi-tenant house scoping
 export const HouseIdContext = createContext<string | null>(null);
@@ -201,7 +203,7 @@ export function useCollection<T extends { id: string }>(
   const add = async (data: Omit<T, "id" | "createdAt">): Promise<string | null> => {
     try {
       const docRef = await addDoc(getCollectionRef(), {
-        ...data,
+        ...omitUndefinedValues(data as Record<string, unknown>),
         createdAt: serverTimestamp(),
       });
       setError(null);
@@ -218,7 +220,13 @@ export function useCollection<T extends { id: string }>(
       prev.map((item) => (item.id === id ? { ...item, ...data } : item))
     );
     try {
-      await updateDoc(getDocRef(id), data as Record<string, unknown>);
+      const firestoreUpdate = Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [
+          key,
+          value === undefined ? deleteField() : value,
+        ])
+      );
+      await updateDoc(getDocRef(id), firestoreUpdate);
     } catch (e) {
       console.error("Update error:", e);
       await refetch();
