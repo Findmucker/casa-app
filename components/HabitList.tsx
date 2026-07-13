@@ -134,10 +134,10 @@ export default function HabitList() {
     const habitId = await add({
       name,
       emoji: newEmoji,
-      reminderTime: newTime || undefined,
       assignee: newAssignee,
-      days: newDays.length > 0 ? newDays : undefined,
       streak: 0,
+      ...(newTime ? { reminderTime: newTime } : {}),
+      ...(newDays.length > 0 ? { days: newDays } : {}),
     });
     if (!habitId) return;
 

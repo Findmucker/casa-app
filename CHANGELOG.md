@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swipe actions on list rows no longer propagate to dashboard tab navigation.
 - Failed habit creation remains visible and surfaces the Firestore error instead of
   silently closing the form.
+- Optional Firestore fields are omitted on create and deleted explicitly on update,
+  preventing writes from failing on unsupported `undefined` values.
 - Event sharing now opens the event that was selected rather than a house-wide view.
 
 ## [0.8.7] - 2026-05-05
