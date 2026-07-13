@@ -8,6 +8,7 @@ import { awardPoints, updateStreak } from "@/lib/gamification";
 import { useMemberNames, useHouseContext } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
 import { useT } from "@/lib/i18n";
+import { getLocalClock } from "@/lib/habit-reminder-time";
 
 const HABIT_EMOJIS = ["💊", "💧", "🏃", "📖", "🧘", "🪴", "🧹", "💤", "🍎", "✍️"];
 
@@ -103,7 +104,7 @@ export default function HabitList() {
     }
 
     while (true) {
-      const dateStr = date.toISOString().split("T")[0];
+      const dateStr = getLocalClock(date).date;
       if (habitChecks.includes(dateStr)) {
         streak++;
         date.setDate(date.getDate() - 1);

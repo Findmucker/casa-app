@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";
+import {
+  DEFAULT_REMINDER_TIME_ZONE,
+  DEFAULT_REMINDER_WINDOW_MINUTES,
+  getLocalClock,
+  getReminderOccurrence,
+} from "@/lib/habit-reminder-time";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 /**
  * Habit reminder cron — runs every 10 minutes.
@@ -29,10 +38,19 @@ export async function GET(request: NextRequest) {
 
   const db = adm.firestore();
   const now = new Date();
-  const today = now.toISOString().split("T")[0];
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const currentDay = now.getDay(); // 0=dom, 1=seg, ..., 6=sáb
+  const timeZone = process.env.REMINDER_TIME_ZONE || DEFAULT_REMINDER_TIME_ZONE;
+  const configuredWindow = Number(process.env.REMINDER_WINDOW_MINUTES);
+  const reminderWindowMinutes = Number.isFinite(configuredWindow) && configuredWindow > 0
+    ? configuredWindow
+    : DEFAULT_REMINDER_WINDOW_MINUTES;
+  const localClock = getLocalClock(now, timeZone);
+  const currentMinutes = localClock.minutes;
   let sent = 0;
+  let deduplicated = 0;
+  let missingTokens = 0;
+  let invalidTokens = 0;
+  let failed = 0;
+  const unmatchedAssignees: Array<{ houseId: string; habitId: string; assignee: string }> = [];
 
   try {
     const housesSnap = await db.collection("houses").get();
@@ -44,15 +62,20 @@ export async function GET(request: NextRequest) {
       const habitsSnap = await db.collection("houses").doc(houseId).collection("habits").get();
       if (habitsSnap.empty) continue;
 
-      // Get today's checks
-      const checksSnap = await db
-        .collection("houses")
-        .doc(houseId)
-        .collection("habit_checks")
-        .where("date", "==", today)
-        .get();
-
-      const checkedHabitIds = new Set(checksSnap.docs.map((d) => d.data().habitId));
+      const checksByDate = new Map<string, Set<string>>();
+      const getCheckedHabitIds = async (date: string) => {
+        const cached = checksByDate.get(date);
+        if (cached) return cached;
+        const checksSnap = await db
+          .collection("houses")
+          .doc(houseId)
+          .collection("habit_checks")
+          .where("date", "==", date)
+          .get();
+        const checked = new Set<string>(checksSnap.docs.map((document) => document.data().habitId));
+        checksByDate.set(date, checked);
+        return checked;
+      };
 
       for (const habitDoc of habitsSnap.docs) {
         const habit = habitDoc.data();
@@ -60,22 +83,14 @@ export async function GET(request: NextRequest) {
         // Skip habits without reminder time
         if (!habit.reminderTime) continue;
 
-        // Skip if already checked today
-        if (checkedHabitIds.has(habitDoc.id)) continue;
+        const occurrence = getReminderOccurrence(now, habit.reminderTime, timeZone, reminderWindowMinutes);
+        if (!occurrence) continue;
+
+        if ((await getCheckedHabitIds(occurrence.date)).has(habitDoc.id)) continue;
 
         // Check if today is an active day
         const days: number[] | undefined = habit.days;
-        if (days && days.length > 0 && !days.includes(currentDay)) continue;
-
-        // Parse reminder time
-        const [h, m] = habit.reminderTime.split(":").map(Number);
-        const reminderMinutes = h * 60 + m;
-
-        // Only send if current time >= reminder time
-        if (currentMinutes < reminderMinutes) continue;
-
-        // Stop after 2 hours past reminder time (avoid spam)
-        if (currentMinutes > reminderMinutes + 120) continue;
+        if (days && days.length > 0 && !days.includes(occurrence.day)) continue;
 
         // Determine who to notify
         const assignee = habit.assignee;
@@ -87,8 +102,13 @@ export async function GET(request: NextRequest) {
           // Send to all house members
           targets.push(...members);
         } else {
-          const member = members.find((item) => item.name.toLowerCase() === assignee.toLowerCase());
-          if (member) targets.push(member);
+          const normalizedAssignee = String(assignee).trim().toLocaleLowerCase("pt-PT");
+          const member = members.find((item) => item.name.trim().toLocaleLowerCase("pt-PT") === normalizedAssignee);
+          if (member) {
+            targets.push(member);
+          } else {
+            unmatchedAssignees.push({ houseId, habitId: habitDoc.id, assignee: String(assignee) });
+          }
         }
 
         for (const target of targets) {
@@ -96,9 +116,36 @@ export async function GET(request: NextRequest) {
           if (!tokenDoc.exists && target.uid) {
             tokenDoc = await db.collection("fcm_tokens").doc(target.name.toLowerCase()).get();
           }
-          if (!tokenDoc.exists) continue;
+          if (!tokenDoc.exists) {
+            missingTokens++;
+            continue;
+          }
 
           const { token } = tokenDoc.data()!;
+          const deliveryId = `${occurrence.date}_${houseId}_${habitDoc.id}_${target.uid || target.name.toLowerCase()}`;
+          const deliveryRef = db.collection("notification_deliveries").doc(deliveryId);
+          const leaseUntil = adm.firestore.Timestamp.fromMillis(Date.now() + 5 * 60 * 1000);
+          const claimed = await db.runTransaction(async (transaction) => {
+            const existing = await transaction.get(deliveryRef);
+            const data = existing.data();
+            if (data?.status === "sent") return false;
+            if (data?.status === "sending" && data.lockedUntil?.toMillis?.() > Date.now()) return false;
+            transaction.set(deliveryRef, {
+              status: "sending",
+              lockedUntil: leaseUntil,
+              attempts: (data?.attempts || 0) + 1,
+              houseId,
+              habitId: habitDoc.id,
+              uid: target.uid || null,
+              reminderDate: occurrence.date,
+              updatedAt: adm.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+            return true;
+          });
+          if (!claimed) {
+            deduplicated++;
+            continue;
+          }
 
           try {
             await adm.messaging().send({
@@ -112,9 +159,22 @@ export async function GET(request: NextRequest) {
                 headers: { Urgency: "high" },
               },
             });
+            await deliveryRef.set({
+              status: "sent",
+              sentAt: adm.firestore.FieldValue.serverTimestamp(),
+              lockedUntil: adm.firestore.FieldValue.delete(),
+            }, { merge: true });
             sent++;
           } catch (e) {
-            console.error(`Failed to send habit reminder to ${target.name}:`, e);
+            const code = typeof e === "object" && e !== null && "code" in e ? String(e.code) : "unknown";
+            if (code === "messaging/registration-token-not-registered" || code === "messaging/invalid-registration-token") {
+              await tokenDoc.ref.delete();
+              invalidTokens++;
+            } else {
+              failed++;
+            }
+            await deliveryRef.delete().catch(() => {});
+            console.error(`Failed to send habit reminder to ${target.name} (${code}):`, e);
           }
         }
       }
@@ -123,8 +183,8 @@ export async function GET(request: NextRequest) {
     // ─── Event reminders (tomorrow's events) ───
     // Only run around 8am (between 7:50 and 8:10)
     if (currentMinutes >= 470 && currentMinutes <= 490) {
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrow = new Date(`${localClock.date}T12:00:00Z`);
+      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
       const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
       for (const houseDoc of housesSnap.docs) {
@@ -157,7 +217,7 @@ export async function GET(request: NextRequest) {
       }
 
       // ─── Birthday notifications (today) ───
-      const todayMmDd = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      const todayMmDd = localClock.date.slice(5);
 
       for (const houseDoc of housesSnap.docs) {
         const houseMembers: Array<{ name: string; uid?: string }> = houseDoc.data().members || [];
@@ -195,7 +255,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, sent, timestamp: now.toISOString() });
+    return NextResponse.json({
+      ok: failed === 0,
+      sent,
+      deduplicated,
+      missingTokens,
+      invalidTokens,
+      failed,
+      unmatchedAssignees,
+      timestamp: now.toISOString(),
+      localTime: `${localClock.date}T${localClock.time}`,
+      timeZone,
+      reminderWindowMinutes,
+    });
   } catch (e) {
     console.error("Habit cron error:", e);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

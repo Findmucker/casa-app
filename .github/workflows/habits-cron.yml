@@ -2,8 +2,14 @@ name: Habit Reminders Cron
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    # GitHub may delay scheduled jobs during busy periods. The API keeps a
+    # three-hour recovery window and deduplicates each reminder in Firestore.
+    - cron: "*/5 * * * *"
   workflow_dispatch: # Allow manual trigger for testing
+
+concurrency:
+  group: habit-reminders-cron
+  cancel-in-progress: false
 
 jobs:
   trigger-habits:
@@ -11,10 +17,17 @@ jobs:
     steps:
       - name: Call habit cron endpoint
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
+          set -euo pipefail
+          body_file=$(mktemp)
+          response=$(curl --silent --show-error --retry 2 --max-time 60 \
+            --output "$body_file" --write-out "%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             "${{ secrets.APP_URL }}/api/cron/habits")
+          body=$(cat "$body_file")
           echo "Response: $response"
+          echo "Body: $body"
           if [ "$response" != "200" ]; then
-            echo "::warning::Cron endpoint returned $response"
+            echo "::error::Cron endpoint returned $response"
+            exit 1
           fi
+          echo "$body" | jq -e '.ok == true' > /dev/null

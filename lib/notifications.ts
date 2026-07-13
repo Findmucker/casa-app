@@ -4,6 +4,7 @@ import { getFCMToken } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { authenticatedFetch } from "./api";
+import { getLocalClock } from "./habit-reminder-time";
 
 /**
  * Send a push notification to a specific member (by lowercase name).
@@ -201,7 +202,7 @@ export function cancelNotification(timerId: number) {
 
 // Get today's date as YYYY-MM-DD
 export function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  return getLocalClock(new Date()).date;
 }
 
 // Check if a date string is today
