@@ -52,7 +52,7 @@ function parseDate(raw: string): string {
     return isValidTransactionDate(value) ? value : "";
   }
 
-  const dmy = raw.match(/(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2}|\d{4})/);
+  const dmy = raw.match(/(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4}|\d{2})/);
   if (dmy) {
     const year = dmy[3].length === 2 ? `20${dmy[3]}` : dmy[3];
     const value = `${year}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
