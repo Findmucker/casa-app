@@ -17,9 +17,17 @@ const location: WeatherLocation = {
 };
 
 describe("weather forecast cache", () => {
+  const fetchMock = jest.fn();
+
   beforeEach(() => {
     clearWeatherForecastCache();
     jest.restoreAllMocks();
+    fetchMock.mockReset();
+    Object.defineProperty(global, "fetch", {
+      configurable: true,
+      writable: true,
+      value: fetchMock,
+    });
   });
 
   it("canonicalizes query order and deduplicates simultaneous requests", async () => {
@@ -27,7 +35,7 @@ describe("weather forecast cache", () => {
     const json = new Promise((resolve) => {
       resolveJson = resolve;
     });
-    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue({
+    fetchMock.mockResolvedValue({
       ok: true,
       json: () => json,
     } as Response);
@@ -55,7 +63,7 @@ describe("weather forecast cache", () => {
   it("serves cached data and marks expired data stale when refresh fails", async () => {
     const now = jest.spyOn(Date, "now");
     now.mockReturnValue(1_000);
-    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValueOnce({
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ temperature: 20 }),
     } as Response);
