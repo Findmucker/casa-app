@@ -13,6 +13,7 @@ import {
   isValidTransactionDate,
   type ParsedTransaction,
 } from "@/lib/bankParsers";
+import { parsePositiveAmount } from "@/lib/finance";
 
 const EXPENSE_CATEGORIES = [
   { id: "casa", emoji: "🏠", label: "Casa" },
@@ -30,7 +31,7 @@ const VALID_EXPENSE_CATEGORIES = new Set(EXPENSE_CATEGORIES.map((category) => ca
 type SubTab = "expenses" | "income" | "savings";
 
 export default function ExpenseList() {
-  const { t } = useT();
+  const { t, locale } = useT();
   const memberNames = useMemberNames();
   const { userName } = useHouseContext();
   const { items: expenses, loading: loadingExpenses, add: addExpense, remove: removeExpense } = useCollection<ExpenseItem>("expenses", "createdAt");
@@ -83,21 +84,21 @@ export default function ExpenseList() {
 
   const monthLabel = useMemo(() => {
     const [y, m] = viewMonth.split("-").map(Number);
-    return new Date(y, m - 1).toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
-  }, [viewMonth]);
+    return new Date(y, m - 1).toLocaleDateString(locale === "en" ? "en-GB" : "pt-PT", { month: "long", year: "numeric" });
+  }, [locale, viewMonth]);
 
   const handleAddExpense = async () => {
     const name = newName.trim();
-    const amount = parseFloat(newAmount);
-    if (!name || !amount) return;
+    const amount = parsePositiveAmount(newAmount);
+    if (!name || amount === null) return;
     await addExpense({ name, amount, category: newCategory, paidBy: newPayer, date: new Date().toISOString().split("T")[0] });
     setNewName(""); setNewAmount(""); setShowAdd(false);
   };
 
   const handleAddIncome = async () => {
     const name = newIncomeName.trim();
-    const amount = parseFloat(newIncomeAmount);
-    if (!name || !amount) return;
+    const amount = parsePositiveAmount(newIncomeAmount);
+    if (!name || amount === null) return;
     await addIncome({ name, amount, owner: newIncomeOwner, recurring: newIncomeRecurring, date: new Date().toISOString().split("T")[0] });
     setNewIncomeName(""); setNewIncomeAmount(""); setNewIncomeRecurring(false); setShowAdd(false);
   };
@@ -142,15 +143,15 @@ export default function ExpenseList() {
 
   const handleAddSavings = async () => {
     const name = newSavingsName.trim();
-    const target = parseFloat(newSavingsTarget);
-    if (!name || !target) return;
+    const target = parsePositiveAmount(newSavingsTarget);
+    if (!name || target === null) return;
     await addSavings({ name, emoji: newSavingsEmoji, targetAmount: target, currentAmount: 0 });
     setNewSavingsName(""); setNewSavingsTarget(""); setShowAdd(false);
   };
 
   const handleDeposit = async (goal: SavingsGoal) => {
-    const amount = parseFloat(depositAmount);
-    if (!amount || amount <= 0) return;
+    const amount = parsePositiveAmount(depositAmount);
+    if (amount === null) return;
     await updateSavings(goal.id, { currentAmount: goal.currentAmount + amount });
     setDepositId(null); setDepositAmount("");
   };
@@ -222,7 +223,7 @@ export default function ExpenseList() {
             <div className="flex gap-2">
               <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t("expenses.placeholder")}
                 className="flex-1 rounded-2xl border border-emerald-200/60 bg-white/80 px-4 py-2.5 text-sm text-emerald-800 placeholder-emerald-300 focus:outline-none focus:border-emerald-300" autoFocus />
-              <input type="number" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} placeholder="€"
+              <input type="number" min="0.01" step="0.01" inputMode="decimal" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} placeholder="€"
                 className="w-20 rounded-2xl border border-emerald-200/60 bg-white/80 px-3 py-2.5 text-sm text-emerald-800 placeholder-emerald-300 focus:outline-none focus:border-emerald-300" />
             </div>
             <div className="flex gap-1.5 flex-wrap">
@@ -241,7 +242,7 @@ export default function ExpenseList() {
                 </button>
               ))}
             </div>
-            <button onClick={handleAddExpense} disabled={!newName.trim() || !newAmount}
+            <button onClick={handleAddExpense} disabled={!newName.trim() || parsePositiveAmount(newAmount) === null}
               className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 py-2.5 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-30">
               {t("expenses.addExpense")}
             </button>
@@ -253,7 +254,7 @@ export default function ExpenseList() {
             <div className="flex gap-2">
               <input type="text" value={newIncomeName} onChange={(e) => setNewIncomeName(e.target.value)} placeholder={t("expenses.income.placeholder")}
                 className="flex-1 rounded-2xl border border-emerald-200/60 bg-white/80 px-4 py-2.5 text-sm text-emerald-800 placeholder-emerald-300 focus:outline-none focus:border-emerald-300" autoFocus />
-              <input type="number" value={newIncomeAmount} onChange={(e) => setNewIncomeAmount(e.target.value)} placeholder="€"
+              <input type="number" min="0.01" step="0.01" inputMode="decimal" value={newIncomeAmount} onChange={(e) => setNewIncomeAmount(e.target.value)} placeholder="€"
                 className="w-20 rounded-2xl border border-emerald-200/60 bg-white/80 px-3 py-2.5 text-sm text-emerald-800 placeholder-emerald-300 focus:outline-none focus:border-emerald-300" />
             </div>
             <div className="flex gap-2">
@@ -269,7 +270,7 @@ export default function ExpenseList() {
                 className="rounded border-emerald-300 text-emerald-500 focus:ring-emerald-200" />
               <span className="text-xs text-emerald-600">{t("expenses.income.recurring")}</span>
             </label>
-            <button onClick={handleAddIncome} disabled={!newIncomeName.trim() || !newIncomeAmount}
+            <button onClick={handleAddIncome} disabled={!newIncomeName.trim() || parsePositiveAmount(newIncomeAmount) === null}
               className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 py-2.5 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-30">
               {t("expenses.income.add")}
             </button>
@@ -289,10 +290,10 @@ export default function ExpenseList() {
             <div className="flex gap-2">
               <input type="text" value={newSavingsName} onChange={(e) => setNewSavingsName(e.target.value)} placeholder={t("expenses.savings.placeholder")}
                 className="flex-1 rounded-2xl border border-emerald-200/60 bg-white/80 px-4 py-2.5 text-sm text-emerald-800 placeholder-emerald-300 focus:outline-none focus:border-emerald-300" autoFocus />
-              <input type="number" value={newSavingsTarget} onChange={(e) => setNewSavingsTarget(e.target.value)} placeholder={t("expenses.savings.target") + " €"}
+              <input type="number" min="0.01" step="0.01" inputMode="decimal" value={newSavingsTarget} onChange={(e) => setNewSavingsTarget(e.target.value)} placeholder={t("expenses.savings.target") + " €"}
                 className="w-24 rounded-2xl border border-emerald-200/60 bg-white/80 px-3 py-2.5 text-sm text-emerald-800 placeholder-emerald-300 focus:outline-none focus:border-emerald-300" />
             </div>
-            <button onClick={handleAddSavings} disabled={!newSavingsName.trim() || !newSavingsTarget}
+            <button onClick={handleAddSavings} disabled={!newSavingsName.trim() || parsePositiveAmount(newSavingsTarget) === null}
               className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 py-2.5 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-30">
               {t("expenses.savings.add")}
             </button>
@@ -452,7 +453,7 @@ export default function ExpenseList() {
                       {!isComplete && (
                         depositId === goal.id ? (
                           <div className="flex gap-1.5">
-                            <input type="number" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} placeholder="€"
+                            <input type="number" min="0.01" step="0.01" inputMode="decimal" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} placeholder="€"
                               className="w-16 rounded-lg border border-emerald-200 bg-white px-2 py-1 text-xs text-emerald-800 focus:outline-none" autoFocus />
                             <button onClick={() => handleDeposit(goal)}
                               className="px-2.5 py-1 rounded-lg bg-emerald-400 text-white text-xs font-medium active:scale-95">✓</button>
