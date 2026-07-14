@@ -16,6 +16,10 @@ interface MonthlyData {
   income: number;
 }
 
+function positiveChartValue(value: number): number {
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
 // --- DONUT CHART ---
 function DonutChart({ data, total, centerLabel }: { data: ChartData[]; total: number; centerLabel?: string }) {
   const radius = 40;
@@ -74,19 +78,31 @@ function BarChart({ data, maxValue }: { data: MonthlyData[]; maxValue: number })
   return (
     <div className="flex items-end gap-1.5 h-32 px-2">
       {data.map((d, i) => {
-        const expH = maxValue > 0 ? (d.expenses / maxValue) * 100 : 0;
-        const incH = maxValue > 0 ? (d.income / maxValue) * 100 : 0;
+        const expenses = positiveChartValue(d.expenses);
+        const income = positiveChartValue(d.income);
+        const expH = maxValue > 0 ? (expenses / maxValue) * 100 : 0;
+        const incH = maxValue > 0 ? (income / maxValue) * 100 : 0;
         return (
           <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
             <div className="flex gap-0.5 items-end w-full h-24">
-              <div
-                className="flex-1 bg-gradient-to-t from-red-300 to-red-400 rounded-t-sm transition-all duration-500"
-                style={{ height: `${expH}%`, minHeight: d.expenses > 0 ? "4px" : "0" }}
-              />
-              <div
-                className="flex-1 bg-gradient-to-t from-green-300 to-green-400 rounded-t-sm transition-all duration-500"
-                style={{ height: `${incH}%`, minHeight: d.income > 0 ? "4px" : "0" }}
-              />
+              <div className="flex-1 h-full flex items-end">
+                {expenses > 0 && (
+                  <div
+                    data-testid="expense-bar"
+                    className="w-full bg-gradient-to-t from-red-300 to-red-400 rounded-t-sm transition-all duration-500"
+                    style={{ height: `${expH}%`, minHeight: "4px" }}
+                  />
+                )}
+              </div>
+              <div className="flex-1 h-full flex items-end">
+                {income > 0 && (
+                  <div
+                    data-testid="income-bar"
+                    className="w-full bg-gradient-to-t from-green-300 to-green-400 rounded-t-sm transition-all duration-500"
+                    style={{ height: `${incH}%`, minHeight: "4px" }}
+                  />
+                )}
+              </div>
             </div>
             <span className="text-[9px] text-emerald-400 font-medium">{d.month}</span>
           </div>
@@ -162,14 +178,21 @@ export default function ExpenseCharts({ monthExpenses, allExpenses, allIncomes, 
       const d = new Date(y, m - 1 - i, 1);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const label = d.toLocaleDateString("pt-PT", { month: "short" }).slice(0, 3);
-      const expenses = allExpenses.filter((e) => e.date?.startsWith(key)).reduce((s, e) => s + e.amount, 0);
-      const income = allIncomes.filter((e) => e.date?.startsWith(key)).reduce((s, e) => s + e.amount, 0);
+      const expenses = allExpenses
+        .filter((e) => e.date?.startsWith(key))
+        .reduce((sum, expense) => sum + positiveChartValue(expense.amount), 0);
+      const income = allIncomes
+        .filter((entry) => entry.date?.startsWith(key))
+        .reduce((sum, entry) => sum + positiveChartValue(entry.amount), 0);
       months.push({ month: label, expenses, income });
     }
     return months;
   }, [allExpenses, allIncomes, viewMonth]);
 
-  const barMax = useMemo(() => Math.max(...barData.map((d) => Math.max(d.expenses, d.income)), 1), [barData]);
+  const barMax = useMemo(
+    () => Math.max(...barData.map((d) => Math.max(positiveChartValue(d.expenses), positiveChartValue(d.income))), 1),
+    [barData]
+  );
 
   // Member split
   const memberData = useMemo(() => {
