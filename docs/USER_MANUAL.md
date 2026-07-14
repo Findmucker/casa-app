@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Última atualização: 13 de julho de 2026 | Deploy contínuo
+> Última atualização: 14 de julho de 2026 | Deploy contínuo
 
 ## O que e a app?
 
