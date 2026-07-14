@@ -8,7 +8,11 @@ import MiniAvatar from "./MiniAvatar";
 import ExpenseCharts from "./ExpenseCharts";
 import ImportPanel from "./ImportPanel";
 import { useT } from "@/lib/i18n";
-import type { ParsedTransaction } from "@/lib/bankParsers";
+import {
+  buildTransactionKey,
+  isValidTransactionDate,
+  type ParsedTransaction,
+} from "@/lib/bankParsers";
 
 const EXPENSE_CATEGORIES = [
   { id: "casa", emoji: "🏠", label: "Casa" },
@@ -21,6 +25,7 @@ const EXPENSE_CATEGORIES = [
 ];
 
 const SAVINGS_EMOJIS = ["🎯", "✈️", "🚗", "🏠", "💍", "🎓", "💻", "🎮", "👶", "🐾"];
+const VALID_EXPENSE_CATEGORIES = new Set(EXPENSE_CATEGORIES.map((category) => category.id));
 
 type SubTab = "expenses" | "income" | "savings";
 
@@ -97,19 +102,42 @@ export default function ExpenseList() {
     setNewIncomeName(""); setNewIncomeAmount(""); setNewIncomeRecurring(false); setShowAdd(false);
   };
 
-  const handleImport = async (items: ParsedTransaction[], owner: string) => {
+  const handleImport = async (items: ParsedTransaction[], owner: string): Promise<number> => {
+    const expenseKeys = new Set(
+      expenses.map((item) => buildTransactionKey(item.name, item.amount, item.date || ""))
+    );
+    const incomeKeys = new Set(
+      incomes.map((item) => buildTransactionKey(item.name, item.amount, item.date || ""))
+    );
+    let importedCount = 0;
+
     for (const item of items) {
-      // Dedup: skip if same description + amount + date already exists
-      if (item.type === "expense") {
-        const isDup = expenses.some(e => e.name === item.description && e.amount === item.amount && e.date === item.date);
-        if (isDup) continue;
-        await addExpense({ name: item.description, amount: item.amount, category: item.category, paidBy: owner, date: item.date });
-      } else {
-        const isDup = incomes.some((i: IncomeItem) => i.name === item.description && i.amount === item.amount && i.date === item.date);
-        if (isDup) continue;
-        await addIncome({ name: item.description, amount: item.amount, owner, recurring: false, date: item.date });
+      const description = item.description.trim().replace(/\s+/g, " ").slice(0, 100);
+      const amount = Math.round(Math.abs(Number(item.amount)) * 100) / 100;
+      if (!description || !Number.isFinite(amount) || amount <= 0 || !isValidTransactionDate(item.date)) {
+        continue;
       }
+
+      const key = buildTransactionKey(description, amount, item.date);
+      if (item.type === "expense") {
+        if (expenseKeys.has(key)) continue;
+        await addExpense({
+          name: description,
+          amount,
+          category: VALID_EXPENSE_CATEGORIES.has(item.category) ? item.category : "outros",
+          paidBy: owner,
+          date: item.date,
+        });
+        expenseKeys.add(key);
+      } else {
+        if (incomeKeys.has(key)) continue;
+        await addIncome({ name: description, amount, owner, recurring: false, date: item.date });
+        incomeKeys.add(key);
+      }
+      importedCount += 1;
     }
+
+    return importedCount;
   };
 
   const handleAddSavings = async () => {
