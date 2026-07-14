@@ -68,7 +68,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
     setError(null);
 
     // CSV files — parse client-side
-    if (file.name.endsWith(".csv") || file.type === "text/csv") {
+    if (file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv") {
       setView("loading");
       try {
         const text = await file.text();
