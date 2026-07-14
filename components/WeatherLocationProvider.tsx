@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { deleteField, doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useHouseContext } from "@/lib/context";
 import { useT } from "@/lib/i18n";
@@ -82,7 +82,12 @@ export function WeatherLocationProvider({ children }: { children: ReactNode }) {
     try {
       await setDoc(
         doc(db, "users", userId, "preferences", "weather"),
-        { ...next, updatedAt: serverTimestamp() },
+        {
+          defaultMode: next.defaultMode,
+          favorites: next.favorites,
+          defaultFavoriteId: next.defaultFavoriteId ?? deleteField(),
+          updatedAt: serverTimestamp(),
+        },
         { merge: true }
       );
       setErrorCode(null);
