@@ -184,6 +184,9 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                 <p className="text-xs text-emerald-400">{t("import.fileHint")}</p>
               </div>
             </button>
+            <p className="text-center text-[11px] text-emerald-400 px-4">
+              🔒 {t("import.localOnly")}
+            </p>
 
             {/* Hidden input */}
             <input
