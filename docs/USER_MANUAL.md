@@ -130,7 +130,6 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 - Vista mensal com grid interativo
 - **Emojis** por tipo de atividade no dia (substituiram os dots coloridos):
   - ✅ Habitos completados
-  - 🪴 Coisinhas concluidas
   - 🏠 Projetos concluidos
   - 🎉 Eventos agendados
   - 🇵🇹 Feriados portugueses
@@ -140,7 +139,7 @@ Os graficos atualizam automaticamente com os dados do mes selecionado.
 - **Previsao meteorologica** — emoji do tempo nos proximos 7 dias diretamente no grid
 - Tap num dia para ver todos os detalhes:
   - Card de meteo com temperatura min/max e probabilidade de chuva
-  - Lista de eventos, habitos, coisinhas e projetos desse dia
+  - Lista de eventos, habitos e projetos desse dia
   - Aniversarios com MiniAvatar do membro
   - Feriados e datas especiais
 
