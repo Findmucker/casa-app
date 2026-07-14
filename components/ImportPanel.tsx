@@ -2,14 +2,21 @@
 
 import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
-import { parseCSV, parsePDFText, parsePDFRows, type ParsedTransaction } from "@/lib/bankParsers";
+import {
+  buildTransactionKey,
+  isValidTransactionDate,
+  parseCSV,
+  parsePDFText,
+  parsePDFRows,
+  type ParsedTransaction,
+} from "@/lib/bankParsers";
 import { pdfToRows, pdfToImage } from "@/lib/pdfToImage";
 import { authenticatedFetch } from "@/lib/api";
 import MiniAvatar from "./MiniAvatar";
 
 interface ImportPanelProps {
   onClose: () => void;
-  onImport: (items: ParsedTransaction[], owner: string) => Promise<void>;
+  onImport: (items: ParsedTransaction[], owner: string) => Promise<number>;
   existingExpenses: { name: string; amount: number; date?: string }[];
   existingIncome: { name: string; amount: number; date?: string }[];
   memberNames: { key: string; label: string }[];
@@ -38,11 +45,25 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const isDuplicate = (item: ParsedTransaction) => {
-    if (item.type === "expense") {
-      return existingExpenses.some(e => e.name === item.description && e.amount === item.amount && e.date === item.date);
-    }
-    return existingIncome.some(i => i.name === item.description && i.amount === item.amount && i.date === item.date);
+  const isImportable = (item: ParsedTransaction) =>
+    item.description.trim().length > 0
+    && Number.isFinite(item.amount)
+    && item.amount > 0
+    && isValidTransactionDate(item.date);
+
+  const isDuplicate = (item: ParsedTransaction, index = -1) => {
+    const key = buildTransactionKey(item.description, item.amount, item.date);
+    const exists = item.type === "expense"
+      ? existingExpenses.some((entry) => buildTransactionKey(entry.name, entry.amount, entry.date || "") === key)
+      : existingIncome.some((entry) => buildTransactionKey(entry.name, entry.amount, entry.date || "") === key);
+    if (exists) return true;
+
+    return index >= 0 && items
+      .slice(0, index)
+      .some((entry) =>
+        entry.type === item.type
+        && buildTransactionKey(entry.description, entry.amount, entry.date) === key
+      );
   };
 
   const handleFile = async (file: File) => {
@@ -157,8 +178,8 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   const handleConfirm = async () => {
     setView("loading");
     try {
-      await onImport(items, owner);
-      setImportedCount(items.length);
+      const count = await onImport(items, owner);
+      setImportedCount(count);
       setView("done");
     } catch {
       setError(t("import.error"));
@@ -311,18 +332,22 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                     </span>
                   </div>
                   {entries.map(({ item, idx }) => {
-              const dup = isDuplicate(item);
+              const dup = isDuplicate(item, idx);
+              const invalid = !isImportable(item);
               return (
               <div
                 key={idx}
                 className={`rounded-2xl p-3 mb-2 border shadow-sm space-y-2 ${
-                  dup ? "bg-amber-50/80 border-amber-200/60 opacity-60"
+                  dup || invalid ? "bg-amber-50/80 border-amber-200/60 opacity-60"
                   : item.type === "expense" ? "bg-red-50/40 border-red-100/50"
                   : "bg-green-50/40 border-green-100/50"
                 }`}
               >
                 {dup && (
                   <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ {t("import.duplicate")}</div>
+                )}
+                {invalid && !dup && (
+                  <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ {t("import.error")}</div>
                 )}
                 <div className="flex items-center gap-2">
                   {/* Type toggle */}
@@ -397,7 +422,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                 onClick={handleConfirm}
                 className="w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
               >
-                {t("import.confirm")} ({items.filter(i => !isDuplicate(i)).length})
+                {t("import.confirm")} ({items.filter((item, index) => isImportable(item) && !isDuplicate(item, index)).length})
               </button>
             )}
           </div>
