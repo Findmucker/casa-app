@@ -68,6 +68,11 @@ describe("WeatherLocationPicker", () => {
     fireEvent.click(
       screen.getByRole("button", { name: /weather.location.active/ })
     );
+    const dialog = screen.getByRole("dialog", {
+      name: "weather.location.dialog",
+    });
+    expect(dialog).toHaveClass("z-[60]");
+    expect(dialog.parentElement).toHaveClass("z-50");
 
     fireEvent.click(
       screen.getByRole("button", { name: "weather.location.useCurrent" })
