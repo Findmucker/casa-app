@@ -163,16 +163,25 @@ Os graficos atualizam automaticamente com o mes selecionado, ignoram valores inv
 
 ## Tempo (Meteorologia)
 
-A previsão usa a localização atual do dispositivo quando autorizada. Se a permissão
-for recusada ou a geolocalização não estiver disponível, a aplicação mostra
-explicitamente `Óbidos (predefinição)`.
+A tab **Tempo** permite escolher qualquer localização no mundo. A localização ativa
+é usada de forma consistente na previsão principal, no Calendário e nos Eventos.
 
-- Previsao a 7 dias via Open-Meteo API (gratuita)
-- Temperatura, vento, precipitacao
-- Vista horaria expandivel por dia (tap para expandir)
-- **Integrada no Calendário** — emoji do tempo visivel no grid
-- **Integrada nos Eventos** — previsao automatica para eventos proximos
+- **Pesquisar** — escreve pelo menos dois caracteres e escolhe uma localidade dos
+  resultados Open-Meteo; podes usá-la temporariamente sem a guardar
+- **Favoritos privados** — guarda até 10 localizações para acesso rápido. A lista é
+  sincronizada na tua conta, mas não é visível para os restantes membros da casa
+- **Localização atual** — só é pedida quando tocas em `Usar localização atual`;
+  a app faz uma leitura única, de baixa precisão, e não acompanha movimentos
+- **Predefinição** — se não escolheres outra localização, é usado Óbidos
+- **Fuso horário correto** — datas e horas seguem a localização escolhida
+- Previsão a 7 dias via Open-Meteo, com temperatura, vento e precipitação
+- Vista horária expansível por dia
+- Se a atualização falhar, a app pode mostrar a última previsão guardada e identifica-a
+  como dados em cache
 
+Para alterar a localização, abre o seletor no topo da tab Tempo. A escolha fica ativa
+durante a sessão; selecionar um favorito, a localização atual ou Óbidos também define
+a predefinição para as sessões seguintes.
 ---
 
 ## Notificacoes Push
