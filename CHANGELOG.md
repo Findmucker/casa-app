@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Coisinhas can now include notes during creation, with a compact mobile-friendly price field.
 - Finance charts no longer render phantom bars for months without expenses or income.
 - Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
 
