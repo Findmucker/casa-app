@@ -40,6 +40,13 @@ locale-specific presentation separate from Firestore data.
 Operational details are in [CRON_SETUP.md](CRON_SETUP.md). Security policy is
 enforced by [../firestore.rules](../firestore.rules).
 
+## Product and platform direction
+
+The app remains web-first and PWA-based. Native Android work is conditional on the
+widget pilot; a full Kotlin rewrite and background geofencing are not planned.
+Architecture priorities, service limits, and the cost analysis are maintained in
+[PRODUCT_REVIEW.md](PRODUCT_REVIEW.md).
+
 ## Change guidelines
 
 - Keep Firebase Admin and secrets out of client modules.
