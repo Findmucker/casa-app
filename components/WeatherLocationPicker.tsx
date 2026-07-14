@@ -41,7 +41,7 @@ export default function WeatherLocationPicker() {
     selectLocation,
     selectFavorite,
     selectFallback,
-    useCurrentLocation,
+    useCurrentLocation: requestCurrentLocation,
     addFavorite,
     removeFavorite,
     isFavorite,
@@ -144,7 +144,7 @@ export default function WeatherLocationPicker() {
 
           <button
             type="button"
-            onClick={() => void useCurrentLocation()}
+            onClick={() => void requestCurrentLocation()}
             disabled={locating}
             className="flex min-h-11 w-full items-center gap-3 rounded-2xl bg-white p-3 text-left text-sm font-semibold text-rose-700 disabled:opacity-60"
           >
