@@ -7,7 +7,9 @@ import { createEventShare } from "@/lib/share";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getWeatherInfo } from "@/lib/weather";
-import { createForecastUrl, getWeatherLocation, weatherLocationKey } from "@/lib/weather-location";
+import { DEFAULT_WEATHER_LOCATION } from "@/lib/weather-location";
+import { fetchWeatherForecast } from "@/lib/weather-cache";
+import { useWeatherLocationOptional } from "@/components/WeatherLocationProvider";
 import { useHouseContextSafe } from "@/lib/context";
 import { notifyOtherMembers } from "@/lib/notifications";
 
@@ -20,47 +22,59 @@ interface DateWeather {
   precipProb: number;
 }
 
-// Cache weather data in memory
-let weatherCache: { data: Record<string, DateWeather>; fetchedAt: number; locationKey: string } | null = null;
-
-async function fetchWeatherForDates(): Promise<Record<string, DateWeather>> {
-  const location = await getWeatherLocation();
-  const locationKey = weatherLocationKey(location);
-  // Cache for 30 minutes
-  if (weatherCache && weatherCache.locationKey === locationKey && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
-    return weatherCache.data;
-  }
-  try {
-    const res = await fetch(createForecastUrl(location, {
-      daily: "temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max",
-      forecast_days: 7,
-    }));
-    if (!res.ok) throw new Error(`Weather request failed (${res.status})`);
-    const json = await res.json();
-    const result: Record<string, DateWeather> = {};
-    for (let i = 0; i < json.daily.time.length; i++) {
-      result[json.daily.time[i]] = {
-        tempMax: Math.round(json.daily.temperature_2m_max[i]),
-        tempMin: Math.round(json.daily.temperature_2m_min[i]),
-        weathercode: json.daily.weather_code[i],
-        precipProb: json.daily.precipitation_probability_max[i],
-      };
-    }
-    weatherCache = { data: result, fetchedAt: Date.now(), locationKey };
-    return result;
-  } catch {
-    return {};
-  }
+interface EventWeatherApiResponse {
+  daily: {
+    time: string[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    weather_code: number[];
+    precipitation_probability_max: number[];
+  };
 }
 
 function useEventWeather(date: string): DateWeather | null {
+  const weatherContext = useWeatherLocationOptional();
+  const sharedFetch = weatherContext?.fetchForecast;
+  const activeLocationId = weatherContext?.activeLocation.id ?? DEFAULT_WEATHER_LOCATION.id;
   const [weather, setWeather] = useState<DateWeather | null>(null);
+
   useEffect(() => {
-    if (!date) return;
-    fetchWeatherForDates().then((data) => {
-      if (data[date]) setWeather(data[date]);
+    if (!date) {
+      setWeather(null);
+      return;
+    }
+
+    let cancelled = false;
+    const query = {
+      daily: "temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max",
+      forecast_days: 7,
+    };
+    const request = sharedFetch
+      ? sharedFetch<EventWeatherApiResponse>(query)
+      : fetchWeatherForecast<EventWeatherApiResponse>(DEFAULT_WEATHER_LOCATION, query);
+
+    void request.then(({ data }) => {
+      if (cancelled) return;
+      const index = data.daily.time.indexOf(date);
+      if (index < 0) {
+        setWeather(null);
+        return;
+      }
+      setWeather({
+        tempMax: Math.round(data.daily.temperature_2m_max[index]),
+        tempMin: Math.round(data.daily.temperature_2m_min[index]),
+        weathercode: data.daily.weather_code[index],
+        precipProb: data.daily.precipitation_probability_max[index],
+      });
+    }).catch(() => {
+      if (!cancelled) setWeather(null);
     });
-  }, [date]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeLocationId, date, sharedFetch]);
+
   return weather;
 }
 
