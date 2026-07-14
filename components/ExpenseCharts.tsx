@@ -2,109 +2,132 @@
 
 import { useMemo } from "react";
 import { useT } from "@/lib/i18n";
+import {
+  buildMonthlyFinanceSeries,
+  formatEuro,
+  positiveAmount,
+  type FinanceLocale,
+  type MonthlyFinancePoint,
+} from "@/lib/finance";
 
 interface ChartData {
+  id: string;
   label: string;
   value: number;
   color: string;
   emoji?: string;
 }
 
-interface MonthlyData {
-  month: string;
-  expenses: number;
-  income: number;
+interface DonutSegment extends ChartData {
+  dashLength: number;
+  dashOffset: number;
 }
 
-function positiveChartValue(value: number): number {
-  return Number.isFinite(value) && value > 0 ? value : 0;
-}
+const CATEGORY_COLORS = ["#059669", "#0891b2", "#7c3aed", "#d97706", "#dc2626", "#db2777", "#4b5563"];
+const DONUT_RADIUS = 40;
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS;
 
-// --- DONUT CHART ---
-function DonutChart({ data, total, centerLabel }: { data: ChartData[]; total: number; centerLabel?: string }) {
-  const radius = 40;
-  const cx = 50;
-  const cy = 50;
-  const strokeWidth = 16;
-
-  let cumulative = 0;
-  const segments = data.map((d) => {
-    const pct = total > 0 ? d.value / total : 0;
-    const startAngle = cumulative * 360;
-    const endAngle = (cumulative + pct) * 360;
-    cumulative = cumulative + pct; // eslint-disable-line react-hooks/immutability
-    return { ...d, startAngle, endAngle, pct };
-  });
-
-  function polarToCartesian(angle: number) {
-    const rad = ((angle - 90) * Math.PI) / 180;
-    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
-  }
+function DonutChart({
+  data,
+  total,
+  centerLabel,
+  label,
+}: {
+  data: ChartData[];
+  total: number;
+  centerLabel: string;
+  label: string;
+}) {
+  const segments = data.reduce<DonutSegment[]>((result, item) => {
+    const dashLength = total > 0 ? (item.value / total) * DONUT_CIRCUMFERENCE : 0;
+    const dashOffset = result.reduce((sum, segment) => sum + segment.dashLength, 0);
+    result.push({ ...item, dashLength, dashOffset });
+    return result;
+  }, []);
 
   return (
     <div className="relative">
-      <svg viewBox="0 0 100 100" className="w-full h-full max-w-[160px] mx-auto">
-        {segments.map((seg, i) => {
-          if (seg.pct === 0) return null;
-          const start = polarToCartesian(seg.startAngle);
-          const end = polarToCartesian(seg.endAngle);
-          const largeArc = seg.endAngle - seg.startAngle > 180 ? 1 : 0;
-          const d = `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`;
-          return (
-            <path
-              key={i}
-              d={d}
-              fill="none"
-              stroke={seg.color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              className="transition-all duration-700"
-              style={{ opacity: 0.85 }}
-            />
-          );
-        })}
-        {centerLabel && (
-          <text x={cx} y={cy + 2} textAnchor="middle" className="text-[8px] font-bold fill-emerald-700">
-            {centerLabel}
-          </text>
-        )}
+      <svg
+        viewBox="0 0 100 100"
+        className="w-full h-full max-w-[160px] mx-auto"
+        role="img"
+        aria-label={label}
+      >
+        <title>{label}</title>
+        <circle
+          cx="50"
+          cy="50"
+          r={DONUT_RADIUS}
+          fill="none"
+          stroke="#d1fae5"
+          strokeWidth="16"
+        />
+        {segments.map((segment) => (
+          <circle
+            key={segment.id}
+            data-testid="donut-segment"
+            cx="50"
+            cy="50"
+            r={DONUT_RADIUS}
+            fill="none"
+            stroke={segment.color}
+            strokeWidth="16"
+            strokeDasharray={`${segment.dashLength} ${DONUT_CIRCUMFERENCE - segment.dashLength}`}
+            strokeDashoffset={-segment.dashOffset}
+            strokeLinecap="butt"
+            transform="rotate(-90 50 50)"
+            className="transition-all duration-700"
+          />
+        ))}
+        <text x="50" y="52" textAnchor="middle" className="text-[8px] font-bold fill-emerald-700">
+          {centerLabel}
+        </text>
       </svg>
     </div>
   );
 }
 
-// --- BAR CHART ---
-function BarChart({ data, maxValue }: { data: MonthlyData[]; maxValue: number }) {
+function BarChart({
+  data,
+  maxValue,
+  label,
+  locale,
+}: {
+  data: MonthlyFinancePoint[];
+  maxValue: number;
+  label: string;
+  locale: FinanceLocale;
+}) {
   return (
-    <div className="flex items-end gap-1.5 h-32 px-2">
-      {data.map((d, i) => {
-        const expenses = positiveChartValue(d.expenses);
-        const income = positiveChartValue(d.income);
-        const expH = maxValue > 0 ? (expenses / maxValue) * 100 : 0;
-        const incH = maxValue > 0 ? (income / maxValue) * 100 : 0;
+    <div className="flex items-end gap-1.5 h-32 px-2" role="img" aria-label={label}>
+      {data.map((point) => {
+        const expenseHeight = maxValue > 0 ? (point.expenses / maxValue) * 100 : 0;
+        const incomeHeight = maxValue > 0 ? (point.income / maxValue) * 100 : 0;
         return (
-          <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+          <div key={point.key} className="flex-1 flex flex-col items-center gap-0.5">
             <div className="flex gap-0.5 items-end w-full h-24">
               <div className="flex-1 h-full flex items-end">
-                {expenses > 0 && (
+                {point.expenses > 0 && (
                   <div
                     data-testid="expense-bar"
-                    className="w-full bg-gradient-to-t from-red-300 to-red-400 rounded-t-sm transition-all duration-500"
-                    style={{ height: `${expH}%`, minHeight: "4px" }}
+                    title={`${point.month}: ${formatEuro(point.expenses, locale)}`}
+                    className="w-full bg-gradient-to-t from-rose-400 to-red-500 rounded-t-sm transition-all duration-500"
+                    style={{ height: `${expenseHeight}%`, minHeight: "4px" }}
                   />
                 )}
               </div>
               <div className="flex-1 h-full flex items-end">
-                {income > 0 && (
+                {point.income > 0 && (
                   <div
                     data-testid="income-bar"
-                    className="w-full bg-gradient-to-t from-green-300 to-green-400 rounded-t-sm transition-all duration-500"
-                    style={{ height: `${incH}%`, minHeight: "4px" }}
+                    title={`${point.month}: ${formatEuro(point.income, locale)}`}
+                    className="w-full bg-gradient-to-t from-emerald-400 to-green-500 rounded-t-sm transition-all duration-500"
+                    style={{ height: `${incomeHeight}%`, minHeight: "4px" }}
                   />
                 )}
               </div>
             </div>
-            <span className="text-[9px] text-emerald-400 font-medium">{d.month}</span>
+            <span className="text-[9px] text-emerald-500 font-medium">{point.month}</span>
           </div>
         );
       })}
@@ -112,31 +135,49 @@ function BarChart({ data, maxValue }: { data: MonthlyData[]; maxValue: number })
   );
 }
 
-// --- MINI PIE (for member split) ---
-function MemberSplit({ data }: { data: ChartData[] }) {
-  const total = data.reduce((s, d) => s + d.value, 0);
+function MemberSplit({
+  data,
+  label,
+  locale,
+}: {
+  data: ChartData[];
+  label: string;
+  locale: FinanceLocale;
+}) {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
   return (
-    <div className="flex gap-3 justify-center">
-      {data.map((d, i) => {
-        const pct = total > 0 ? ((d.value / total) * 100).toFixed(0) : "0";
+    <div className="flex gap-3 justify-center flex-wrap" aria-label={label}>
+      {data.map((item) => {
+        const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0;
         return (
-          <div key={i} className="flex flex-col items-center gap-1">
+          <div key={item.id} className="flex flex-col items-center gap-1">
             <div className="relative w-12 h-12">
-              <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                <circle cx="18" cy="18" r="14" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+              <svg
+                viewBox="0 0 36 36"
+                className="w-full h-full -rotate-90"
+                role="img"
+                aria-label={`${item.label}: ${formatEuro(item.value, locale)}, ${percentage}%`}
+              >
+                <circle cx="18" cy="18" r="14" fill="none" stroke="#d1fae5" strokeWidth="4" />
                 <circle
-                  cx="18" cy="18" r="14" fill="none"
-                  stroke={d.color}
+                  cx="18"
+                  cy="18"
+                  r="14"
+                  fill="none"
+                  stroke={item.color}
                   strokeWidth="4"
-                  strokeDasharray={`${(d.value / total) * 88} 88`}
+                  strokeDasharray={`${(item.value / total) * 88} 88`}
                   strokeLinecap="round"
                   className="transition-all duration-700"
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-emerald-700">{pct}%</span>
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-emerald-700">
+                {percentage}%
+              </span>
             </div>
-            <span className="text-[10px] text-emerald-500">{d.emoji} {d.label}</span>
-            <span className="text-[10px] font-semibold text-emerald-700">{d.value.toFixed(0)}€</span>
+            <span className="text-[10px] text-emerald-600">{item.emoji} {item.label}</span>
+            <span className="text-[10px] font-semibold text-emerald-800">{formatEuro(item.value, locale)}</span>
           </div>
         );
       })}
@@ -144,7 +185,6 @@ function MemberSplit({ data }: { data: ChartData[] }) {
   );
 }
 
-// --- MAIN COMPONENT ---
 interface ExpenseChartsProps {
   monthExpenses: { amount: number; category: string; date: string; paidBy: string }[];
   allExpenses: { amount: number; category: string; date: string; paidBy: string }[];
@@ -154,101 +194,118 @@ interface ExpenseChartsProps {
   viewMonth: string;
 }
 
-const CATEGORY_COLORS = ["#34d399", "#06b6d4", "#8b5cf6", "#f59e0b", "#ef4444", "#ec4899", "#6b7280"];
+export default function ExpenseCharts({
+  monthExpenses,
+  allExpenses,
+  allIncomes,
+  categories,
+  memberNames,
+  viewMonth,
+}: ExpenseChartsProps) {
+  const { t, locale } = useT();
 
-export default function ExpenseCharts({ monthExpenses, allExpenses, allIncomes, categories, memberNames, viewMonth }: ExpenseChartsProps) {
-  const { t } = useT();
-
-  // Donut data by category
   const donutData = useMemo(() => {
-    const map: Record<string, number> = {};
-    monthExpenses.forEach((e) => { map[e.category] = (map[e.category] || 0) + e.amount; });
+    const totals = new Map<string, number>();
+    for (const expense of monthExpenses) {
+      const amount = positiveAmount(expense.amount);
+      if (amount > 0) totals.set(expense.category, (totals.get(expense.category) ?? 0) + amount);
+    }
+
     return categories
-      .map((c, i) => ({ label: c.label, emoji: c.emoji, value: map[c.id] || 0, color: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }))
-      .filter((d) => d.value > 0);
+      .map((category, index) => ({
+        id: category.id,
+        label: category.label,
+        emoji: category.emoji,
+        value: totals.get(category.id) ?? 0,
+        color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+      }))
+      .filter((item) => item.value > 0);
   }, [monthExpenses, categories]);
 
-  const totalMonth = useMemo(() => monthExpenses.reduce((s, e) => s + e.amount, 0), [monthExpenses]);
+  const totalMonth = useMemo(
+    () => donutData.reduce((sum, item) => sum + item.value, 0),
+    [donutData]
+  );
 
-  // Bar chart: last 6 months
-  const barData = useMemo(() => {
-    const months: MonthlyData[] = [];
-    const [y, m] = viewMonth.split("-").map(Number);
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(y, m - 1 - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const label = d.toLocaleDateString("pt-PT", { month: "short" }).slice(0, 3);
-      const expenses = allExpenses
-        .filter((e) => e.date?.startsWith(key))
-        .reduce((sum, expense) => sum + positiveChartValue(expense.amount), 0);
-      const income = allIncomes
-        .filter((entry) => entry.date?.startsWith(key))
-        .reduce((sum, entry) => sum + positiveChartValue(entry.amount), 0);
-      months.push({ month: label, expenses, income });
-    }
-    return months;
-  }, [allExpenses, allIncomes, viewMonth]);
+  const barData = useMemo(
+    () => buildMonthlyFinanceSeries(viewMonth, allExpenses, allIncomes, locale),
+    [allExpenses, allIncomes, locale, viewMonth]
+  );
 
   const barMax = useMemo(
-    () => Math.max(...barData.map((d) => Math.max(positiveChartValue(d.expenses), positiveChartValue(d.income))), 1),
+    () => Math.max(...barData.map((item) => Math.max(item.expenses, item.income)), 1),
     [barData]
   );
 
-  // Member split
   const memberData = useMemo(() => {
-    const map: Record<string, number> = {};
-    memberNames.forEach((m) => { map[m.key] = 0; });
-    monthExpenses.forEach((e) => { map[e.paidBy] = (map[e.paidBy] || 0) + e.amount; });
-    return memberNames.map((m, i) => ({
-      label: m.label,
-      emoji: m.emoji,
-      value: map[m.key] || 0,
-      color: i === 0 ? "#8b5cf6" : i === 1 ? "#ec4899" : CATEGORY_COLORS[i % CATEGORY_COLORS.length],
-    }));
+    const totals = new Map(memberNames.map((member) => [member.key, 0]));
+    for (const expense of monthExpenses) {
+      const amount = positiveAmount(expense.amount);
+      if (amount > 0 && totals.has(expense.paidBy)) {
+        totals.set(expense.paidBy, (totals.get(expense.paidBy) ?? 0) + amount);
+      }
+    }
+
+    return memberNames
+      .map((member, index) => ({
+        id: member.key,
+        label: member.label,
+        emoji: member.emoji,
+        value: totals.get(member.key) ?? 0,
+        color: index === 0 ? "#7c3aed" : index === 1 ? "#db2777" : CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+      }))
+      .filter((item) => item.value > 0);
   }, [monthExpenses, memberNames]);
 
-  if (monthExpenses.length === 0 && barData.every((d) => d.expenses === 0 && d.income === 0)) {
-    return null;
-  }
+  const hasMonthlyActivity = barData.some((item) => item.expenses > 0 || item.income > 0);
+  if (totalMonth === 0 && !hasMonthlyActivity) return null;
+
+  const categoryLabel = t("expenses.byCategory");
+  const monthlyLabel = t("expenses.charts.monthly");
+  const memberLabel = t("expenses.whoPaid");
 
   return (
     <div className="space-y-4">
-      {/* Donut: by category */}
       {donutData.length > 0 && (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
-          <p className="text-xs font-semibold text-emerald-600 mb-3">{t("expenses.byCategory")}</p>
-          <DonutChart data={donutData} total={totalMonth} centerLabel={`${totalMonth.toFixed(0)}€`} />
+        <section className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
+          <h3 className="text-xs font-semibold text-emerald-700 mb-3">{categoryLabel}</h3>
+          <DonutChart
+            data={donutData}
+            total={totalMonth}
+            centerLabel={formatEuro(totalMonth, locale)}
+            label={categoryLabel}
+          />
           <div className="flex flex-wrap gap-2 mt-3 justify-center">
-            {donutData.map((d, i) => (
-              <span key={i} className="flex items-center gap-1 text-[10px] text-emerald-600">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-                {d.emoji} {d.label}
+            {donutData.map((item) => (
+              <span key={item.id} className="flex items-center gap-1 text-[10px] text-emerald-700">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                {item.emoji} {item.label}
               </span>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Bar chart: 6 months */}
-      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
-        <p className="text-xs font-semibold text-emerald-600 mb-3">{t("expenses.charts.monthly")}</p>
-        <BarChart data={barData} maxValue={barMax} />
-        <div className="flex gap-4 justify-center mt-2">
-          <span className="flex items-center gap-1 text-[10px] text-emerald-500">
-            <span className="w-2 h-2 rounded-full bg-red-400" /> {t("expenses.expenses.label")}
-          </span>
-          <span className="flex items-center gap-1 text-[10px] text-emerald-500">
-            <span className="w-2 h-2 rounded-full bg-green-400" /> {t("expenses.income.label")}
-          </span>
-        </div>
-      </div>
+      {hasMonthlyActivity && (
+        <section className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
+          <h3 className="text-xs font-semibold text-emerald-700 mb-3">{monthlyLabel}</h3>
+          <BarChart data={barData} maxValue={barMax} label={monthlyLabel} locale={locale} />
+          <div className="flex gap-4 justify-center mt-2">
+            <span className="flex items-center gap-1 text-[10px] text-emerald-600">
+              <span className="w-2 h-2 rounded-full bg-red-500" /> {t("expenses.expenses.label")}
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-emerald-600">
+              <span className="w-2 h-2 rounded-full bg-green-500" /> {t("expenses.income.label")}
+            </span>
+          </div>
+        </section>
+      )}
 
-      {/* Member split */}
-      {memberData.some((d) => d.value > 0) && (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
-          <p className="text-xs font-semibold text-emerald-600 mb-3">{t("expenses.whoPaid")}</p>
-          <MemberSplit data={memberData} />
-        </div>
+      {memberData.length > 0 && (
+        <section className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100/30 shadow-sm">
+          <h3 className="text-xs font-semibold text-emerald-700 mb-3">{memberLabel}</h3>
+          <MemberSplit data={memberData} label={memberLabel} locale={locale} />
+        </section>
       )}
     </div>
   );

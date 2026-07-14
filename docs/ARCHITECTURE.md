@@ -25,6 +25,10 @@ Firestore listeners and exposes loading and error state to feature components.
 Dashboard collection data is shared through `CollectionDataContext` where possible
 to avoid duplicate listeners.
 
+Financial amount validation, currency formatting, and six-month aggregation are pure
+helpers in `lib/finance.ts`. UI components consume normalized positive values and keep
+locale-specific presentation separate from Firestore data.
+
 ## Notification flow
 
 1. The browser registers an FCM token under the authenticated user's UID.

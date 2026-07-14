@@ -41,13 +41,14 @@ A household management PWA for couples and families — organize shopping, tasks
 ### Finances (Finanças)
 - **3 sub-tabs:** Despesas (expenses), Rendimentos (income), Poupancas (savings goals)
 - Track: name, amount, category, who paid
-- Monthly summary by category with visual bars
-- Total per person + monthly navigation
+- Monthly summary by category and member, with localized month navigation
+- Positive-value validation for expenses, income, savings targets, and deposits
 - Split tracking between members
-- **Visual charts** (pure SVG, no external deps):
-  - Donut chart for category breakdown
-  - Bar chart for 6-month spending history
+- **Accessible visual charts** (pure SVG, no external deps):
+  - Donut chart for category breakdown, including single-category months
+  - Bar chart for 6-month expense and income history
   - Member split rings
+- Invalid, negative, and non-finite amounts are excluded consistently from charts
 - **Income tracking** — log income entries per member
 - **Savings goals** — set targets with progress bars
 
