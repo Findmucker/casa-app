@@ -78,7 +78,7 @@ describe("bankParsers", () => {
 
     expect(parsePDFRows(rows)).toEqual([
       {
-        description: "Continente",
+        description: "CONTINENTE",
         amount: 45.67,
         date: "2026-07-14",
         type: "expense",
