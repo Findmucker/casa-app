@@ -100,12 +100,13 @@ A tab Finanças esta organizada em **3 sub-tabs** para gestao financeira complet
 
 ### Sub-tab: Despesas
 - Regista gastos com nome, valor, categoria e quem pagou
-- Resumo mensal por categoria com barras visuais
-- Total por pessoa (membros da casa)
-- Navegacao por meses (setas para avancar/recuar)
+- Aceita apenas valores positivos
+- Resumo mensal por categoria e por membro
+- Navegacao por meses (setas para avancar/recuar), no idioma selecionado
 
 ### Sub-tab: Rendimentos
 - Regista entradas de dinheiro (salario, freelance, outros)
+- Aceita apenas valores positivos
 - Associa a um membro da casa
 - Historico mensal de rendimentos
 
@@ -113,15 +114,15 @@ A tab Finanças esta organizada em **3 sub-tabs** para gestao financeira complet
 - Define **objetivos de poupanca** (ex: ferias, carro, fundo de emergencia)
 - Cada objetivo tem um valor alvo e valor atual
 - **Barras de progresso** visuais para acompanhar cada objetivo
-- Adiciona contribuicoes ao longo do tempo
+- Adiciona contribuicoes positivas ao longo do tempo
 
 ### Graficos Visuais
-Na seccao de despesas, tens acesso a graficos interativos (SVG puro, sem dependencias externas):
-- **Donut chart** — distribuicao de gastos por categoria (cores por tipo)
-- **Bar chart** — historico de gastos dos ultimos 6 meses
+Na seccao de despesas, tens acesso a graficos SVG responsivos e acessiveis:
+- **Donut chart** — distribuicao de gastos por categoria, mesmo quando existe uma unica categoria
+- **Bar chart** — despesas e rendimentos dos ultimos 6 meses; meses sem movimentos ficam vazios
 - **Split rings** — visualizacao da divisao de gastos entre membros da casa
 
-Os graficos atualizam automaticamente com os dados do mes selecionado.
+Os graficos atualizam automaticamente com o mes selecionado, ignoram valores invalidos e usam o idioma ativo nos meses e montantes.
 
 ---
 
