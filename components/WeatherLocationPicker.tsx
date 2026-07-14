@@ -96,7 +96,7 @@ export default function WeatherLocationPicker() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <button
         type="button"
         onClick={() => {
@@ -120,7 +120,7 @@ export default function WeatherLocationPicker() {
         <div
           role="dialog"
           aria-label={t("weather.location.dialog")}
-          className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[65vh] overflow-y-auto rounded-3xl border border-pink-100 bg-rose-50/95 p-3 shadow-xl backdrop-blur-xl"
+          className="absolute left-0 right-0 top-full z-[60] mt-2 max-h-[65vh] overflow-y-auto rounded-3xl border border-pink-100 bg-rose-50/95 p-3 shadow-xl backdrop-blur-xl"
         >
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-rose-700">

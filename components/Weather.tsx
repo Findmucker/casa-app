@@ -154,7 +154,7 @@ export default function Weather() {
   });
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative isolate flex h-full flex-col">
       <TabTip
         tabId="weather"
         emoji="🌤️"
@@ -162,7 +162,7 @@ export default function Weather() {
         tips={["tutorial.weather.tip1", "tutorial.weather.tip2"]}
       />
 
-      <div className="border-b border-pink-100/40 bg-white/60 p-4 backdrop-blur-sm">
+      <div className="relative z-50 border-b border-pink-100/40 bg-white/60 p-4 backdrop-blur-sm">
         <WeatherLocationPicker />
       </div>
 
