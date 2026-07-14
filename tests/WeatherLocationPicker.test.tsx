@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import WeatherLocationPicker from "@/components/WeatherLocationPicker";
 import type { WeatherLocation } from "@/lib/weather-location";
 
@@ -63,7 +63,7 @@ describe("WeatherLocationPicker", () => {
     mockSearchLocations.mockResolvedValue([porto]);
   });
 
-  it("allows explicit current-location use and favorite selection", () => {
+  it("allows explicit current-location use and favorite selection", async () => {
     render(<WeatherLocationPicker />);
     fireEvent.click(
       screen.getByRole("button", { name: /weather.location.active/ })
@@ -74,9 +74,12 @@ describe("WeatherLocationPicker", () => {
     );
     expect(mockUseCurrentLocation).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Lisboa · Portugal" })
-    );
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole("button", { name: "Lisboa · Portugal" })
+      );
+      await Promise.resolve();
+    });
     expect(mockSelectFavorite).toHaveBeenCalledWith(lisbon);
   });
 
@@ -98,7 +101,12 @@ describe("WeatherLocationPicker", () => {
     });
 
     expect(mockSearchLocations).toHaveBeenCalledWith("Porto");
-    fireEvent.click(screen.getByRole("button", { name: /Porto/ }));
+    const results = screen.getByRole("list", {
+      name: "weather.location.results",
+    });
+    fireEvent.click(
+      within(results).getByRole("button", { name: /^Porto/ })
+    );
     expect(mockSelectLocation).toHaveBeenCalledWith(porto);
     jest.useRealTimers();
   });
