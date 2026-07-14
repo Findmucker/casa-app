@@ -112,6 +112,15 @@ function splitCSVLine(line: string, separator: string): string[] {
   return result;
 }
 
+function validTransactions(items: ParsedTransaction[]): ParsedTransaction[] {
+  return items.filter((item) =>
+    item.description.trim().length > 0
+    && Number.isFinite(item.amount)
+    && item.amount > 0
+    && isValidTransactionDate(item.date)
+  );
+}
+
 // ─── CGD (Caixa Geral de Depósitos) ──────────────────────────
 function parseCGD(lines: string[]): ParsedTransaction[] {
   // CGD format: Data movimento;Data valor;Descrição;Débito;Crédito;Saldo contabilístico;Saldo disponível
@@ -225,23 +234,23 @@ export function parseCSV(content: string): ParsedTransaction[] {
   const header = lines[headerIndex].toLocaleLowerCase("pt-PT");
 
   // Detect bank by header patterns
-  if (header.includes("tipo") && header.includes("product") || header.includes("type,product")) {
-    return parseRevolut(dataLines);
+  if ((header.includes("tipo") && header.includes("product")) || header.includes("type,product")) {
+    return validTransactions(parseRevolut(dataLines));
   }
   if (header.includes("débito") && header.includes("crédito") && header.includes("saldo contabilístico")) {
-    return parseCGD(dataLines);
+    return validTransactions(parseCGD(dataLines));
   }
   if (header.includes("data mov") && header.includes("descrição") && header.includes("valor") && header.includes("saldo")) {
-    return parseBPI(dataLines);
+    return validTransactions(parseBPI(dataLines));
   }
   if (header.includes("data") && header.includes("descrição") && header.includes("débito") && header.includes("crédito")) {
-    return parseActivoBank(dataLines);
+    return validTransactions(parseActivoBank(dataLines));
   }
   if (header.includes("data") && header.includes("montante") && header.includes("saldo")) {
-    return parseMoey(dataLines);
+    return validTransactions(parseMoey(dataLines));
   }
   if (header.includes("data") && header.includes("descrição") && header.includes("valor")) {
-    return parseMillennium(dataLines);
+    return validTransactions(parseMillennium(dataLines));
   }
 
   // Fallback: try generic semicolon-separated with date detection
@@ -262,7 +271,7 @@ export function parseCSV(content: string): ParsedTransaction[] {
       else if (amount > 0) results.push({ description: desc, amount, date, type: "income", category: guessCategory(desc) });
     }
   }
-  return results;
+  return validTransactions(results);
 }
 
 // ─── Parse PDF using positioned rows (accurate column detection) ──
@@ -270,7 +279,7 @@ export function parsePDFRows(rows: PDFRow[]): ParsedTransaction[] {
   // Detect BPI by content
   const allText = rows.map(r => r.items.map(i => i.str).join(" ")).join(" ");
   if (allText.includes("bancobpi") || allText.includes("BPI") || allText.includes("CONTA VALOR BPI")) {
-    return parseBPIRows(rows);
+    return validTransactions(parseBPIRows(rows));
   }
   return [];
 }
@@ -371,7 +380,7 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
 export function parsePDFText(text: string): ParsedTransaction[] {
   // Only try CGD format (full dates DD-MM-YYYY work reliably with text)
   // BPI is handled by parsePDFRows (position-based) which is much more accurate
-  return parseCGDPDF(text);
+  return validTransactions(parseCGDPDF(text));
 }
 
 function parseCGDPDF(text: string): ParsedTransaction[] {
