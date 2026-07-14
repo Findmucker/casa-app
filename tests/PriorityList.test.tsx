@@ -93,8 +93,10 @@ describe("PriorityList add form", () => {
       }));
     });
 
-    expect(screen.getByPlaceholderText("priority.placeholder")).toHaveValue("");
-    expect(screen.getByLabelText("priority.price")).toHaveValue(null);
-    expect(screen.getByLabelText("priority.notes")).toHaveValue("");
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("priority.placeholder")).toHaveValue("");
+      expect(screen.getByLabelText("priority.price")).toHaveValue(null);
+      expect(screen.getByLabelText("priority.notes")).toHaveValue("");
+    });
   });
 });
