@@ -125,7 +125,7 @@ export default function Calendar() {
   const [birthdays, setBirthdays] = useState<{ name: string; date: string; houseName?: string }[]>([]);
   const [friendBirthdays, setFriendBirthdays] = useState<{ name: string; date: string; houseName?: string }[]>([]);
 
-  const { habits, checks, coisinhas, projects } = useSharedCollections();
+  const { habits, checks, projects } = useSharedCollections();
   const { items: events } = useCollection<CasaEvent>("events", "createdAt");
   const { members, houseId } = useHouseContext();
   const { friends } = useFriends(houseId);
@@ -200,13 +200,6 @@ export default function Calendar() {
       addDot(c.date, { color: "bg-green-400", emoji: hEmoji, label: `${hEmoji} ${habit?.name || "Hábito"}`, type: "habit" });
     });
 
-    // Completed coisinhas (pink) - use completedAt
-    coisinhas.forEach((c) => {
-      if (c.done && c.completedAt) {
-        addDot(c.completedAt, { color: "bg-pink-400", emoji: "🪴", label: `🪴 ${c.name}`, type: "deadline" });
-      }
-    });
-
     // Projects in progress (purple)
     projects.forEach((p) => {
       if (p.status === "concluido" && p.completedAt) {
@@ -252,7 +245,7 @@ export default function Calendar() {
     });
 
     return map;
-  }, [habits, checks, coisinhas, projects, events, viewDate, birthdays, friendBirthdays]);
+  }, [habits, checks, projects, events, viewDate, birthdays, friendBirthdays]);
 
   // Calendar grid
   const calendarDays = useMemo(() => {
@@ -399,10 +392,6 @@ export default function Calendar() {
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">🧘</span>
                 <span className="text-[10px]">{t("calendar.habits")}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[10px]">🪴</span>
-                <span className="text-[10px]">{t("calendar.tasks")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-[10px]">🏠</span>
