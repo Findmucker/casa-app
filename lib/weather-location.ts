@@ -120,9 +120,9 @@ export function normalizeGeocodingResponse(payload: unknown): WeatherLocation[] 
       timezone,
       source: "geocoding",
       isFallback: false,
-      admin1,
-      country,
-      countryCode,
+      ...(admin1 ? { admin1 } : {}),
+      ...(country ? { country } : {}),
+      ...(countryCode ? { countryCode } : {}),
     });
   }
 
@@ -205,12 +205,20 @@ export function dateKeyInTimeZone(
   locale: "pt" | "en" = "pt"
 ): string {
   try {
-    return new Intl.DateTimeFormat(locale === "en" ? "en-CA" : "sv-SE", {
+    const parts = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "pt-PT", {
       timeZone: timezone === "auto" ? undefined : timezone,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    }).format(date);
+    }).formatToParts(date);
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((value) => value.type === type)?.value;
+    const year = part("year");
+    const month = part("month");
+    const day = part("day");
+    return year && month && day
+      ? `${year}-${month}-${day}`
+      : date.toISOString().split("T")[0];
   } catch {
     return date.toISOString().split("T")[0];
   }
