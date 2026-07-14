@@ -70,11 +70,13 @@ A household management PWA for couples and families — organize shopping, tasks
 - Clone past events
 
 ### Weather Widget
-- 7-day forecast (Open-Meteo API)
-- Device geolocation with an explicit Óbidos fallback when permission is unavailable
-- Temperature, wind, precipitation
-- Expandable hourly view
-- Integrated in Calendar and Events
+- 7-day forecast and global place search via Open-Meteo
+- Explicit, one-shot device geolocation with low accuracy and an Óbidos fallback
+- Up to 10 private favorite locations per user, synchronized between sessions
+- Temporary location selection without adding it to favorites
+- Location-aware timezone, shared forecast cache, and stale-data fallback
+- The active location is shared consistently by Weather, Calendar, and Events
+- Temperature, wind, precipitation, and expandable hourly view
 
 ### Dashboard Summary
 - Cards with status from all areas

@@ -33,6 +33,7 @@ import { type AvatarConfig } from "@/components/AvatarBuilder";
 import { type EquippedItems } from "@/lib/gamification";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { WeatherLocationProvider } from "@/components/WeatherLocationProvider";
 
 const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "calendar", "events", "weather"] as const;
 
@@ -261,6 +262,7 @@ function DashboardInner() {
 
       {/* Content */}
       <UndoProvider>
+      <WeatherLocationProvider>
       <CollectionDataContext.Provider value={sharedData}>
       <main
         className="flex-1 overflow-hidden relative"
@@ -553,6 +555,7 @@ function DashboardInner() {
         <UndoToast />
       </main>
       </CollectionDataContext.Provider>
+      </WeatherLocationProvider>
       </UndoProvider>
 
       {/* Bottom tabs - scrollable */}

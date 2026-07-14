@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Global weather location search, temporary selection, and up to 10 private favorites per user.
 - Product, architecture, Android, service-cost, and backlog review documentation.
 
 ### Fixed
@@ -33,8 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI now validates the actual production branch, `master`.
 - Contributor, branching, architecture, and cron documentation now match the live
   deployment model.
-- Weather forecasts use the device's current coordinates when permission is granted;
-  the Óbidos fallback is now identified explicitly.
+- Weather, Calendar, and Events now share one active location, timezone-aware dates,
+  a 30-minute forecast cache, and stale-data fallback.
+- Device geolocation is now explicit, one-shot, low-accuracy, and never persisted;
+  Óbidos remains the identified fallback.
 - Event links contain a public snapshot of only the selected event and its items,
   instead of attempting to expose the house event collection.
 

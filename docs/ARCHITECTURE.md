@@ -18,6 +18,11 @@ share document rather than exposing arbitrary house IDs.
 New event-share documents contain a read-only snapshot of the selected event and
 its items. Public pages never query the private `houses/{houseId}/events` collection.
 
+Weather preferences live at `users/{uid}/preferences/weather`. They contain a
+maximum of 10 favorite geocoded places and a default-mode reference. Firestore rules
+make this subcollection owner-only: house members cannot read another user's saved
+locations. Current device coordinates are session-only and are never persisted.
+
 ## Client data flow
 
 `HouseIdContext` identifies the active tenant. `useCollection` creates real-time
@@ -28,6 +33,14 @@ to avoid duplicate listeners.
 Financial amount validation, currency formatting, and six-month aggregation are pure
 helpers in `lib/finance.ts`. UI components consume normalized positive values and keep
 locale-specific presentation separate from Firestore data.
+
+`WeatherLocationProvider` owns the active weather location for the authenticated
+dashboard. Weather, Calendar, and Events consume that same state and the shared
+30-minute forecast cache. Manual search uses Open-Meteo geocoding with debouncing and
+request cancellation. Device geolocation is an explicit, one-shot low-accuracy request;
+the provider never starts a position watcher or prompts automatically. API dates and
+hours use the returned IANA timezone. Public event pages have no user provider and use
+the explicit Óbidos fallback.
 
 ## Notification flow
 
