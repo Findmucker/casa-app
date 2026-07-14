@@ -10,8 +10,7 @@ import {
   parsePDFRows,
   type ParsedTransaction,
 } from "@/lib/bankParsers";
-import { pdfToRows, pdfToImage } from "@/lib/pdfToImage";
-import { authenticatedFetch } from "@/lib/api";
+import { pdfToRows } from "@/lib/pdfToImage";
 import MiniAvatar from "./MiniAvatar";
 
 interface ImportPanelProps {
@@ -43,7 +42,6 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   const [importedCount, setImportedCount] = useState(0);
   const [owner, setOwner] = useState(currentUser);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const isImportable = (item: ParsedTransaction) =>
     item.description.trim().length > 0
@@ -89,65 +87,25 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
       return;
     }
 
-    // Image/PDF — send to Gemini via API
-    if (file.type.startsWith("image/") || file.type === "application/pdf") {
+    // PDFs are parsed locally from their embedded, positioned text.
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
       setView("loading");
       try {
-        // PDF: try text extraction first (no AI needed)
-        if (file.type === "application/pdf") {
-          const rows = await pdfToRows(file);
-          const text = rows.map(r => r.items.map(i => i.str).join(" ")).join("\n");
-          // Try position-aware row parsing first (most accurate), then raw text patterns
-          const results = parsePDFRows(rows);
-          const finalResults = results.length > 0 ? results : parsePDFText(text);
-          if (finalResults.length > 0) {
-            setItems(finalResults);
-            setView("preview");
-            return;
-          }
-          // Text extraction didn't yield results — fall through to AI with image
-        }
+        const rows = await pdfToRows(file);
+        const text = rows.map((row) => row.items.map((item) => item.str).join(" ")).join("\n");
+        const positionedResults = parsePDFRows(rows);
+        const parsed = positionedResults.length > 0 ? positionedResults : parsePDFText(text);
 
-        let base64: string;
-        let mime: string;
-
-        if (file.type === "application/pdf") {
-          // Convert PDF to image for AI processing
-          const result = await pdfToImage(file);
-          base64 = result.base64;
-          mime = result.mimeType;
-        } else {
-          // Regular image — encode as base64
-          const buffer = await file.arrayBuffer();
-          base64 = btoa(
-            new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-          );
-          mime = file.type;
-        }
-
-        const res = await authenticatedFetch("/api/parse-receipt", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64, mimeType: mime }),
-        });
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          setError(data.error || t("import.error"));
-          setView("choose");
-          return;
-        }
-
-        const data = await res.json();
-        if (!data.items || data.items.length === 0) {
+        if (parsed.length === 0) {
           setError(t("import.noItems"));
           setView("choose");
           return;
         }
-        setItems(data.items);
+
+        setItems(parsed);
         setView("preview");
       } catch (err) {
-        console.error("Import processing error:", err);
+        console.error("Local PDF processing error:", err);
         setError(err instanceof Error ? err.message : t("import.error"));
         setView("choose");
       }
@@ -217,17 +175,6 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
             </div>
 
             <button
-              onClick={() => cameraInputRef.current?.click()}
-              className="w-full p-5 rounded-[28px] bg-white/80 border border-emerald-100/40 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
-            >
-              <span className="text-3xl">🔮</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-emerald-700">{t("import.takePhoto")}</p>
-                <p className="text-xs text-emerald-400">{t("import.photoHint")}</p>
-              </div>
-            </button>
-
-            <button
               onClick={() => fileInputRef.current?.click()}
               className="w-full p-5 rounded-[28px] bg-white/80 border border-emerald-100/40 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
             >
@@ -238,19 +185,11 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
               </div>
             </button>
 
-            {/* Hidden inputs */}
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-            />
+            {/* Hidden input */}
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,.csv,.pdf"
+              accept=".csv,.pdf,text/csv,application/pdf"
               className="hidden"
               onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
             />
