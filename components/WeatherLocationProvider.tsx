@@ -300,3 +300,7 @@ export function useWeatherLocation(): WeatherLocationContextValue {
   }
   return context;
 }
+
+export function useWeatherLocationOptional(): WeatherLocationContextValue | null {
+  return useContext(WeatherLocationContext);
+}
