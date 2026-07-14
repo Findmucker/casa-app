@@ -8,7 +8,8 @@ import { useHouseContext } from "@/lib/context";
 import { useFriends } from "@/lib/friends";
 import { useT } from "@/lib/i18n";
 import { getWeatherInfo } from "@/lib/weather";
-import { createForecastUrl, getWeatherLocation, weatherLocationKey } from "@/lib/weather-location";
+import { dateKeyInTimeZone } from "@/lib/weather-location";
+import { useWeatherLocation } from "@/components/WeatherLocationProvider";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CasaEvent } from "./EventList";
@@ -86,42 +87,11 @@ interface DayWeather {
   precipProb: number;
 }
 
-// Cache weather data in memory
-let weatherCache: { data: Record<string, DayWeather>; fetchedAt: number; locationKey: string } | null = null;
-
-async function fetchWeather7Days(): Promise<Record<string, DayWeather>> {
-  const location = await getWeatherLocation();
-  const locationKey = weatherLocationKey(location);
-  if (weatherCache && weatherCache.locationKey === locationKey && Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000) {
-    return weatherCache.data;
-  }
-  try {
-    const res = await fetch(createForecastUrl(location, {
-      daily: "temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max",
-      forecast_days: 7,
-    }));
-    if (!res.ok) throw new Error(`Weather request failed (${res.status})`);
-    const json = await res.json();
-    const result: Record<string, DayWeather> = {};
-    for (let i = 0; i < json.daily.time.length; i++) {
-      result[json.daily.time[i]] = {
-        tempMax: Math.round(json.daily.temperature_2m_max[i]),
-        tempMin: Math.round(json.daily.temperature_2m_min[i]),
-        weathercode: json.daily.weather_code[i],
-        precipProb: json.daily.precipitation_probability_max[i],
-      };
-    }
-    weatherCache = { data: result, fetchedAt: Date.now(), locationKey };
-    return result;
-  } catch {
-    return {};
-  }
-}
-
 export default function Calendar() {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [weatherData, setWeatherData] = useState<Record<string, DayWeather>>({});
+  const [weatherTimezone, setWeatherTimezone] = useState("Europe/Lisbon");
   const [birthdays, setBirthdays] = useState<{ name: string; date: string; houseName?: string }[]>([]);
   const [friendBirthdays, setFriendBirthdays] = useState<{ name: string; date: string; houseName?: string }[]>([]);
 
@@ -129,16 +99,48 @@ export default function Calendar() {
   const { items: events } = useCollection<CasaEvent>("events", "createdAt");
   const { members, houseId } = useHouseContext();
   const { friends } = useFriends(houseId);
-  const { t, tArray } = useT();
+  const { t, tArray, locale } = useT();
+  const { activeLocation, fetchForecast } = useWeatherLocation();
   const weekdays = tArray("calendar.weekdays");
   const months = tArray("calendar.months");
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = dateKeyInTimeZone(new Date(), weatherTimezone);
 
-  // Fetch weather on mount
+  // Fetch weather whenever the shared location changes
   useEffect(() => {
-    fetchWeather7Days().then(setWeatherData);
-  }, []);
+    let cancelled = false;
+    void fetchForecast<{
+      timezone?: string;
+      daily: {
+        time: string[];
+        temperature_2m_max: number[];
+        temperature_2m_min: number[];
+        weather_code: number[];
+        precipitation_probability_max: number[];
+      };
+    }>({
+      daily: "temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max",
+      forecast_days: 7,
+    }).then(({ data }) => {
+      if (cancelled) return;
+      const result: Record<string, DayWeather> = {};
+      data.daily.time.forEach((date, index) => {
+        result[date] = {
+          tempMax: Math.round(data.daily.temperature_2m_max[index]),
+          tempMin: Math.round(data.daily.temperature_2m_min[index]),
+          weathercode: data.daily.weather_code[index],
+          precipProb: data.daily.precipitation_probability_max[index],
+        };
+      });
+      setWeatherTimezone(data.timezone || activeLocation.timezone);
+      setWeatherData(result);
+    }).catch(() => {
+      if (!cancelled) setWeatherData({});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeLocation.id, activeLocation.timezone, fetchForecast]);
 
   // Fetch member birthdays (own house)
   useEffect(() => {
@@ -349,7 +351,7 @@ export default function Calendar() {
         {selectedDate && (
           <div className="space-y-2 animate-fade-in-up">
             <p className="text-xs font-semibold text-blue-500 mb-2">
-              {new Date(selectedDate + "T12:00").toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" })}
+              {new Date(selectedDate + "T12:00").toLocaleDateString(locale === "en" ? "en-GB" : "pt-PT", { weekday: "long", day: "numeric", month: "long" })}
             </p>
 
             {/* Weather card for selected day */}
