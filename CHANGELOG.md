@@ -8,11 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Finance donuts now render a complete ring for single-category months.
+- Finance charts consistently ignore invalid, non-finite, and non-positive amounts.
 - Coisinhas can now include notes during creation, with a compact mobile-friendly price field.
 - Finance charts no longer render phantom bars for months without expenses or income.
 - Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
 
 ### Changed
+- Finance charts now share pure calculations, localized labels, stable keys, and accessible descriptions.
+- Manual finance entries, savings targets, and deposits now require positive amounts.
 - The calendar no longer shows Coisinhas completed on each day.
 - Bank statement imports now process CSV and text-based PDFs locally in the browser;
   image uploads and external AI processing were removed.
