@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Finance charts no longer render phantom bars for months without expenses or income.
+- Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
+
 ### Changed
+- Bank statement imports now process CSV and text-based PDFs locally in the browser;
+  image uploads and external AI processing were removed.
 - Habit reminders now use Lisbon local time, a delayed-run recovery window, and
   Firestore-backed delivery deduplication.
 - Invalid FCM tokens are removed automatically and cron responses expose diagnostic

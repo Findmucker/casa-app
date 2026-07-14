@@ -84,7 +84,6 @@ export const pt = {
   "projects.savingsProgress": "Poupado",
 
   "import.title": "Importar transações",
-  "import.takePhoto": "Tirar foto",
   "import.chooseFile": "Escolher ficheiro",
   "import.analyzing": "A analisar...",
   "import.preview": "Pré-visualização",
@@ -93,8 +92,8 @@ export const pt = {
   "import.error": "Erro ao processar ficheiro",
   "import.noItems": "Nenhuma transação encontrada",
   "import.duplicate": "Duplicado — será ignorado",
-  "import.photoHint": "Recibo, fatura, extrato",
-  "import.fileHint": "CSV, PDF, imagem",
+  "import.fileHint": "Extrato bancário em CSV ou PDF",
+  "import.localOnly": "O ficheiro é processado apenas neste dispositivo e não é enviado para serviços externos.",
   "import.owner": "De",
 
   // Dashboard Summary

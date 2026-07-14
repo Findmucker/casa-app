@@ -86,7 +86,6 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "projects.savingsProgress": "Saved",
 
   "import.title": "Import transactions",
-  "import.takePhoto": "Take photo",
   "import.chooseFile": "Choose file",
   "import.analyzing": "Analyzing...",
   "import.preview": "Preview",
@@ -95,8 +94,8 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "import.error": "Error processing file",
   "import.noItems": "No transactions found",
   "import.duplicate": "Duplicate — will be skipped",
-  "import.photoHint": "Receipt, invoice, statement",
-  "import.fileHint": "CSV, PDF, image",
+  "import.fileHint": "Bank statement in CSV or PDF",
+  "import.localOnly": "The file is processed only on this device and is not sent to external services.",
   "import.owner": "From",
 
   // Dashboard Summary

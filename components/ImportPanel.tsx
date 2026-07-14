@@ -2,14 +2,20 @@
 
 import { useState, useRef } from "react";
 import { useT } from "@/lib/i18n";
-import { parseCSV, parsePDFText, parsePDFRows, type ParsedTransaction } from "@/lib/bankParsers";
-import { pdfToRows, pdfToImage } from "@/lib/pdfToImage";
-import { authenticatedFetch } from "@/lib/api";
+import {
+  buildTransactionKey,
+  isValidTransactionDate,
+  parseCSV,
+  parsePDFText,
+  parsePDFRows,
+  type ParsedTransaction,
+} from "@/lib/bankParsers";
+import { pdfToRows } from "@/lib/pdfToImage";
 import MiniAvatar from "./MiniAvatar";
 
 interface ImportPanelProps {
   onClose: () => void;
-  onImport: (items: ParsedTransaction[], owner: string) => Promise<void>;
+  onImport: (items: ParsedTransaction[], owner: string) => Promise<number>;
   existingExpenses: { name: string; amount: number; date?: string }[];
   existingIncome: { name: string; amount: number; date?: string }[];
   memberNames: { key: string; label: string }[];
@@ -36,20 +42,33 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   const [importedCount, setImportedCount] = useState(0);
   const [owner, setOwner] = useState(currentUser);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const isDuplicate = (item: ParsedTransaction) => {
-    if (item.type === "expense") {
-      return existingExpenses.some(e => e.name === item.description && e.amount === item.amount && e.date === item.date);
-    }
-    return existingIncome.some(i => i.name === item.description && i.amount === item.amount && i.date === item.date);
+  const isImportable = (item: ParsedTransaction) =>
+    item.description.trim().length > 0
+    && Number.isFinite(item.amount)
+    && item.amount > 0
+    && isValidTransactionDate(item.date);
+
+  const isDuplicate = (item: ParsedTransaction, index = -1) => {
+    const key = buildTransactionKey(item.description, item.amount, item.date);
+    const exists = item.type === "expense"
+      ? existingExpenses.some((entry) => buildTransactionKey(entry.name, entry.amount, entry.date || "") === key)
+      : existingIncome.some((entry) => buildTransactionKey(entry.name, entry.amount, entry.date || "") === key);
+    if (exists) return true;
+
+    return index >= 0 && items
+      .slice(0, index)
+      .some((entry) =>
+        entry.type === item.type
+        && buildTransactionKey(entry.description, entry.amount, entry.date) === key
+      );
   };
 
   const handleFile = async (file: File) => {
     setError(null);
 
     // CSV files — parse client-side
-    if (file.name.endsWith(".csv") || file.type === "text/csv") {
+    if (file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv") {
       setView("loading");
       try {
         const text = await file.text();
@@ -68,65 +87,25 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
       return;
     }
 
-    // Image/PDF — send to Gemini via API
-    if (file.type.startsWith("image/") || file.type === "application/pdf") {
+    // PDFs are parsed locally from their embedded, positioned text.
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
       setView("loading");
       try {
-        // PDF: try text extraction first (no AI needed)
-        if (file.type === "application/pdf") {
-          const rows = await pdfToRows(file);
-          const text = rows.map(r => r.items.map(i => i.str).join(" ")).join("\n");
-          // Try position-aware row parsing first (most accurate), then raw text patterns
-          const results = parsePDFRows(rows);
-          const finalResults = results.length > 0 ? results : parsePDFText(text);
-          if (finalResults.length > 0) {
-            setItems(finalResults);
-            setView("preview");
-            return;
-          }
-          // Text extraction didn't yield results — fall through to AI with image
-        }
+        const rows = await pdfToRows(file);
+        const text = rows.map((row) => row.items.map((item) => item.str).join(" ")).join("\n");
+        const positionedResults = parsePDFRows(rows);
+        const parsed = positionedResults.length > 0 ? positionedResults : parsePDFText(text);
 
-        let base64: string;
-        let mime: string;
-
-        if (file.type === "application/pdf") {
-          // Convert PDF to image for AI processing
-          const result = await pdfToImage(file);
-          base64 = result.base64;
-          mime = result.mimeType;
-        } else {
-          // Regular image — encode as base64
-          const buffer = await file.arrayBuffer();
-          base64 = btoa(
-            new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-          );
-          mime = file.type;
-        }
-
-        const res = await authenticatedFetch("/api/parse-receipt", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64, mimeType: mime }),
-        });
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          setError(data.error || t("import.error"));
-          setView("choose");
-          return;
-        }
-
-        const data = await res.json();
-        if (!data.items || data.items.length === 0) {
+        if (parsed.length === 0) {
           setError(t("import.noItems"));
           setView("choose");
           return;
         }
-        setItems(data.items);
+
+        setItems(parsed);
         setView("preview");
       } catch (err) {
-        console.error("Import processing error:", err);
+        console.error("Local PDF processing error:", err);
         setError(err instanceof Error ? err.message : t("import.error"));
         setView("choose");
       }
@@ -157,8 +136,8 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
   const handleConfirm = async () => {
     setView("loading");
     try {
-      await onImport(items, owner);
-      setImportedCount(items.length);
+      const count = await onImport(items, owner);
+      setImportedCount(count);
       setView("done");
     } catch {
       setError(t("import.error"));
@@ -196,17 +175,6 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
             </div>
 
             <button
-              onClick={() => cameraInputRef.current?.click()}
-              className="w-full p-5 rounded-[28px] bg-white/80 border border-emerald-100/40 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
-            >
-              <span className="text-3xl">🔮</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-emerald-700">{t("import.takePhoto")}</p>
-                <p className="text-xs text-emerald-400">{t("import.photoHint")}</p>
-              </div>
-            </button>
-
-            <button
               onClick={() => fileInputRef.current?.click()}
               className="w-full p-5 rounded-[28px] bg-white/80 border border-emerald-100/40 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
             >
@@ -216,20 +184,15 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                 <p className="text-xs text-emerald-400">{t("import.fileHint")}</p>
               </div>
             </button>
+            <p className="text-center text-[11px] text-emerald-400 px-4">
+              🔒 {t("import.localOnly")}
+            </p>
 
-            {/* Hidden inputs */}
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-            />
+            {/* Hidden input */}
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,.csv,.pdf"
+              accept=".csv,.pdf,text/csv,application/pdf"
               className="hidden"
               onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
             />
@@ -311,18 +274,22 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                     </span>
                   </div>
                   {entries.map(({ item, idx }) => {
-              const dup = isDuplicate(item);
+              const dup = isDuplicate(item, idx);
+              const invalid = !isImportable(item);
               return (
               <div
                 key={idx}
                 className={`rounded-2xl p-3 mb-2 border shadow-sm space-y-2 ${
-                  dup ? "bg-amber-50/80 border-amber-200/60 opacity-60"
+                  dup || invalid ? "bg-amber-50/80 border-amber-200/60 opacity-60"
                   : item.type === "expense" ? "bg-red-50/40 border-red-100/50"
                   : "bg-green-50/40 border-green-100/50"
                 }`}
               >
                 {dup && (
                   <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ {t("import.duplicate")}</div>
+                )}
+                {invalid && !dup && (
+                  <div className="text-[10px] font-semibold text-amber-500 -mb-1">⚠️ {t("import.error")}</div>
                 )}
                 <div className="flex items-center gap-2">
                   {/* Type toggle */}
@@ -397,7 +364,7 @@ export default function ImportPanel({ onClose, onImport, existingExpenses, exist
                 onClick={handleConfirm}
                 className="w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
               >
-                {t("import.confirm")} ({items.filter(i => !isDuplicate(i)).length})
+                {t("import.confirm")} ({items.filter((item, index) => isImportable(item) && !isDuplicate(item, index)).length})
               </button>
             )}
           </div>

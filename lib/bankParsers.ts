@@ -6,6 +6,21 @@ export interface ParsedTransaction {
   category: string;
 }
 
+export function isValidTransactionDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day;
+}
+
+export function buildTransactionKey(description: string, amount: number, date: string): string {
+  const normalizedDescription = description.trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-PT");
+  const normalizedAmount = Number.isFinite(amount) ? Math.abs(amount).toFixed(2) : "invalid";
+  return `${date}|${normalizedAmount}|${normalizedDescription}`;
+}
+
 interface PDFRow {
   items: { str: string; x: number }[];
 }
@@ -31,25 +46,57 @@ function guessCategory(desc: string): string {
 }
 
 function parseDate(raw: string): string {
-  // Try DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD
-  const dmy = raw.match(/(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})/);
-  if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
   const ymd = raw.match(/(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})/);
-  if (ymd) return `${ymd[1]}-${ymd[2].padStart(2, "0")}-${ymd[3].padStart(2, "0")}`;
-  return new Date().toISOString().split("T")[0];
+  if (ymd) {
+    const value = `${ymd[1]}-${ymd[2].padStart(2, "0")}-${ymd[3].padStart(2, "0")}`;
+    return isValidTransactionDate(value) ? value : "";
+  }
+
+  const dmy = raw.match(/(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4}|\d{2})/);
+  if (dmy) {
+    const year = dmy[3].length === 2 ? `20${dmy[3]}` : dmy[3];
+    const value = `${year}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
+    return isValidTransactionDate(value) ? value : "";
+  }
+
+  return "";
+}
+
+function parseSignedAmount(raw: string): number {
+  const normalized = raw.replace(/\u00a0/g, " ").trim();
+  const parenthesized = /^\(.*\)$/.test(normalized);
+  let cleaned = normalized
+    .replace(/[€\s()]/g, "")
+    .replace(/[−–—]/g, "-");
+
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  const separatorIndex = Math.max(lastComma, lastDot);
+
+  if (separatorIndex >= 0) {
+    const decimalDigits = cleaned.length - separatorIndex - 1;
+    const separator = cleaned[separatorIndex];
+    const hasBothSeparators = lastComma >= 0 && lastDot >= 0;
+    const isDecimalSeparator = hasBothSeparators || decimalDigits === 1 || decimalDigits === 2;
+
+    if (isDecimalSeparator) {
+      const integerPart = cleaned.slice(0, separatorIndex).replace(/[.,]/g, "");
+      const decimalPart = cleaned.slice(separatorIndex + 1).replace(/[.,]/g, "");
+      cleaned = `${integerPart}.${decimalPart}`;
+    } else {
+      cleaned = cleaned.replace(/[.,]/g, "");
+    }
+
+    if (separator !== "," && separator !== ".") return 0;
+  }
+
+  const value = Number(cleaned);
+  if (!Number.isFinite(value)) return 0;
+  return parenthesized ? -Math.abs(value) : value;
 }
 
 function parseAmount(raw: string): number {
-  // Handle European format: 1.234,56 or 1234,56
-  let cleaned = raw.replace(/[€\s]/g, "").trim();
-  // If has comma as decimal separator
-  if (cleaned.includes(",") && !cleaned.includes(".")) {
-    cleaned = cleaned.replace(",", ".");
-  } else if (cleaned.includes(",") && cleaned.includes(".")) {
-    // 1.234,56 format
-    cleaned = cleaned.replace(/\./g, "").replace(",", ".");
-  }
-  return Math.abs(parseFloat(cleaned) || 0);
+  return Math.abs(parseSignedAmount(raw));
 }
 
 function splitCSVLine(line: string, separator: string): string[] {
@@ -63,6 +110,15 @@ function splitCSVLine(line: string, separator: string): string[] {
   }
   result.push(current.trim());
   return result;
+}
+
+function validTransactions(items: ParsedTransaction[]): ParsedTransaction[] {
+  return items.filter((item) =>
+    item.description.trim().length > 0
+    && Number.isFinite(item.amount)
+    && item.amount > 0
+    && isValidTransactionDate(item.date)
+  );
 }
 
 // ─── CGD (Caixa Geral de Depósitos) ──────────────────────────
@@ -91,7 +147,7 @@ function parseBPI(lines: string[]): ParsedTransaction[] {
     if (cols.length < 4) continue;
     const date = parseDate(cols[0]);
     const desc = cols[2] || "";
-    const amount = parseFloat(cols[3].replace(/[€\s]/g, "").replace(",", ".")) || 0;
+    const amount = parseSignedAmount(cols[3]);
     if (amount < 0) results.push({ description: desc, amount: Math.abs(amount), date, type: "expense", category: guessCategory(desc) });
     else if (amount > 0) results.push({ description: desc, amount, date, type: "income", category: guessCategory(desc) });
   }
@@ -107,7 +163,7 @@ function parseMillennium(lines: string[]): ParsedTransaction[] {
     if (cols.length < 3) continue;
     const date = parseDate(cols[0]);
     const desc = cols[1] || "";
-    const amount = parseFloat(cols[2].replace(/[€\s]/g, "").replace(",", ".")) || 0;
+    const amount = parseSignedAmount(cols[2]);
     if (amount < 0) results.push({ description: desc, amount: Math.abs(amount), date, type: "expense", category: guessCategory(desc) });
     else if (amount > 0) results.push({ description: desc, amount, date, type: "income", category: guessCategory(desc) });
   }
@@ -124,7 +180,7 @@ function parseRevolut(lines: string[]): ParsedTransaction[] {
     const dateRaw = cols[2] || cols[3] || "";
     const date = parseDate(dateRaw.split(" ")[0]);
     const desc = cols[4] || "";
-    const amount = parseFloat(cols[5]) || 0;
+    const amount = parseSignedAmount(cols[5]);
     if (amount < 0) results.push({ description: desc, amount: Math.abs(amount), date, type: "expense", category: guessCategory(desc) });
     else if (amount > 0) results.push({ description: desc, amount, date, type: "income", category: guessCategory(desc) });
   }
@@ -140,7 +196,7 @@ function parseMoey(lines: string[]): ParsedTransaction[] {
     if (cols.length < 3) continue;
     const date = parseDate(cols[0]);
     const desc = cols[1] || "";
-    const amount = parseFloat(cols[2].replace(/[€\s]/g, "").replace(",", ".")) || 0;
+    const amount = parseSignedAmount(cols[2]);
     if (amount < 0) results.push({ description: desc, amount: Math.abs(amount), date, type: "expense", category: guessCategory(desc) });
     else if (amount > 0) results.push({ description: desc, amount, date, type: "income", category: guessCategory(desc) });
   }
@@ -166,50 +222,56 @@ function parseActivoBank(lines: string[]): ParsedTransaction[] {
 
 // ─── Auto-detect and parse ───────────────────────────────────
 export function parseCSV(content: string): ParsedTransaction[] {
-  const lines = content.split(/\r?\n/).filter((l) => l.trim());
-  if (lines.length < 2) return [];
+  const lines = content
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const headerIndex = lines.findIndex((line) => !/^sep\s*=/i.test(line));
+  if (headerIndex < 0 || lines.length - headerIndex < 2) return [];
 
-  const header = lines[0].toLowerCase();
+  const dataLines = lines.slice(headerIndex + 1);
+  const header = lines[headerIndex].toLocaleLowerCase("pt-PT");
 
   // Detect bank by header patterns
-  if (header.includes("tipo") && header.includes("product") || header.includes("type,product")) {
-    return parseRevolut(lines.slice(1));
+  if ((header.includes("tipo") && header.includes("product")) || header.includes("type,product")) {
+    return validTransactions(parseRevolut(dataLines));
   }
   if (header.includes("débito") && header.includes("crédito") && header.includes("saldo contabilístico")) {
-    return parseCGD(lines.slice(1));
+    return validTransactions(parseCGD(dataLines));
   }
   if (header.includes("data mov") && header.includes("descrição") && header.includes("valor") && header.includes("saldo")) {
-    return parseBPI(lines.slice(1));
+    return validTransactions(parseBPI(dataLines));
   }
   if (header.includes("data") && header.includes("descrição") && header.includes("débito") && header.includes("crédito")) {
-    return parseActivoBank(lines.slice(1));
+    return validTransactions(parseActivoBank(dataLines));
   }
   if (header.includes("data") && header.includes("montante") && header.includes("saldo")) {
-    return parseMoey(lines.slice(1));
+    return validTransactions(parseMoey(dataLines));
   }
   if (header.includes("data") && header.includes("descrição") && header.includes("valor")) {
-    return parseMillennium(lines.slice(1));
+    return validTransactions(parseMillennium(dataLines));
   }
 
   // Fallback: try generic semicolon-separated with date detection
   const separator = header.includes(";") ? ";" : ",";
   const results: ParsedTransaction[] = [];
-  for (const line of lines.slice(1)) {
+  for (const line of dataLines) {
     const cols = splitCSVLine(line, separator);
     if (cols.length < 3) continue;
     // Try to find date, description, and amount columns
     const dateCol = cols.find((c) => /\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}/.test(c));
-    const amountCol = cols.find((c) => /^-?[\d.,]+€?$/.test(c.trim()));
+    const amountCol = cols.find((c) => /^[+\-−–—]?[\d\s.,]+€?$|^\([\d\s.,]+€?\)$/.test(c.trim()));
     const descCol = cols.find((c) => c.length > 3 && !/^[\d.,€\-\s]+$/.test(c) && !/\d{1,2}[/\-]/.test(c));
     if (amountCol) {
-      const amount = parseFloat(amountCol.replace(/[€\s]/g, "").replace(",", ".")) || 0;
+      const amount = parseSignedAmount(amountCol);
       const desc = descCol || "Transação";
       const date = dateCol ? parseDate(dateCol) : new Date().toISOString().split("T")[0];
       if (amount < 0) results.push({ description: desc, amount: Math.abs(amount), date, type: "expense", category: guessCategory(desc) });
       else if (amount > 0) results.push({ description: desc, amount, date, type: "income", category: guessCategory(desc) });
     }
   }
-  return results;
+  return validTransactions(results);
 }
 
 // ─── Parse PDF using positioned rows (accurate column detection) ──
@@ -217,7 +279,7 @@ export function parsePDFRows(rows: PDFRow[]): ParsedTransaction[] {
   // Detect BPI by content
   const allText = rows.map(r => r.items.map(i => i.str).join(" ")).join(" ");
   if (allText.includes("bancobpi") || allText.includes("BPI") || allText.includes("CONTA VALOR BPI")) {
-    return parseBPIRows(rows);
+    return validTransactions(parseBPIRows(rows));
   }
   return [];
 }
@@ -318,7 +380,7 @@ function parseBPIRows(rows: PDFRow[]): ParsedTransaction[] {
 export function parsePDFText(text: string): ParsedTransaction[] {
   // Only try CGD format (full dates DD-MM-YYYY work reliably with text)
   // BPI is handled by parsePDFRows (position-based) which is much more accurate
-  return parseCGDPDF(text);
+  return validTransactions(parseCGDPDF(text));
 }
 
 function parseCGDPDF(text: string): ParsedTransaction[] {
