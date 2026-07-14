@@ -10,5 +10,6 @@ export const onSnapshot = jest.fn();
 export const addDoc = jest.fn();
 export const deleteDoc = jest.fn();
 export const getDocs = jest.fn(() => Promise.resolve({ docs: [] }));
-export const serverTimestamp = jest.fn();
+export const serverTimestamp = jest.fn(() => ({ type: "serverTimestamp" }));
+export const deleteField = jest.fn(() => ({ type: "deleteField" }));
 export const getFirestore = jest.fn(() => ({}));
