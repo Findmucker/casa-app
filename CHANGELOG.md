@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
 
 ### Changed
+- The calendar no longer shows Coisinhas completed on each day.
 - Bank statement imports now process CSV and text-based PDFs locally in the browser;
   image uploads and external AI processing were removed.
 - Habit reminders now use Lisbon local time, a delayed-run recovery window, and
