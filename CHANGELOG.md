@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Product, architecture, Android, service-cost, and backlog review documentation.
+
 ### Fixed
 - Finance donuts now render a complete ring for single-category months.
 - Finance charts consistently ignore invalid, non-finite, and non-positive amounts.
@@ -15,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
 
 ### Changed
+- The open backlog was consolidated from 36 issues to 12 active roadmap items.
+- The platform direction remains PWA-first; Android work is limited to a future Capacitor widget pilot.
+- Paid/external AI generation proposals were replaced by local deterministic templates.
 - Finance charts now share pure calculations, localized labels, stable keys, and accessible descriptions.
 - Manual finance entries, savings targets, and deposits now require positive amounts.
 - The calendar no longer shows Coisinhas completed on each day.
