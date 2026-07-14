@@ -175,7 +175,9 @@ A household management PWA for couples and families — organize shopping, tasks
 - **Multi-tenant:** Each house has isolated data, invites by link
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for runtime boundaries, data
-ownership, and notification flow.
+ownership, and notification flow. The current product roadmap, Android decision,
+service limits, and cost review are in
+[docs/PRODUCT_REVIEW.md](docs/PRODUCT_REVIEW.md).
 
 ## Branching Strategy
 
