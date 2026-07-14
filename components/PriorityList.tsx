@@ -31,6 +31,7 @@ export default function PriorityList() {
   );
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newNotes, setNewNotes] = useState("");
   const [newAssignee, setNewAssignee] = useState("ambos");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -99,9 +100,11 @@ export default function PriorityList() {
       assignee: newAssignee,
       category,
       ...(newPrice ? { price: parseFloat(newPrice) } : {}),
+      ...(newNotes.trim() ? { notes: newNotes.trim() } : {}),
     });
     setNewName("");
     setNewPrice("");
+    setNewNotes("");
   };
 
   const startEditing = (item: SmallPriorityItem) => {
@@ -158,13 +161,27 @@ export default function PriorityList() {
               suggestions={nameSuggestions}
               className="w-full rounded-2xl border border-pink-200/60 bg-white/80 px-4 py-3 text-base text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100/50 transition-all"
             />
-            <input
-              type="number"
-              value={newPrice}
-              onChange={(e) => setNewPrice(e.target.value)}
-              placeholder={t("priority.price")}
-              className="w-full rounded-xl border border-pink-200/60 bg-white/80 px-4 py-2.5 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
-            />
+            <div className="flex gap-2 min-w-0">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={newPrice}
+                onChange={(e) => setNewPrice(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                placeholder={t("priority.price")}
+                aria-label={t("priority.price")}
+                className="w-24 sm:w-28 shrink-0 rounded-xl border border-pink-200/60 bg-white/80 px-3 py-2.5 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
+              />
+              <input
+                type="text"
+                value={newNotes}
+                onChange={(e) => setNewNotes(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                placeholder={t("priority.notes")}
+                aria-label={t("priority.notes")}
+                className="flex-1 min-w-0 rounded-xl border border-pink-200/60 bg-white/80 px-3 py-2.5 text-sm text-rose-800 placeholder-pink-300 focus:outline-none focus:border-pink-300 transition-all"
+              />
+            </div>
           </div>
           {/* Right: add button spanning both rows */}
           <button
