@@ -39,15 +39,15 @@ export default function SwipeableRow({
     <div className="relative overflow-hidden rounded-2xl" data-swipe-action>
       {/* Background action indicators */}
       {showRight && (
-        <div className={`absolute inset-0 ${rightColor} rounded-2xl flex items-center pl-4 transition-opacity ${triggered ? "opacity-100" : "opacity-60"}`}>
-          <span className={`text-white font-semibold text-sm transition-transform ${triggered ? "scale-110" : ""}`}>
+        <div className={`absolute inset-0 ${rightColor} rounded-2xl flex items-center pl-4 transition-opacity motion-reduce:transition-none ${triggered ? "opacity-100" : "opacity-60"}`}>
+          <span className={`text-white font-semibold text-sm transition-transform motion-reduce:transition-none motion-reduce:transform-none ${triggered ? "scale-110" : ""}`}>
             {rightLabel}
           </span>
         </div>
       )}
       {showLeft && (
-        <div className={`absolute inset-0 ${leftColor} rounded-2xl flex items-center justify-end pr-4 transition-opacity ${triggered ? "opacity-100" : "opacity-60"}`}>
-          <span className={`text-white font-semibold text-sm transition-transform ${triggered ? "scale-110" : ""}`}>
+        <div className={`absolute inset-0 ${leftColor} rounded-2xl flex items-center justify-end pr-4 transition-opacity motion-reduce:transition-none ${triggered ? "opacity-100" : "opacity-60"}`}>
+          <span className={`text-white font-semibold text-sm transition-transform motion-reduce:transition-none motion-reduce:transform-none ${triggered ? "scale-110" : ""}`}>
             {leftLabel}
           </span>
         </div>
@@ -58,9 +58,8 @@ export default function SwipeableRow({
         {...handlers}
         style={{
           transform: `translateX(${offsetX}px)`,
-          transition: swiping ? "none" : "transform 0.3s ease-out",
         }}
-        className="relative z-10"
+        className={`relative z-10 ${swiping ? "transition-none" : "transition-transform duration-300 ease-out motion-reduce:transition-none"}`}
       >
         {children}
       </div>

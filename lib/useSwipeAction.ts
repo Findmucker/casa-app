@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 
 interface SwipeState {
   offsetX: number;
@@ -21,8 +21,14 @@ export function useSwipeAction({
   const [state, setState] = useState<SwipeState>({ offsetX: 0, swiping: false });
   const startRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const lockedRef = useRef<"horizontal" | "vertical" | null>(null);
+  const actionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+  }, []);
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (actionTimerRef.current) return;
     startRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
@@ -66,16 +72,18 @@ export function useSwipeAction({
     if (offsetX > threshold && onSwipeRight) {
       // Animate out to the right
       setState({ offsetX: 400, swiping: false });
-      setTimeout(() => {
+      actionTimerRef.current = setTimeout(() => {
         onSwipeRight();
         setState({ offsetX: 0, swiping: false });
+        actionTimerRef.current = null;
       }, 200);
     } else if (offsetX < -threshold && onSwipeLeft) {
       // Animate out to the left
       setState({ offsetX: -400, swiping: false });
-      setTimeout(() => {
+      actionTimerRef.current = setTimeout(() => {
         onSwipeLeft();
         setState({ offsetX: 0, swiping: false });
+        actionTimerRef.current = null;
       }, 200);
     } else {
       // Snap back
@@ -86,9 +94,15 @@ export function useSwipeAction({
     lockedRef.current = null;
   }, [state.offsetX, threshold, onSwipeRight, onSwipeLeft]);
 
+  const onTouchCancel = useCallback(() => {
+    startRef.current = null;
+    lockedRef.current = null;
+    setState({ offsetX: 0, swiping: false });
+  }, []);
+
   return {
     offsetX: state.offsetX,
     swiping: state.swiping,
-    handlers: { onTouchStart, onTouchMove, onTouchEnd },
+    handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel },
   };
 }

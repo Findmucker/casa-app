@@ -18,10 +18,11 @@ A household management PWA for couples and families — organize shopping, tasks
 
 ### Priority/Task List (Coisinhas)
 - Auto-categorization (House, Kitchen, Decor, Organization, DIY, Bathroom, Tech, Garden, Laundry, Tasks)
-- **Drag reorder** for prioritization
+- Accessible up/down controls for reliable priority ordering on touch and keyboard
 - Assign to person + notes per item
 - Collapsible categories with progress bars
 - Autocomplete suggestions
+- Real-time sync, reduced-motion support, and 44px minimum touch targets
 
 ### Projects (Projetos)
 - Status workflow: Pending → In Progress → Done

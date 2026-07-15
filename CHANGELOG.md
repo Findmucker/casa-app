@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Product, architecture, Android, service-cost, and backlog review documentation.
 
 ### Fixed
+- Coisinhas now avoid duplicate completion gestures, preserve failed creation drafts,
+  and expose accessible 44px touch targets across item actions.
 - Finance donuts now render a complete ring for single-category months.
 - Finance charts consistently ignore invalid, non-finite, and non-positive amounts.
 - Coisinhas can now include notes during creation, with a compact mobile-friendly price field.
@@ -19,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
 
 ### Changed
+- Coisinhas now group large lists in one pass, provide a clearer empty state,
+  and respect reduced-motion preferences for completion and swipe animations.
 - The original rose/pink visual theme is now used consistently at every hour;
   automatic morning, dusk, and night theme switching was removed.
 - The open backlog was consolidated from 36 issues to 12 active roadmap items.

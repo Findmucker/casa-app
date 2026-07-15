@@ -10,6 +10,7 @@ interface AutocompleteInputProps {
   className?: string;
   suggestions: string[];
   inputRef?: React.RefObject<HTMLInputElement | null>;
+  ariaLabel?: string;
 }
 
 export default function AutocompleteInput({
@@ -20,6 +21,7 @@ export default function AutocompleteInput({
   className,
   suggestions,
   inputRef: externalRef,
+  ariaLabel,
 }: AutocompleteInputProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
@@ -86,6 +88,7 @@ export default function AutocompleteInput({
         onFocus={() => setShowSuggestions(true)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
+        aria-label={ariaLabel}
         className={className}
       />
       {showSuggestions && filtered.length > 0 && (
@@ -98,7 +101,7 @@ export default function AutocompleteInput({
                 setShowSuggestions(false);
                 ref.current?.focus();
               }}
-              className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+              className={`w-full min-h-11 text-left px-4 py-2.5 text-sm transition-colors ${
                 idx === selectedIdx
                   ? "bg-pink-50 text-rose-700"
                   : "text-rose-800 hover:bg-pink-50/50"
