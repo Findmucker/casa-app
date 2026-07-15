@@ -73,6 +73,16 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "priority.uncheck": "Uncheck",
   "priority.markDone": "Mark as done",
   "priority.delete": "Delete",
+  "priority.add": "Add task",
+  "priority.changeAssignee": "Change assignee",
+  "priority.edit": "Edit",
+  "priority.editNotes": "Edit notes for",
+  "priority.moveUp": "Move up",
+  "priority.moveDown": "Move down",
+  "priority.emptyAction": "Add first task",
+  "priority.saveError": "Could not save. Please try again.",
+  "priority.swipeDone": "✓ Done",
+  "priority.swipeDelete": "✕ Delete",
 
   // Projects
   "projects.title": "Projects",

@@ -62,10 +62,11 @@ O ecra inicial mostra:
 - Pequenas tarefas do dia-a-dia (Casa, Cozinha, Decoracao, Organizacao, Bricolage, WC, Tech, Jardim, Roupa, Tarefazinhas)
 - Auto-categorizacao automatica ao adicionar
 - Categorias em caixas colapsaveis com barra de progresso
-- Arrasta para reordenar por prioridade
+- Reordena por prioridade com os botoes subir/descer (touch e teclado)
 - Atribui a pessoa responsavel + notas em cada item
 - Autocomplete com sugestoes baseadas em items anteriores
 - Animacao de celebracao ao completar uma categoria inteira
+- Sincronizacao em tempo real, alvos tacteis acessiveis e respeito pela preferencia de movimento reduzido
 
 ---
 

@@ -71,6 +71,16 @@ export const pt = {
   "priority.uncheck": "Desmarcar",
   "priority.markDone": "Marcar como feito",
   "priority.delete": "Apagar",
+  "priority.add": "Adicionar coisinha",
+  "priority.changeAssignee": "Alterar responsável",
+  "priority.edit": "Editar",
+  "priority.editNotes": "Editar notas de",
+  "priority.moveUp": "Mover para cima",
+  "priority.moveDown": "Mover para baixo",
+  "priority.emptyAction": "Adicionar primeira coisinha",
+  "priority.saveError": "Não foi possível guardar. Tenta novamente.",
+  "priority.swipeDone": "✓ Feito",
+  "priority.swipeDelete": "✕ Apagar",
 
   // Projects
   "projects.title": "Projetos",
