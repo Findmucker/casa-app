@@ -24,7 +24,7 @@ import UndoToast from "@/components/UndoToast";
 import { UndoProvider } from "@/lib/useUndoStack";
 import { HouseIdContext, useCollection, CollectionDataContext, type ShoppingItem, type SmallPriorityItem, type BigPriorityItem, type HabitItem, type HabitCheck, type ExpenseItem } from "@/lib/hooks";
 import { useAuth, updateHouseName } from "@/lib/auth";
-import { useTimeTheme } from "@/lib/themes";
+import { MAIN_THEME } from "@/lib/themes";
 import { registerPushToken } from "@/lib/notifications";
 import { LocaleProvider, useT } from "@/lib/i18n";
 import { useHouseContext } from "@/lib/context";
@@ -95,8 +95,7 @@ function DashboardInner() {
   const [showSendMessage, setShowSendMessage] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [memberActionTarget, setMemberActionTarget] = useState<MemberWidget | null>(null);
-  const theme = useTimeTheme();
-  const darkMode = theme.isDark;
+  const theme = MAIN_THEME;
   const { user, logout } = useAuth();
   const houseId = useContext(HouseIdContext);
   const { members, userName, houseName } = useHouseContext();
@@ -225,19 +224,13 @@ function DashboardInner() {
   };
 
   return (
-    <div className={`flex flex-col h-screen transition-all duration-1000 ${theme.cssClass} bg-gradient-to-br ${theme.bgGradient}`}>
+    <div className={`flex h-screen flex-col bg-gradient-to-br ${theme.bgGradient}`}>
       {/* Header */}
-      <header className={`backdrop-blur-xl border-b px-4 py-3 flex items-center justify-between transition-colors duration-500 ${
-        darkMode
-          ? "bg-white/40 border-purple-200/30"
-          : "bg-white/50 border-pink-100/40"
-      }`}>
+      <header className="flex items-center justify-between border-b border-pink-100/40 bg-white/50 px-4 py-3 backdrop-blur-xl transition-colors duration-500">
         <button
           onClick={() => openOverlay(() => setShowSearch(true))}
           aria-label="Pesquisar"
-          className={`w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all ${
-            darkMode ? "bg-purple-100/60 text-purple-500 hover:bg-purple-100" : "bg-pink-50 text-pink-400 hover:bg-pink-100"
-          }`}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-50 text-pink-400 transition-all hover:bg-pink-100 active:scale-90"
         >
           🔍
         </button>
@@ -245,9 +238,7 @@ function DashboardInner() {
           onClick={() => { if (showPanel) { history.back(); } else { openOverlay(() => { setShowPanel(true); setMenuSubPanel(null); }); } }}
           aria-label="Menu principal"
           aria-expanded={showPanel}
-          className={`text-lg font-bold tracking-wide active:scale-95 transition-all ${
-            darkMode ? "text-purple-500 hover:text-purple-600" : "text-rose-400 hover:text-rose-500"
-          }`}
+          className="text-lg font-bold tracking-wide text-rose-400 transition-all hover:text-rose-500 active:scale-95"
         >
           🏡 {houseName}
         </button>
@@ -285,27 +276,17 @@ function DashboardInner() {
         {showPanel && (
           <div
             onClick={(e) => { if (e.target === e.currentTarget) history.back(); }}
-            className={`absolute inset-0 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in-up bg-gradient-to-br ${
-            darkMode
-              ? "from-purple-100/98 via-indigo-100/98 to-pink-100/98"
-              : theme.phase === "morning"
-                ? "from-amber-50/98 via-yellow-50/98 to-orange-50/98"
-                : theme.phase === "dusk"
-                  ? "from-orange-50/98 via-rose-100/98 to-purple-100/98"
-                  : "from-rose-50/98 via-pink-50/98 to-fuchsia-50/98"
-          }`}>
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-rose-50/98 via-pink-50/98 to-fuchsia-50/98 backdrop-blur-md animate-fade-in-up">
             {/* Sub-panel for categories */}
             {menuSubPanel ? (
               <div className="animate-fade-in-up flex flex-col items-center">
                 <button
                   onClick={() => setMenuSubPanel(null)}
-                  className={`mb-4 text-xs font-medium px-3 py-1.5 rounded-full transition-all active:scale-95 ${
-                    darkMode ? "bg-purple-100 text-purple-600" : "bg-pink-100 text-rose-500"
-                  }`}
+                  className="mb-4 rounded-full bg-pink-100 px-3 py-1.5 text-xs font-medium text-rose-500 transition-all active:scale-95"
                 >
                   ← {t("common.close")}
                 </button>
-                <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-rose-300">
                   {menuSubPanel === "house" ? t("menu.house") : t("menu.settings")}
                 </p>
                 <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
@@ -321,20 +302,14 @@ function DashboardInner() {
                     <button
                       key={item.label}
                       onClick={item.action}
-                      className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl transition-all active:scale-90 ${
-                        darkMode
-                          ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
-                          : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
-                      }`}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl border border-pink-100/30 bg-white/60 p-4 transition-all hover:bg-white/80 active:scale-90"
                     >
                       <span className="text-2xl">{item.emoji}</span>
-                      <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{item.label}</span>
+                      <span className="text-[10px] font-medium text-rose-600">{item.label}</span>
                     </button>
                   ))}
                   {menuSubPanel === "house" && editingHouseName && (
-                    <div className={`col-span-full flex gap-2 p-3 rounded-2xl ${
-                      darkMode ? "bg-purple-100/60 border border-purple-200/30" : "bg-white/60 border border-pink-100/30"
-                    }`}>
+                    <div className="col-span-full flex gap-2 rounded-2xl border border-pink-100/30 bg-white/60 p-3">
                       <input
                         type="text"
                         value={houseNameInput}
@@ -358,25 +333,19 @@ function DashboardInner() {
                     </div>
                   )}
                   {menuSubPanel === "settings" && (
-                    <div className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl ${
-                      darkMode ? "bg-purple-100/60 border border-purple-200/30" : "bg-white/60 border border-pink-100/30"
-                    }`}>
+                    <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-pink-100/30 bg-white/60 p-4">
                       <span className="text-2xl">🌐</span>
                       <div className="flex gap-1">
                         <button
                           onClick={() => setLocale("pt")}
-                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
-                            locale === "pt"
-                              ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
-                              : darkMode ? "text-purple-400" : "text-pink-400"
+                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold transition-all active:scale-90 ${
+                            locale === "pt" ? "bg-rose-400 text-white" : "text-pink-400"
                           }`}
                         >PT</button>
                         <button
                           onClick={() => setLocale("en")}
-                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold transition-all active:scale-90 ${
-                            locale === "en"
-                              ? darkMode ? "bg-purple-600 text-white" : "bg-rose-400 text-white"
-                              : darkMode ? "text-purple-400" : "text-pink-400"
+                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold transition-all active:scale-90 ${
+                            locale === "en" ? "bg-rose-400 text-white" : "text-pink-400"
                           }`}
                         >EN</button>
                       </div>
@@ -389,14 +358,10 @@ function DashboardInner() {
                     <button
                       onClick={() => { logout(); }}
                       aria-label="Sair da conta"
-                      className={`flex flex-col items-center gap-1.5 px-6 py-3 rounded-2xl transition-all active:scale-90 ${
-                        darkMode
-                          ? "bg-red-100/60 border border-red-200/40 hover:bg-red-100"
-                          : "bg-red-50/60 border border-red-200/50 hover:bg-red-100/80"
-                      }`}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl border border-red-200/50 bg-red-50/60 px-6 py-3 transition-all hover:bg-red-100/80 active:scale-90"
                     >
                       <span className="text-xl">🚪</span>
-                      <span className={`text-[10px] font-medium ${darkMode ? "text-red-500" : "text-red-500"}`}>{t("menu.logout")}</span>
+                      <span className="text-[10px] font-medium text-red-500">{t("menu.logout")}</span>
                     </button>
                   </div>
                 )}
@@ -406,25 +371,17 @@ function DashboardInner() {
                 {/* Members widget — premium card */}
                 {memberWidgets.length > 0 && (
                   <div className={`w-full px-4 max-w-sm mb-6 relative`}>
-                    <div className={`rounded-[28px] p-5 shadow-lg ${
-                      darkMode
-                        ? "bg-gradient-to-br from-purple-100/70 via-purple-50/50 to-indigo-100/60 border border-purple-200/50 shadow-purple-200/20"
-                        : "bg-gradient-to-br from-white/90 via-rose-50/70 to-pink-50/80 border border-pink-200/40 shadow-pink-100/30"
-                    }`}>
+                    <div className="rounded-[28px] border border-pink-200/40 bg-gradient-to-br from-white/90 via-rose-50/70 to-pink-50/80 p-5 shadow-lg shadow-pink-100/30">
                       {/* Title as elegant button */}
                       <button
                         onClick={() => { setShowPanel(false); setMenuSubPanel(null); history.replaceState({ overlay: true }, ""); setShowHouseMembers(true); }}
-                        className={`w-full flex items-center justify-center gap-2 mb-4 py-2 rounded-2xl transition-all active:scale-[0.97] ${
-                          darkMode
-                            ? "bg-purple-200/30 hover:bg-purple-200/50"
-                            : "bg-white/60 hover:bg-white/80 shadow-sm shadow-pink-100/20"
-                        }`}
+                        className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-white/60 py-2 shadow-sm shadow-pink-100/20 transition-all hover:bg-white/80 active:scale-[0.97]"
                       >
                         <span className="text-base">👥</span>
-                        <span className={`text-xs font-bold tracking-wide ${darkMode ? "text-purple-600" : "text-rose-500"}`}>
+                        <span className="text-xs font-bold tracking-wide text-rose-500">
                           {t("menu.members")}
                         </span>
-                        <span className={`text-[10px] ${darkMode ? "text-purple-400" : "text-pink-300"}`}>›</span>
+                        <span className="text-[10px] text-pink-300">›</span>
                       </button>
 
                       {/* Member avatars — larger, more spacious */}
@@ -435,25 +392,21 @@ function DashboardInner() {
                             onClick={() => setMemberActionTarget(memberActionTarget?.uid === m.uid ? null : m)}
                             className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all duration-300 active:scale-90 min-w-[70px] animate-fade-in-up ${
                               memberActionTarget?.uid === m.uid
-                                ? darkMode
-                                  ? "bg-purple-200/80 border border-purple-300/70 shadow-lg shadow-purple-200/30 scale-105"
-                                  : "bg-white border border-pink-200/70 shadow-lg shadow-pink-100/40 scale-105"
-                                : darkMode
-                                  ? "hover:bg-purple-200/30 hover:scale-[1.03]"
-                                  : "hover:bg-white/60 hover:scale-[1.03]"
+                                ? "bg-white border border-pink-200/70 shadow-lg shadow-pink-100/40 scale-105"
+                                : "hover:bg-white/60 hover:scale-[1.03]"
                             }`}
                             style={{ animationDelay: `${i * 100}ms`, animationFillMode: "both" }}
                           >
                             <div className={`relative transition-transform duration-300 ${memberActionTarget?.uid === m.uid ? "animate-bounce-gentle" : ""}`}>
                               <MiniAvatar name={m.name} size={48} avatarConfig={m.avatar || null} equippedItems={m.equipped} />
                             </div>
-                            <span className={`text-[10px] font-semibold leading-tight ${darkMode ? "text-purple-700" : "text-rose-700"}`}>{m.name}</span>
+                            <span className="text-[10px] font-semibold leading-tight text-rose-700">{m.name}</span>
                             <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-300 ${
                               memberActionTarget?.uid === m.uid
-                                ? darkMode ? "bg-purple-300/60 scale-110" : "bg-pink-200/80 scale-110"
-                                : darkMode ? "bg-purple-200/50" : "bg-pink-100/60"
+                                ? "bg-pink-200/80 scale-110"
+                                : "bg-pink-100/60"
                             }`}>
-                              <span className={`text-[8px] font-bold ${darkMode ? "text-purple-600" : "text-pink-500"}`}>Nv.{m.level}</span>
+                              <span className="text-[8px] font-bold text-pink-500">Nv.{m.level}</span>
                             </div>
                           </button>
                         ))}
@@ -461,28 +414,18 @@ function DashboardInner() {
 
                       {/* Action popup for selected member */}
                       {memberActionTarget && (
-                        <div className={`mt-4 pt-3 flex gap-2.5 justify-center animate-fade-in-up border-t ${
-                          darkMode ? "border-purple-200/30" : "border-pink-100/40"
-                        }`}>
+                        <div className="mt-4 flex justify-center gap-2.5 border-t border-pink-100/40 pt-3 animate-fade-in-up">
                           {memberActionTarget.uid !== user?.uid && (
                             <button
                               onClick={() => { setHouseMembersMessageTo(memberActionTarget.name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); history.replaceState({ overlay: true }, ""); setShowHouseMembers(true); }}
-                              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[11px] font-semibold transition-all active:scale-90 shadow-sm ${
-                                darkMode
-                                  ? "bg-purple-200/70 text-purple-700 hover:bg-purple-200 shadow-purple-200/20"
-                                  : "bg-white text-rose-600 border border-pink-100/50 hover:shadow-md shadow-pink-100/20"
-                              }`}
+                              className="flex items-center gap-1.5 rounded-2xl border border-pink-100/50 bg-white px-4 py-2.5 text-[11px] font-semibold text-rose-600 shadow-sm shadow-pink-100/20 transition-all hover:shadow-md active:scale-90"
                             >
                               <span>💌</span> {t("menu.message")}
                             </button>
                           )}
                           <button
                             onClick={() => { const name = memberActionTarget.uid !== user?.uid ? memberActionTarget.name : undefined; setProfileViewMember(name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); history.replaceState({ overlay: true }, ""); setShowGamification(true); }}
-                            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-[11px] font-semibold transition-all active:scale-90 shadow-sm ${
-                              darkMode
-                                ? "bg-purple-200/70 text-purple-700 hover:bg-purple-200 shadow-purple-200/20"
-                                : "bg-white text-rose-600 border border-pink-100/50 hover:shadow-md shadow-pink-100/20"
-                            }`}
+                            className="flex items-center gap-1.5 rounded-2xl border border-pink-100/50 bg-white px-4 py-2.5 text-[11px] font-semibold text-rose-600 shadow-sm shadow-pink-100/20 transition-all hover:shadow-md active:scale-90"
                           >
                             <span>👤</span> {t("menu.profile")}
                           </button>
@@ -493,7 +436,7 @@ function DashboardInner() {
                 )}
 
                 {/* All tabs grid */}
-                <p className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${darkMode ? "text-purple-500" : "text-rose-300"}`}>{t("menu.navigate")}</p>
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-rose-300">{t("menu.navigate")}</p>
                 <div className="grid grid-cols-5 gap-2.5 px-4 max-w-sm mb-6">
                   {ALL_TABS.map((section) => (
                     <button
@@ -501,22 +444,18 @@ function DashboardInner() {
                       onClick={() => { switchTab(section.id); history.back(); }}
                       className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl transition-all active:scale-90 ${
                         activeTab === section.id
-                          ? darkMode
-                            ? "bg-purple-200/70 shadow-md shadow-purple-200/30 border border-purple-300/60 scale-105"
-                            : "bg-white shadow-md shadow-pink-100/50 border border-pink-200/60 scale-105"
-                          : darkMode
-                            ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-100"
-                            : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
+                          ? "bg-white shadow-md shadow-pink-100/50 border border-pink-200/60 scale-105"
+                          : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
                       }`}
                     >
                       <span className="text-lg">{section.emoji}</span>
-                      <span className={`text-[9px] font-medium leading-tight ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{section.label}</span>
+                      <span className="text-[9px] font-medium leading-tight text-rose-600">{section.label}</span>
                     </button>
                   ))}
                 </div>
 
                 {/* Divider */}
-                <div className={`w-32 h-px mb-5 ${darkMode ? "bg-purple-200/50" : "bg-pink-200/60"}`} />
+                <div className="mb-5 h-px w-32 bg-pink-200/60" />
 
                 {/* Category buttons */}
                 <div className="grid grid-cols-2 gap-3 px-6 max-w-sm">
@@ -527,14 +466,10 @@ function DashboardInner() {
                     <button
                       key={cat.key}
                       onClick={() => setMenuSubPanel(cat.key)}
-                      className={`flex flex-col items-center gap-1.5 p-3.5 rounded-2xl transition-all active:scale-90 ${
-                        darkMode
-                          ? "bg-purple-100/60 border border-purple-200/50 hover:bg-purple-200/60"
-                          : "bg-white/60 border border-pink-100/30 hover:bg-white/80"
-                      }`}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl border border-pink-100/30 bg-white/60 p-3.5 transition-all hover:bg-white/80 active:scale-90"
                     >
                       <span className="text-xl">{cat.emoji}</span>
-                      <span className={`text-[10px] font-medium ${darkMode ? "text-purple-600" : "text-rose-600"}`}>{cat.label}</span>
+                      <span className="text-[10px] font-medium text-rose-600">{cat.label}</span>
                     </button>
                   ))}
                 </div>
@@ -559,9 +494,7 @@ function DashboardInner() {
       </UndoProvider>
 
       {/* Bottom tabs - scrollable */}
-      <nav aria-label="Navegação principal" className={`backdrop-blur-xl border-t safe-area-bottom transition-colors duration-500 ${
-        darkMode ? "bg-white/40 border-purple-200/30" : "bg-white/60 border-pink-100/40"
-      }`}>
+      <nav aria-label="Navegação principal" className="border-t border-pink-100/40 bg-white/60 backdrop-blur-xl transition-colors duration-500 safe-area-bottom">
         <div ref={navRef} className="flex overflow-x-auto scrollbar-hide" role="tablist">
           {ALL_TABS.map((tab) => (
             <button
@@ -573,8 +506,8 @@ function DashboardInner() {
               onClick={() => switchTab(tab.id)}
               className={`flex-shrink-0 min-w-[56px] flex flex-col items-center gap-0.5 py-2.5 px-1.5 transition-all duration-300 relative ${
                 activeTab === tab.id && !showPanel
-                  ? darkMode ? "text-purple-500 scale-105" : "text-rose-500 scale-105"
-                  : darkMode ? "text-gray-500 hover:text-purple-400" : "text-gray-400 hover:text-rose-300"
+                  ? "text-rose-500 scale-105"
+                  : "text-gray-400 hover:text-rose-300"
               }`}
             >
               <span className={`text-lg transition-all duration-300 ${
@@ -584,9 +517,7 @@ function DashboardInner() {
               </span>
               <span className="text-[9px] font-medium leading-tight">{tab.label}</span>
               {activeTab === tab.id && !showPanel && (
-                <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full ${
-                  darkMode ? "bg-gradient-to-r from-purple-400 to-pink-400" : "bg-gradient-to-r from-pink-400 to-rose-400"
-                }`} />
+                <div className="absolute -top-0.5 left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full bg-gradient-to-r from-pink-400 to-rose-400" />
               )}
             </button>
           ))}

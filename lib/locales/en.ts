@@ -350,7 +350,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.welcome.title": "Welcome to Our Little Home!",
   "tutorial.welcome.text": "The app that organizes life together. Shopping, tasks, habits, expenses, events and more — all in one cute shared space.",
   "tutorial.welcome.tip1": "All information syncs in real-time between members",
-  "tutorial.welcome.tip2": "The app theme changes throughout the day ☀️🌅🌙",
+  "tutorial.welcome.tip2": "The app uses a soft, consistent pink theme 🌸",
   "tutorial.welcome.tip3": "Available in Português and English 🌐",
 
   "tutorial.nav.title": "How to Navigate",
@@ -462,5 +462,5 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.tips.tip4": "📜 History shows what you completed",
   "tutorial.tips.tip5": "⚙️ Maintenance to reorganize",
   "tutorial.tips.tip6": "🔗 Invite members to your home",
-  "tutorial.tips.tip7": "Theme changes automatically: ☀️ morning → 🌤️ afternoon → 🌅 evening → 🌙 night",
+  "tutorial.tips.tip7": "The main pink theme stays consistent at every hour 🌸",
 };
