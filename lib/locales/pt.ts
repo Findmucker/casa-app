@@ -348,7 +348,7 @@ export const pt = {
   "tutorial.welcome.title": "Bem-vindo à Nossa Casinha!",
   "tutorial.welcome.text": "A app que organiza a vida a dois. Compras, tarefas, hábitos, despesas, eventos e mais — tudo num sítio fofo e partilhado.",
   "tutorial.welcome.tip1": "Toda a informação sincroniza em tempo real entre membros",
-  "tutorial.welcome.tip2": "A app muda de tema ao longo do dia ☀️🌅🌙",
+  "tutorial.welcome.tip2": "A app usa um tema rosa suave e consistente 🌸",
   "tutorial.welcome.tip3": "Disponível em Português e English 🌐",
 
   "tutorial.nav.title": "Como Navegar",
@@ -460,7 +460,7 @@ export const pt = {
   "tutorial.tips.tip4": "📜 Histórico mostra o que completaste",
   "tutorial.tips.tip5": "⚙️ Manutenção para reorganizar",
   "tutorial.tips.tip6": "🔗 Convida membros para a casa",
-  "tutorial.tips.tip7": "Tema muda sozinho: ☀️ manhã → 🌤️ tarde → 🌅 anoitecer → 🌙 noite",
+  "tutorial.tips.tip7": "Tema principal rosa, consistente a qualquer hora 🌸",
 } as const;
 
 export type LocaleKeys = keyof typeof pt;
