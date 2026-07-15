@@ -377,16 +377,9 @@ O widget de Membros no menu central mostra:
 
 ## Temas Visuais
 
-A app muda automaticamente de tema ao longo do dia:
-
-| Periodo | Tema | Cores |
-|---------|------|-------|
-| 7h - 12h | ☀️ Manha | Amber, amarelo, laranja quente |
-| 12h - 18h | 🌤️ Tarde | Rosa, roxo, rose (default) |
-| 18h - 20h | 🌅 Anoitecer | Laranja, rose, roxo |
-| 20h - 7h | 🌙 Noite | Modo escuro, slate, purple |
-
-A transicao entre temas e suave e automatica.
+A app usa sempre o tema principal rosa, independentemente da hora do
+dispositivo. As cores, o contraste e os fundos permanecem consistentes durante
+todo o dia.
 
 ---
 
