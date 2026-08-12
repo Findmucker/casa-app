@@ -42,3 +42,14 @@ next-env.d.ts
 
 .env*.local
 *.pdf
+
+# Android build outputs and signing material
+/android/.gradle/
+/android/app/build/
+/android/build/
+/android/local.properties
+/android/*.jks
+/android/*.keystore
+/android/*.p12
+/android/app-release-*.apk
+/android/app-release-*.aab

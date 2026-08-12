@@ -1,0 +1,43 @@
+{
+  "packageId": "com.findmucker.casa",
+  "host": "casa-app-zeta.vercel.app",
+  "name": "A Nossa Casinha",
+  "launcherName": "Casinha",
+  "display": "standalone",
+  "displayOverride": ["standalone", "minimal-ui"],
+  "themeColor": "#fce7f3",
+  "themeColorDark": "#fce7f3",
+  "navigationColor": "#fdf2f8",
+  "navigationColorDark": "#fdf2f8",
+  "navigationDividerColor": "#00000000",
+  "navigationDividerColorDark": "#00000000",
+  "backgroundColor": "#fdf2f8",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://casa-app-zeta.vercel.app/icon-512.png",
+  "maskableIconUrl": "https://casa-app-zeta.vercel.app/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "android-upload-key.jks",
+    "alias": "upload"
+  },
+  "appVersionCode": 1,
+  "appVersion": "1.0.0",
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://casa-app-zeta.vercel.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 23,
+  "orientation": "portrait-primary",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "launchHandlerClientMode": "navigate-existing"
+}
