@@ -1,18 +1,19 @@
 # Revisão de produto, arquitetura e custos
 
-> Estado analisado: 14 de julho de 2026
+> Estado analisado: 12 de agosto de 2026
 
 ## Resumo executivo
 
-A aplicação deve continuar como PWA web-first. Uma reescrita completa em Android
-nativo duplicaria UI, regras de negócio, testes e manutenção sem benefício para as
-funcionalidades atuais.
+A aplicação continua como PWA web-first e é agora distribuída no Android através de
+uma Trusted Web Activity (TWA) gerada por Bubblewrap. Esta solução preserva o mesmo
+origin, Firebase Auth, Firestore, notificações web e route handlers Next.js sem
+duplicar UI, regras de negócio, testes ou manutenção num cliente nativo.
 
-Se widgets de ecrã inicial se mantiverem prioritários, a evolução recomendada é um
-piloto com Capacitor: reutilizar a aplicação React/Next existente dentro de um
-contentor Android e escrever apenas as integrações que precisam do SDK nativo.
-Geofencing em background não é recomendado nesta fase devido a permissões
-sensíveis, consumo de bateria e política da Play Store.
+Se widgets de ecrã inicial se mantiverem prioritários, continuam a exigir um piloto
+nativo separado; a TWA não transforma APIs web em widgets Android. Capacitor ou um
+módulo Kotlin só devem ser avaliados para essa capacidade concreta. Geofencing em
+background continua não recomendado devido a permissões sensíveis, consumo de
+bateria e política da Play Store.
 
 As prioridades devem ser confiabilidade, privacidade, importação bancária local,
 tratamento uniforme de erros e experiência das funcionalidades domésticas. Temas,
@@ -27,6 +28,7 @@ avatar e gamificação ficam depois do núcleo.
 - Autenticação Firebase, notificações FCM e agendamento externo idempotente.
 - Importação bancária local, sem IA nem envio de documentos.
 - CI com TypeScript, ESLint, testes e build em cada PR.
+- Shell Android TWA com deep links, delegação de notificações e APK de teste em CI.
 - Funcionalidades domésticas integradas: compras, tarefas, projetos, hábitos,
   finanças, calendário, eventos e meteorologia.
 
@@ -67,28 +69,32 @@ avatar e gamificação ficam depois do núcleo.
 
 - Extrair módulos por domínio sem uma migração total:
   `features/finance`, `features/habits`, `features/tasks`, etc.
-- Introduzir Capacitor apenas através de um piloto isolado se uma capacidade nativa
-  aprovada o justificar.
+- Introduzir Capacitor ou Kotlin apenas através de um piloto isolado se uma
+  capacidade nativa aprovada, como um widget, o justificar.
 - Evitar uma segunda implementação completa em Kotlin.
 
 ## Android: decisão e custo
 
 ### Decisão
 
-Não fazer agora uma aplicação Android nativa de raiz.
+Publicar a aplicação web existente como TWA e não fazer uma aplicação Android
+nativa de raiz. Bubblewrap gera um projeto Android pequeno que abre o origin de
+produção no browser do dispositivo. Digital Asset Links comprovam a associação
+entre o pacote assinado e o site; sem essa associação, a app usa uma Custom Tab
+segura com barra do browser.
 
-Capacitor é um runtime web-native open source que permite manter a base web e aceder
-a APIs Android através de plugins ou código Kotlin pontual. É a opção indicada para
-um piloto, não uma autorização automática para publicar ou adicionar permissões.
+Capacitor fica reservado para um futuro piloto de capacidades que a TWA não cobre,
+como widgets. Não existe autorização automática para adicionar plugins, código
+Kotlin, permissões sensíveis ou geofencing.
 
 ### Estimativa de esforço
 
 | Opção | Custo externo obrigatório | Esforço próprio estimado | Resultado |
 |---|---:|---:|---|
-| Continuar PWA | €0 incremental | manutenção normal | cobre as funcionalidades atuais |
-| Piloto Capacitor interno | €0 sem publicação | 3–7 dias | build Android, autenticação, navegação e smoke tests |
-| Publicação Android básica | US$25 uma vez | 2–4 semanas | shell estável, ícones, deep links, permissões, QA e Play Console |
-| Widget Android | incluído acima | +1–3 semanas | widget nativo com sincronização e abertura da tab correta |
+| PWA + shell TWA | €0 incremental | implementado; manutenção normal | uma base web com APK Android, deep links e push |
+| APK de teste em CI | €0 | implementado | artefacto debug instalável em cada alteração Android |
+| Publicação Play básica | US$25 uma vez | 1–3 dias após conta/chaves | assinatura, Digital Asset Links, QA e faixa interna |
+| Widget Android | incluído acima | +1–3 semanas | piloto nativo/Capacitor com sincronização e abertura da tab correta |
 | Geofencing | incluído acima | +1–3 semanas e revisão de política | lembrete de localização em background |
 
 As estimativas são de engenharia, não orçamentos comerciais. Trabalho contratado
@@ -101,8 +107,9 @@ limitações e revisão de política.
 
 Fontes:
 
-- [Capacitor](https://capacitorjs.com/docs/)
-- [Capacitor para Android](https://capacitorjs.com/docs/android)
+- [Trusted Web Activities](https://developer.chrome.com/docs/android/trusted-web-activity/)
+- [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap)
+- [Capacitor](https://capacitorjs.com/docs/), apenas para um futuro piloto nativo
 - [Registo na Google Play Console](https://support.google.com/googleplay/android-developer/answer/6112435)
 - [Android App Widgets](https://developer.android.com/develop/ui/views/appwidgets/overview)
 - [Localização em background](https://developer.android.com/develop/sensors-and-location/location/background)
@@ -149,12 +156,12 @@ Fontes:
 2. Sistema de temas por CSS variables, contraste e `prefers-reduced-motion`.
 3. Gamificação cooperativa; não bloquear funções essenciais através de stats.
 
-### P3 — capacidade nativa condicionada
+### P3 — distribuição Android e capacidade nativa condicionada
 
-1. Validar procura real por widget Android.
-2. Fazer um piloto Capacitor sem geofencing.
-3. Só publicar depois de testes de autenticação, notificações, offline, deep links e
-   atualização.
+1. Testar o APK TWA na faixa interna da Play com autenticação, notificações, deep
+   links e atualização do origin web.
+2. Validar procura real por widget Android.
+3. Fazer um piloto Capacitor/Kotlin apenas para o widget, sem geofencing.
 4. Reavaliar geofencing separadamente; por omissão, não pedir localização em
    background.
 
@@ -172,6 +179,6 @@ Decisões desta revisão:
 - encerrar tabs de roupa rejeitadas;
 - substituir geração por IA por sugestões locais;
 - marcar o cron externo como concluído;
-- manter widgets bloqueados pelo piloto Android;
+- manter widgets bloqueados por um piloto nativo separado da TWA;
 - manter parsers bancários como prioridade de privacidade;
 - criar trabalho explícito para arquitetura e controlo de quotas.

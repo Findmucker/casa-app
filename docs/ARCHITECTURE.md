@@ -8,6 +8,21 @@
 - GitHub Actions schedules habit reminders. Vercel hosts the endpoint and provides
   a daily fallback invocation.
 
+## Android runtime
+
+The Android package is a Trusted Web Activity (TWA), generated from
+`android/twa-manifest.json`. It opens `https://casa-app-zeta.vercel.app` in the
+device's supported browser engine. The APK contains the launcher, splash assets,
+deep-link intent filters, and notification delegation service; it does not embed a
+second copy of the Next.js frontend or server.
+
+This boundary is deliberate: Firebase Auth, Firestore, browser storage, the FCM
+service worker, and Next.js route handlers retain the same origin and behavior on
+web and Android. Web releases deploy through Vercel independently of Android shell
+releases. Digital Asset Links at `/.well-known/assetlinks.json` prove that the
+website and signed package belong to the same publisher; without a matching
+certificate fingerprint, Android safely falls back to a Custom Tab with browser UI.
+
 ## Data ownership
 
 User profiles live at `users/{uid}`. Household data belongs under
@@ -44,7 +59,8 @@ the explicit Óbidos fallback.
 
 ## Notification flow
 
-1. The browser registers an FCM token under the authenticated user's UID.
+1. The browser, including the Android TWA browser session, registers an FCM token
+   under the authenticated user's UID.
 2. A scheduler calls `/api/cron/habits` with `Authorization: Bearer CRON_SECRET`.
 3. The route calculates due occurrences in `Europe/Lisbon`.
 4. A Firestore delivery record leases and deduplicates each recipient occurrence.
@@ -52,11 +68,13 @@ the explicit Óbidos fallback.
 
 Operational details are in [CRON_SETUP.md](CRON_SETUP.md). Security policy is
 enforced by [../firestore.rules](../firestore.rules).
+Android packaging and certificate operations are in [ANDROID.md](ANDROID.md).
 
 ## Product and platform direction
 
-The app remains web-first and PWA-based. Native Android work is conditional on the
-widget pilot; a full Kotlin rewrite and background geofencing are not planned.
+The app remains web-first and PWA-based. Android distribution uses the TWA shell
+described above; native-only work remains conditional on a separate widget pilot.
+A full Kotlin rewrite and background geofencing are not planned.
 Architecture priorities, service limits, and the cost analysis are maintained in
 [PRODUCT_REVIEW.md](PRODUCT_REVIEW.md).
 

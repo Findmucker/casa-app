@@ -395,18 +395,26 @@ A app suporta **Portugues** 🇵🇹 e **Ingles** 🇬🇧.
 
 ---
 
-## PWA e Atualizacoes
+## Android, PWA e Atualizacoes
 
-A app funciona como **Progressive Web App (PWA)** — podes instala-la no telemovel ou computador.
+A app funciona como **aplicacao Android** e como **Progressive Web App (PWA)**.
+As duas versoes usam a mesma conta, os mesmos dados e as mesmas funcionalidades.
 
 ### Instalar a app
-- **Android/Chrome:** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
+- **APK Android de teste:** descarrega o artefacto `casinha-android-debug-*` do workflow
+  **Android APK**, extrai o ZIP e instala `app-debug.apk`. O Android pode pedir para
+  autorizar temporariamente a instalacao de apps desconhecidas para o browser ou gestor de ficheiros.
+- **Android/Chrome (PWA):** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
 - **iOS/Safari:** Botao de partilha → "Adicionar ao ecra inicial"
+
+O APK Android usa o browser do dispositivo de forma segura. Se a assinatura do APK
+ainda nao estiver associada ao site, aparece uma barra do browser; a app continua
+funcional e a barra desaparece quando a verificacao de publicacao estiver configurada.
 
 ### Atualizacoes automaticas
 - O **service worker** usa `skipWaiting` + **cache purge** para garantir que recebes sempre a versao mais recente
-- Quando ha uma atualizacao, a app carrega automaticamente a nova versao na proxima visita
-- Nao precisas de fazer nada — as atualizacoes sao transparentes e fiaveis
+- As funcionalidades web atualizam automaticamente na proxima abertura, tanto na PWA como no APK Android
+- Alteracoes ao icone, splash screen ou integracao Android exigem uma nova versao do APK ou uma atualizacao pela Play Store
 
 ---
 

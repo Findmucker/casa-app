@@ -25,6 +25,7 @@ npm run dev
    npm run lint       # Zero warnings
    npm run build      # Build OK
    npm test           # Tests pass
+   npm run android:verify # Required when Android/PWA packaging changes
    ```
 4. **Commit** using Conventional Commits:
    ```bash
@@ -112,8 +113,17 @@ The pipeline runs automatically on all PRs — all gates must pass:
 ## Tech Notes
 
 - **Next.js 16** App Router — Firebase pages use `force-dynamic` export
+- **Android** uses a Bubblewrap-generated Trusted Web Activity in `android/`; edit
+  `android/twa-manifest.json`, run `npm run android:update`, and review all generated changes
+- **Android versions** require a monotonically increasing `appVersionCode`; never reuse
+  an uploaded Play version code
+- **Signing keys** and `android/local.properties` must never be committed
 - **Calendar** uses emoji indicators (not colored dots)
 - **Charts** are pure SVG — no chart libraries allowed
+
+The `Android APK` workflow builds a debug APK for Android-related pull requests.
+Local Android prerequisites and the release process are documented in
+[docs/ANDROID.md](docs/ANDROID.md).
 
 ## Questions?
 
