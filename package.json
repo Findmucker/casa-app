@@ -10,7 +10,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "android:verify": "node scripts/verify-android.mjs",
+    "android:update": "npx --yes @bubblewrap/cli@1.24.1 update --skipVersionUpgrade --manifest=android",
+    "android:build": "node scripts/build-android.mjs"
   },
   "dependencies": {
     "firebase": "^12.12.1",
