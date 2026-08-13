@@ -406,6 +406,10 @@ A app funciona como **aplicacao Android nativa** e, separadamente, como
   autorizar temporariamente a instalacao de apps desconhecidas para o browser ou gestor de ficheiros.
 - **Android nativo:** abre **Casinha** no ecra de aplicacoes; o login e as listas nao
   abrem Chrome nem Brave.
+- **Paridade Android:** a app nativa apresenta as mesmas 9 tabs, pela mesma ordem,
+  com pesquisa, menu da casa, perfil, membros, amigos, mensagens, historico e ajuda.
+  O cabeçalho, a paleta rosa/roxo, os cartoes e os emojis seguem a identidade visual
+  da Casinha web.
 - **Android/Chrome (PWA web opcional):** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
 - **iOS/Safari:** Botao de partilha → "Adicionar ao ecra inicial"
 

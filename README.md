@@ -103,7 +103,9 @@ A household management PWA and Android app for couples and families — organize
 ### PWA & Push Notifications
 - Full PWA with installable manifest
 - Dedicated native Android app built with Kotlin and Jetpack Compose
-- Native Firebase authentication and real-time Firestore household lists
+- Native Firebase authentication and real-time Firestore household data
+- The same nine destinations, navigation order, compact header, visual identity, and
+  supporting search/house/profile surfaces as the web client
 - **Back button navigation** — device/browser back closes panels instead of leaving the app
 - Push notifications via Firebase Cloud Messaging (FCM) using **data-only messages** (no duplicates)
 - **Service worker with `skipWaiting` + cache purge** for reliable updates

@@ -20,8 +20,11 @@ listeners, and mutations. `CasaViewModel` exposes immutable screen state and rem
 Firestore listeners when the session or ViewModel ends. Compose screens contain no
 direct Firebase calls.
 
-The Android and web UIs can evolve independently, but stored document fields remain
-compatible. Every cross-client schema change must be implemented and tested in both.
+The Android and web implementations can evolve independently, but the product shell
+and stored document fields remain compatible. The nine destinations, compact header,
+bottom-navigation order, labels, emojis, and Casinha visual tokens are cross-client
+product contracts. Every schema or navigation change must be implemented and tested
+in both.
 
 ## Data ownership
 
@@ -37,9 +40,10 @@ Firestore rules, not either client, are the security boundary.
 ## Client data flow
 
 On Android, `CasaViewModel` restores the Firebase session and emits one of four
-states: loading, signed out, needs a house, or ready. The ready state starts one
-real-time listener for each native collection. Snapshots are mapped to shared
-`HouseItem` models and flow into Compose through `StateFlow`.
+states: loading, signed out, needs a house, or ready. The ready state starts scoped
+real-time listeners for the four household collections, habit checks, finances,
+events, friends, and gamification. Snapshots are mapped to native domain models and
+flow into Compose through `StateFlow`; weather is loaded from Open-Meteo.
 
 On web, `HouseIdContext`, `useCollection`, and `CollectionDataContext` provide the
 equivalent house scoping and real-time updates.
@@ -60,6 +64,7 @@ operations are in [ANDROID.md](ANDROID.md).
 - Preserve house scoping for every collection and query.
 - Keep Android Firebase access in the repository layer and UI state in ViewModels.
 - Treat the Firestore document shape as a cross-client contract.
+- Treat the nine-tab order and visual identity as cross-client product contracts.
 - Cover pure state transitions with unit tests and run Android lint on each change.
 - Route-handler changes must follow the installed Next.js documentation under
   `node_modules/next/dist/docs`.

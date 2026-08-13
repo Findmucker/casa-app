@@ -25,8 +25,22 @@ foreground UI and `FirebaseCasaRepository` preserves the existing web data model
 - email/password authentication;
 - Google account selection through Android Credential Manager;
 - household creation and invite-code joining;
-- dashboard and real-time Firestore lists for shopping, coisinhas, projects, and habits;
-- add, complete/update, and delete actions without browser navigation.
+- the same nine primary destinations, in the same order as the web client: Início,
+  Compras, Coisinhas, Projetos, Rotinas, Finanças, Calendário, Eventos, and Tempo;
+- compact search/house/profile header, swipe navigation, and a horizontally scrollable
+  native bottom bar;
+- real-time Firestore data for the four household lists, habit checks, expenses,
+  income, savings goals, events, friends, and gamification;
+- native create/update/delete flows for the household lists, finances, savings, and
+  events, including the richer fields already stored by the web client;
+- native search, history, invites, members, friends, messages, profile, help, house
+  rename, and sign-out surfaces;
+- calendar aggregation and Open-Meteo forecast rendered inside the Android process.
+
+The Android shell deliberately follows the established Casinha visual system: compact
+rose header, pale pink/purple background, translucent cards, the original labels and
+emojis, and the same information hierarchy. It is a separate implementation, not a
+different product skin.
 
 The PWA remains available separately. Installing the PWA and the APK may show two
 launcher icons; use the APK labelled **Casinha** for the native client and remove the
@@ -59,8 +73,8 @@ npm run android:build
 The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 `android:verify` is an architectural guard: it checks the package, native entry
-point, Compose/Firebase dependencies and rejects Bubblewrap, TWA, Custom Tab,
-WebView, or browser-helper code.
+point, Compose/Firebase dependencies, all nine navigation destinations and supporting
+surfaces, and rejects Bubblewrap, TWA, Custom Tab, WebView, or browser-helper code.
 
 ## Firebase setup
 
@@ -109,7 +123,13 @@ Official references:
 - [ ] Google login shows the native Android account chooser and reaches the same house.
 - [ ] Creating or joining a house writes compatible Firestore documents.
 - [ ] Each dashboard collection loads and updates in real time.
+- [ ] The bottom bar shows all nine tabs in the documented order and supports swipe.
+- [ ] Search, house menu, profile, history, invite, members, friends, messages, and
+      help all open without leaving `com.findmucker.casa`.
 - [ ] Add, complete/status/check, and delete actions persist after relaunch.
+- [ ] Finance, calendar, events, and weather show the existing shared-house data.
+- [ ] Compare login, dashboard, cards, spacing, colors, labels, and emojis with the web
+      client at the same 720 px viewport.
 - [ ] Back and system navigation do not open a browser.
 
 ## Troubleshooting

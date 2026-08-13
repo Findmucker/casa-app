@@ -42,6 +42,39 @@ const firebaseApplication = readText(
   "casa",
   "CasaApplication.kt",
 );
+const dashboardScreen = readText(
+  "android",
+  "app",
+  "src",
+  "main",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+  "DashboardScreen.kt",
+);
+const overlayScreens = readText(
+  "android",
+  "app",
+  "src",
+  "main",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+  "OverlayScreens.kt",
+);
+const sessionModels = readText(
+  "android",
+  "app",
+  "src",
+  "main",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+  "SessionModels.kt",
+);
 
 assert.match(appGradle, /applicationId ['"]com\.findmucker\.casa['"]/);
 assert.match(appGradle, /minSdk 23/);
@@ -62,6 +95,55 @@ assert.match(mainActivity, /CasaApp\(\)/);
 assert.match(repository, /FirebaseAuth\.getInstance\(\)/);
 assert.match(repository, /FirebaseFirestore\.getInstance\(\)/);
 assert.match(repository, /CredentialManager\.create/);
+for (const collection of [
+  "shopping",
+  "priorities_small",
+  "priorities_big",
+  "habits",
+  "habit_checks",
+  "expenses",
+  "income",
+  "savings_goals",
+  "events",
+  "friends",
+  "gamification",
+]) {
+  assert.match(repository + sessionModels, new RegExp(`[\"']${collection}[\"']`));
+}
+
+const dashboardTabBlock = dashboardScreen.match(
+  /enum class DashboardTab[\s\S]*?\{([\s\S]*?)\n\}/,
+)?.[1];
+assert.ok(dashboardTabBlock, "DashboardTab must remain declared in the native shell.");
+assert.deepEqual(
+  [...dashboardTabBlock.matchAll(/^[ \t]*[A-Z_]+\(\"([^\"]+)\",\s*\"([^\"]+)\"\)/gm)].map(
+    ([, label, emoji]) => `${emoji} ${label}`,
+  ),
+  [
+    "✨ Início",
+    "🛒 Compras",
+    "🪄 Coisinhas",
+    "🏡 Projetos",
+    "🧘 Rotinas",
+    "💰 Finanças",
+    "🗓️ Calendário",
+    "🎉 Eventos",
+    "🌤️ Tempo",
+  ],
+  "The native bottom navigation must match the web product exactly.",
+);
+for (const surface of [
+  "SEARCH",
+  "PROFILE",
+  "HISTORY",
+  "INVITE",
+  "MEMBERS",
+  "FRIENDS",
+  "MESSAGE",
+  "HELP",
+]) {
+  assert.match(overlayScreens, new RegExp(`\\b${surface}\\b`));
+}
 assert.match(
   firebaseApplication,
   /1:776757654663:android:723d4443cad6dd283ff422/,

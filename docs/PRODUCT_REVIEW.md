@@ -9,15 +9,17 @@ web e uma aplicação Android nativa em Kotlin/Jetpack Compose. A opção anteri
 empacotar a web como Trusted Web Activity foi removida porque abria o browser do
 dispositivo e não cumpria a experiência Android pretendida.
 
-O cliente Android autentica e lê/escreve diretamente no Firebase. A primeira versão
-nativa cobre entrada/registo, Google Credential Manager, criação/entrada na casa,
-dashboard, compras, coisinhas, projetos e hábitos. A paridade restante deve avançar
-por domínio, mantendo o esquema Firestore compatível entre web e Android.
+O cliente Android autentica e lê/escreve diretamente no Firebase. A navegação nativa
+mantém as nove tabs do produto, o cabeçalho compacto e as superfícies globais. Os
+domínios principais — listas, hábitos, finanças, calendário, eventos, meteorologia,
+casa, pesquisa e perfil — usam o mesmo esquema Firestore da web.
 
 ## Princípios de produto
 
 - A experiência Android normal nunca depende de Chrome, Brave, Custom Tabs ou WebView.
-- Web e Android partilham identidade, casa, regras de segurança e documentos, não UI.
+- Web e Android partilham identidade, casa, regras de segurança e contratos de dados.
+- A implementação da UI é nativa, mas a identidade visual, ordem, nomes, emojis e
+  hierarquia de informação são um contrato de produto entre os dois clientes.
 - Alterações de esquema são contratos entre clientes e precisam de migração compatível.
 - Funcionalidades essenciais precedem gamificação e personalização cosmética.
 - Documentos financeiros continuam a ser processados localmente e nunca são enviados
@@ -31,20 +33,26 @@ por domínio, mantendo o esquema Firestore compatível entre web e Android.
 - Cliente Android nativo API 23+ com Compose e Material 3.
 - Firebase Auth nativo por email/password e Google Credential Manager.
 - Onboarding de casa compatível com os convites existentes.
-- Sincronização Firestore em tempo real das listas Android principais.
+- Nove tabs nativas na mesma ordem: Início, Compras, Coisinhas, Projetos, Rotinas,
+  Finanças, Calendário, Eventos e Tempo.
+- Sincronização Firestore em tempo real das listas, hábitos, finanças, eventos,
+  amigos e gamificação.
+- Pesquisa, menu da casa, perfil, histórico, convites, membros, amigos, mensagens e
+  ajuda dentro do processo Android.
+- Identidade visual Casinha restaurada para a experiência nativa: layout compacto,
+  paleta rosa/roxo clara, cartões translúcidos e navegação original.
 - APK debug testado por Gradle e disponibilizado no GitHub Actions.
 - Verificação automática que impede regressões para TWA/browser/WebView.
 
-### Próximos domínios de paridade
+### Evolução posterior à paridade base
 
-1. Finanças, poupanças e refeições.
-2. Calendário, eventos e meteorologia.
-3. Perfis avançados, vizinhos, mensagens e gamificação.
-4. FCM nativo, lembretes locais e links de aplicação.
+1. FCM nativo, lembretes locais e links de aplicação.
+2. Distribuição pela faixa interna do Google Play e assinatura de produção.
+3. Testes instrumentados de screenshot para os viewports suportados.
 
 Cada domínio deve ter modelos, repositório, ViewModel, estados de erro/vazio e testes
 próprios. Paridade não significa copiar a estrutura de componentes React; significa
-preservar o comportamento e os dados com padrões Android.
+preservar a experiência reconhecível, o comportamento e os dados com padrões Android.
 
 ## Custos e operação
 
