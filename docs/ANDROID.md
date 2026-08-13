@@ -14,6 +14,7 @@ Firebase Authentication and Firestore are called directly from the Android proce
 | Compile/target API | 36 |
 | Language and UI | Kotlin 2.1, Jetpack Compose and Material 3 |
 | Data | Firebase Auth and Firestore |
+| Firebase Android app ID | `1:776757654663:android:723d4443cad6dd283ff422` |
 
 The hand-maintained Android project is under `android/`. `MainActivity` owns the
 foreground UI and `FirebaseCasaRepository` preserves the existing web data model:
@@ -67,9 +68,11 @@ The current public Firebase project identifiers are initialized in
 `CasaApplication.kt`; no secret or administrator credential is embedded. Firestore
 security rules remain the enforcement boundary.
 
-For Google sign-in, register an Android Firebase application with package
-`com.findmucker.casa`, add the SHA-1 and SHA-256 fingerprints of each signing
-certificate, and keep the web OAuth client ID passed to Credential Manager current.
+Google sign-in uses the registered Android Firebase application for package
+`com.findmucker.casa`. Add the SHA-1 and SHA-256 fingerprints of every signing
+certificate and keep the web OAuth client ID passed to Credential Manager current.
+The local debug certificate installed on the Samsung is already registered; CI and
+Google Play builds use different certificates and must be registered separately.
 Print the debug certificate with:
 
 ```bash

@@ -31,6 +31,17 @@ const repository = readText(
   "casa",
   "FirebaseCasaRepository.kt",
 );
+const firebaseApplication = readText(
+  "android",
+  "app",
+  "src",
+  "main",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+  "CasaApplication.kt",
+);
 
 assert.match(appGradle, /applicationId ['"]com\.findmucker\.casa['"]/);
 assert.match(appGradle, /minSdk 23/);
@@ -51,6 +62,12 @@ assert.match(mainActivity, /CasaApp\(\)/);
 assert.match(repository, /FirebaseAuth\.getInstance\(\)/);
 assert.match(repository, /FirebaseFirestore\.getInstance\(\)/);
 assert.match(repository, /CredentialManager\.create/);
+assert.match(
+  firebaseApplication,
+  /1:776757654663:android:723d4443cad6dd283ff422/,
+  "The native client must use its registered Firebase Android application ID.",
+);
+assert.doesNotMatch(firebaseApplication, /:web:/);
 
 assert.equal(existsSync(fromRoot("android", "twa-manifest.json")), false);
 
