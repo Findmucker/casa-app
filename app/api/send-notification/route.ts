@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       webpush: {
         headers: { Urgency: "high" },
       },
+      android: { priority: "high" },
     });
 
     return NextResponse.json({ ok: true });

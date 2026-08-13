@@ -158,6 +158,7 @@ export async function GET(request: NextRequest) {
               webpush: {
                 headers: { Urgency: "high" },
               },
+              android: { priority: "high" },
             });
             await deliveryRef.set({
               status: "sent",
@@ -208,6 +209,7 @@ export async function GET(request: NextRequest) {
                   token: tokenDoc.data()!.token,
                   data: { title: `📅 Evento amanhã!`, body: `"${event.title}" é amanhã`, tag: `event-reminder-${eventDoc.id}` },
                   webpush: { headers: { Urgency: "high" } },
+                  android: { priority: "high" },
                 });
                 sent++;
               } catch { /* skip */ }
@@ -246,6 +248,7 @@ export async function GET(request: NextRequest) {
                   token: tokenDoc.data()!.token,
                   data: { title: `🎂 Parabéns!`, body: `Hoje é o aniversário de ${member.name}!`, tag: `birthday-${member.name}` },
                   webpush: { headers: { Urgency: "high" } },
+                  android: { priority: "high" },
                 });
                 sent++;
               } catch { /* skip */ }
