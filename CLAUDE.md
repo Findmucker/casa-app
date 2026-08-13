@@ -22,7 +22,7 @@
 | `lib/context.tsx` | `HouseProvider`, `useHouseContext()` — houseId, userName, userId, members |
 | `lib/hooks.ts` | `useCollection()` generic Firestore hook, shared types |
 | `lib/themes.ts` | Time-based themes (morning/afternoon/dusk/night), `useTimeTheme()` |
-| `lib/gamification.ts` | Points, levels, streaks, badges, inventory |
+| `lib/gamification.ts` | Activity stats, streaks, achievements, inventory |
 | `lib/friends.ts` | Friends/vizinhos system — `useFriends()` hook, invite codes, friend requests |
 | `lib/i18n.tsx` | `useT()` hook, `LocaleProvider` |
 | `lib/locales/pt.ts` | Portuguese translations — `LocaleKeys` type derived from here |
@@ -33,7 +33,7 @@
 | Collection | Key by | Purpose |
 |-----------|--------|---------|
 | `houses/{id}` | auto-ID | House data, members array |
-| `gamification/{memberName}` | display name | Points, level, badges, avatar, inventory |
+| `gamification/{memberName}` | display name | Activity counters, achievements, avatar, inventory; legacy progression fields may remain |
 | `fcm_tokens/{memberName}` | display name | Push notification tokens |
 | `users/{uid}` | Firebase UID | User profile |
 | `shopping`, `priorities_small`, `priorities_big`, `habits`, `habit_checks`, `expenses`, `events`, `income`, `savings_goals` | auto-ID | App data collections |
@@ -147,7 +147,7 @@ Menu (click title) → Main panel:
 - **Firestore doc names are case-sensitive** — `gamification/{name}` uses display name (capitalized), but `useMemberNames()` returns lowercase keys. Always handle both cases.
 - **MiniAvatar** generates a deterministic default avatar from the name when none is configured — never shows bare initials
 - **AnimeAnimalCharacter** needs minimum ~16px to render pixel grid visibly (each pixel = size/16)
-- **Two avatar systems**: `AvatarConfig` (animal pixel art, shown everywhere) vs `EquippedItems` (RPG loot, shown only in ProfilePage inventory). They are independent.
+- **Two avatar systems**: `AvatarConfig` (animal pixel art, shown everywhere) vs `EquippedItems` (existing cosmetic inventory, shown only in ProfilePage inventory). They are independent.
 - **Always show issue URL to user before starting work** — let them review/edit scope first
 - **Notifications use data-only FCM messages** (no `notification` field) — SW handles all display via `onBackgroundMessage`
 - **Back button navigation**: overlays push history state, close via popstate. Menu→overlay uses `replaceState`.
@@ -160,11 +160,13 @@ Menu (click title) → Main panel:
 - Fields: animal, eyes, mouth, top, bottom, accessory, background, effect (all number indices)
 - If not configured: MiniAvatar generates deterministic default from name
 
-### EquippedItems (CharacterModel / RPG Loot)
+### EquippedItems (CharacterModel / Cosmetic Inventory)
 - Stored in: `gamification/{name}.equipped`
 - Used in: ProfilePage inventory tab, helmet badge on MiniAvatar
 - Fields: helmet?, weapon?, shield?, armor?, boots?, accessory? (all item ID strings)
-- LootSlot types and LOOT_POOL defined in `lib/gamification.ts`
+- LootSlot types and the existing cosmetic catalog are defined in `lib/gamification.ts`
+- XP, levels, progressive titles, and point-based boxes are intentionally inactive;
+  do not restore them without an explicit product design and migration plan
 
 ### MiniAvatar Component (`components/MiniAvatar.tsx`)
 - Props: `name` (member key, lowercase OK), `size` (px), `showEquipBadge` (default true)

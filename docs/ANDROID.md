@@ -9,7 +9,7 @@ Firebase Authentication and Firestore are called directly from the Android proce
 | Setting | Value |
 |---|---|
 | Package ID | `com.findmucker.casa` |
-| Version | `2.0.0-native` (`versionCode` 2) |
+| Version | `2.0.1-native` (`versionCode` 3) |
 | Minimum Android | API 23 (Android 6.0) |
 | Compile/target API | 36 |
 | Language and UI | Kotlin 2.1, Jetpack Compose and Material 3 |
@@ -30,11 +30,13 @@ foreground UI and `FirebaseCasaRepository` preserves the existing web data model
 - compact search/house/profile header, swipe navigation, and a horizontally scrollable
   native bottom bar;
 - real-time Firestore data for the four household lists, habit checks, expenses,
-  income, savings goals, events, friends, and gamification;
+  income, savings goals, events, friends, profile activity, avatar, and inventory;
 - native create/update/delete flows for the household lists, finances, savings, and
   events, including the richer fields already stored by the web client;
 - native search, history, invites, members, friends, messages, profile, help, house
   rename, and sign-out surfaces;
+- activity-based profile achievements plus existing avatar and equipment controls,
+  without XP, levels, progressive titles, or point-based loot boxes;
 - calendar aggregation and Open-Meteo forecast rendered inside the Android process;
 - native FCM delivery, system notification channels, direct routing to the matching
   tab, and local 10-minute habit reminders during each configured two-hour window.
@@ -77,7 +79,7 @@ The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 `android:verify` is an architectural guard: it checks the package, native entry
 point, Compose/Firebase dependencies, messaging services, all nine navigation
 destinations and supporting surfaces, and rejects Bubblewrap, TWA, Custom Tab,
-WebView, or browser-helper code.
+WebView, browser-helper code, and reintroduction of XP/level UI.
 
 ## Native notifications and reminders
 
@@ -142,6 +144,8 @@ Official references:
 - [ ] The bottom bar shows all nine tabs in the documented order and supports swipe.
 - [ ] Search, house menu, profile, history, invite, members, friends, messages, and
       help all open without leaving `com.findmucker.casa`.
+- [ ] Profile and member cards contain no XP, points, level, progressive title, or
+      point-based loot-box controls; avatar and existing inventory still work.
 - [ ] Add, complete/status/check, and delete actions persist after relaunch.
 - [ ] Finance, calendar, events, and weather show the existing shared-house data.
 - [ ] The Android notification permission is granted and an FCM token exists for the

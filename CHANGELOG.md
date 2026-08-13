@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- XP, points, levels, progressive titles, point-based achievements, and automatic
+  loot boxes from the active web and Android experience. Historical fields remain
+  untouched for compatibility with avatar, activity, and inventory documents.
+
 ### Added
 - Global weather location search, temporary selection, and up to 10 private favorites per user.
 - Product, architecture, Android, service-cost, and backlog review documentation.

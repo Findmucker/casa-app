@@ -4,7 +4,7 @@
 
 ## O que e a app?
 
-A Nossa Casinha e uma app de gestao domestica para casais e familias. Permite organizar compras, tarefas, habitos, financas, eventos e muito mais — tudo partilhado entre os membros da casa, com notificacoes push reais e um sistema de gamificacao RPG completo.
+A Nossa Casinha e uma app de gestao domestica para casais e familias. Permite organizar compras, tarefas, habitos, financas, eventos e muito mais — tudo partilhado entre os membros da casa, com notificacoes push reais e um perfil personalizavel.
 
 Todos os membros da casa sao **iguais** — nao ha hierarquia de administrador.
 
@@ -91,7 +91,7 @@ O ecra inicial mostra:
 - **Atribui a pessoa** responsavel (dinamico por membros da casa)
 - **Notificações fiáveis** — o servidor recupera execuções atrasadas e impede envios duplicados para a mesma rotina e pessoa
 - **Push notifications reais** — recebe lembretes mesmo com a app fechada (via FCM)
-- Pontos de gamificacao por cada check (+2 pontos)
+- O check atualiza o streak e as estatisticas de atividade do perfil
 
 ---
 
@@ -270,7 +270,7 @@ Grid com todas as 9 tabs — tap para ir directamente.
 
 ### Casa
 - **🔗 Convidar** — gerar codigo de convite para novos membros
-- **👥 Membros** — widget com avatares de todos os membros, nivel e acoes rapidas:
+- **👥 Membros** — widget com avatares de todos os membros e acoes rapidas:
   - Tap num membro para ver botoes de acao: 💌 Mensagem e 👤 Perfil
   - **💌 Mensagem** — abre diretamente o painel de mensagem para esse membro (nao aparece para ti proprio)
   - **👤 Perfil** — mostra o perfil do membro em modo leitura (sem tab de definicoes); no teu proprio perfil, abre o perfil editavel completo
@@ -287,7 +287,7 @@ Botao isolado para logout seguro.
 
 ---
 
-## Perfil e Gamificacao
+## Perfil, Atividade e Personalizacao
 
 Acede ao perfil tocando no **teu avatar** (pixel art) no canto superior direito do header.
 
@@ -302,11 +302,8 @@ Acede ao perfil tocando no **teu avatar** (pixel art) no canto superior direito 
 - Se nao tiveres avatar NEM equipamento, o perfil mostra um **circulo com a letra inicial** do teu nome
 - **Badge de capacete** — quando tens equipamento equipado, o MiniAvatar e o widget de membros mostram um pequeno badge de capacete
 
-### Sistema RPG
-- **Pontos** ganhos ao completar tarefas (+1 compra, +2 coisinha, +5 projeto, +2 habito)
-- **Nivel** sobe a cada 50 pontos
-- **Titulo** baseado no nivel — desde "Aprendiz da Casa" (Nv.1) ate "Divindade do Lar" (Nv.30)
-- **Atributos** calculados automaticamente:
+### Atividade
+- **Atributos de atividade** calculados automaticamente:
   - STR (Forca): projetos concluidos
   - INT (Inteligencia): coisinhas feitas
   - DEX (Destreza): comprinhas feitas
@@ -314,30 +311,22 @@ Acede ao perfil tocando no **teu avatar** (pixel art) no canto superior direito 
   - VIT (Vitalidade): habitos feitos
   - LCK (Sorte): melhor streak
 
-### Badges (9 conquistaveis)
-Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Centenario, Top Scorer.
+### Conquistas (7 disponiveis)
+Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo e Arquiteto. Todas dependem de acoes reais ou streaks, nao de pontos.
 
 ### Equipamento (6 slots)
-- 🗡️ Espada do Construtor — 3 projetinhos
-- 🛡️ Escudo da Consistencia — 10 dias streak
-- 👑 Coroa Real — nivel 10
-- 🧤 Luvas do Faz-Tudo — 50 coisinhas
-- 👟 Botas do Maratonista — 30 comprinhas
-- 💍 Anel da Comunidade — 100 pontos
+- Cabeca, arma, escudo, corpo, pes e acessorio
+- Os items cosmeticos ja existentes continuam disponiveis para equipar e desequipar
 - O modelo do personagem mostra um **placeholder fofo** quando nao tens equipamento (em vez de uma silhueta generica)
 - O equipamento e sincronizado em toda a app — ao ver o perfil de outro membro, o equipamento dele e carregado corretamente
 
-### Loot Boxes
-- Ganha 1 caixa por cada 50 pontos
-- 30 items cosmeticos em 6 slots (cabeca, arma, escudo, corpo, pes, acessorio)
-- 4 raridades: Comum (50%), Raro (30%), Epico (15%), Lendario (5%)
-- Animacao de abertura: shake → explosao → reveal
-- Duplicados convertidos em XP (Lendario: 50, Epico: 30, Raro: 15, Comum: 5)
+### Progressao em pausa
+XP, niveis, titulos progressivos e caixas automaticas por pontos nao fazem parte da experiencia atual. Os dados historicos nao sao apagados, mas tambem nao sao apresentados nem incrementados. Uma eventual progressao futura exige primeiro um desenho de produto proprio.
 
 ### Inventario WoW TBC-style
 - Grid com filtro por slot
 - Drag-and-drop para equipar items no avatar
-- **Modo leitura** — ao ver o perfil de outro membro, o inventario e visivel mas nao podes abrir loot boxes
+- **Modo leitura** — ao ver o perfil de outro membro, o inventario e visivel mas nao pode ser alterado
 
 ---
 
@@ -364,7 +353,7 @@ Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Ce
 Todos os membros sao **iguais** — nao existe hierarquia de administrador.
 
 O widget de Membros no menu central mostra:
-- Avatar pixel art de cada membro com nivel
+- Avatar pixel art de cada membro
 - Tap num membro revela botoes de acao:
   - **💌 Mensagem** — abre o painel de mensagem diretamente para esse membro (nao aparece no teu proprio)
   - **👤 Perfil** — mostra o perfil em modo leitura (sem definicoes); no teu perfil, abre o perfil editavel completo
@@ -433,7 +422,7 @@ PWA nas informacoes dessa aplicacao e conserva o APK nativo `com.findmucker.casa
 
 - **Swipe** entre tabs para navegar rapidamente
 - **Marca items como urgentes** nas compras para destacar no topo
-- **Mantem streaks** nos habitos para ganhar mais pontos e badges
+- **Mantem streaks** nos habitos e acompanha as conquistas baseadas em atividade
 - O **dashboard** mostra o que e mais importante para hoje
 - **Ativa notificacoes** para nao perderes lembretes de habitos
 - **Envia mensagens** a outros membros diretamente pela app

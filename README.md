@@ -83,14 +83,13 @@ A household management PWA and Android app for couples and families — organize
 - Cards with status from all areas
 - Weekly progress bar
 
-### Gamification & RPG Profile
-- Points system (+1 shopping, +2 task, +5 project, +2 habit)
-- Levels (every 50 points) with progressive titles
-- 9 unlockable badges
-- RPG profile with 6 stats based on real activity
-- Loot boxes with cosmetic items (4 rarities)
-- WoW TBC-style inventory with drag-and-drop
+### Profile, Activity & Avatar
+- Activity summary based on completed household work and habit streaks
+- 7 achievements based on concrete actions, not XP or levels
+- Existing cosmetic inventory with 6 equipment slots and drag-and-drop
 - 8-bit pixel art avatar with full customization (11 animals, 6 customization tabs)
+- XP, levels, progressive titles, and point-based loot boxes are intentionally disabled
+  until the progression model has been properly designed and tested
 
 ### i18n (Internationalization)
 - Portuguese and English support
@@ -126,7 +125,7 @@ A household management PWA and Android app for couples and families — organize
 ### Member Management
 - Invite system with 6-char codes and shareable links
 - **Flat hierarchy** — all members are equal (no admin roles)
-- **Members widget in menu** — shows member avatars with level, clickable for actions
+- **Members widget in menu** — shows member avatars and provides quick actions
 - Action buttons: 💌 Message (opens direct message panel) and 👤 Profile (view profile)
 - Viewing another member's profile shows read-only view (no settings tab)
 - Viewing your own profile shows full editable profile
@@ -282,10 +281,9 @@ casa-app/
 │   ├── EventList.tsx         # Events with weather
 │   ├── Weather.tsx           # Weather forecast
 │   ├── DashboardSummary.tsx  # Dashboard overview
-│   ├── ProfilePage.tsx       # RPG profile + inventory + avatar
+│   ├── ProfilePage.tsx       # Activity profile + inventory + avatar
 │   ├── AvatarBuilder.tsx     # 8-bit pixel art avatar
 │   ├── Inventory.tsx         # WoW-style inventory grid
-│   ├── LootBoxOpener.tsx     # Loot box opening animation
 │   ├── Tutorial.tsx          # Interactive tutorial (i18n)
 │   ├── SearchOverlay.tsx     # Global search
 │   ├── SendMessagePanel.tsx  # Send push message to members
@@ -296,7 +294,7 @@ casa-app/
 │   ├── locales/
 │   │   ├── pt.ts             # Portuguese dictionary
 │   │   └── en.ts             # English dictionary
-│   ├── gamification.ts       # Points, badges, loot, inventory
+│   ├── gamification.ts       # Activity stats, achievements, inventory
 │   ├── notifications.ts      # FCM registration and client notification helpers
 │   ├── habit-reminder-time.ts # Lisbon-time reminder occurrence calculation
 │   ├── categories.ts         # Categories + auto-classification
@@ -326,8 +324,7 @@ casa-app/
 | `houses/{houseId}/income` | Income entries |
 | `houses/{houseId}/savings_goals` | Savings goals with targets |
 | `houses/{houseId}/friends/{id}` | Friend house connections |
-| `houses/{houseId}/gamification` | Points, badges, stats |
-| `gamification/{owner}` | RPG profile: inventory, equipped, avatar, lootBoxes |
+| `gamification/{owner}` | Activity, avatar, inventory, and equipped cosmetics; historical progression fields may remain stored |
 | `fcm_tokens/{owner}` | FCM tokens for push notifications |
 | `notification_deliveries/{id}` | Reminder leases and delivery deduplication |
 

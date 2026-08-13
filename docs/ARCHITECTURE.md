@@ -42,11 +42,21 @@ Firestore rules, not either client, are the security boundary.
 On Android, `CasaViewModel` restores the Firebase session and emits one of four
 states: loading, signed out, needs a house, or ready. The ready state starts scoped
 real-time listeners for the four household collections, habit checks, finances,
-events, friends, and gamification. Snapshots are mapped to native domain models and
-flow into Compose through `StateFlow`; weather is loaded from Open-Meteo.
+events, friends, and profile customization/activity. Snapshots are mapped to native
+domain models and flow into Compose through `StateFlow`; weather is loaded from
+Open-Meteo.
 
 On web, `HouseIdContext`, `useCollection`, and `CollectionDataContext` provide the
 equivalent house scoping and real-time updates.
+
+## Progression boundary
+
+XP, points, levels, progressive titles, and automatic loot boxes are not active
+product concepts. Both clients may read legacy gamification documents because those
+documents also contain activity counters, avatar configuration, inventory, and
+equipped cosmetics. They do not display or increment historical progression fields,
+and they do not derive rewards from them. This is intentionally non-destructive so a
+future progression design starts with product decisions instead of a data migration.
 
 ## Notifications
 
@@ -72,6 +82,8 @@ operations are in [ANDROID.md](ANDROID.md).
 - Keep Android Firebase access in the repository layer and UI state in ViewModels.
 - Treat the Firestore document shape as a cross-client contract.
 - Treat the nine-tab order and visual identity as cross-client product contracts.
+- Do not reactivate legacy progression fields without an approved cross-client
+  product design and migration plan.
 - Cover pure state transitions with unit tests and run Android lint on each change.
 - Route-handler changes must follow the installed Next.js documentation under
   `node_modules/next/dist/docs`.

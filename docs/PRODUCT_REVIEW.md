@@ -21,7 +21,9 @@ casa, pesquisa e perfil — usam o mesmo esquema Firestore da web.
 - A implementação da UI é nativa, mas a identidade visual, ordem, nomes, emojis e
   hierarquia de informação são um contrato de produto entre os dois clientes.
 - Alterações de esquema são contratos entre clientes e precisam de migração compatível.
-- Funcionalidades essenciais precedem gamificação e personalização cosmética.
+- Funcionalidades essenciais precedem mecânicas experimentais de progressão.
+- XP, níveis, títulos progressivos e recompensas automáticas por pontos permanecem
+  desativados até existir um desenho de produto validado para essa experiência.
 - Documentos financeiros continuam a ser processados localmente e nunca são enviados
   para serviços de IA.
 
@@ -36,13 +38,15 @@ casa, pesquisa e perfil — usam o mesmo esquema Firestore da web.
 - Nove tabs nativas na mesma ordem: Início, Compras, Coisinhas, Projetos, Rotinas,
   Finanças, Calendário, Eventos e Tempo.
 - Sincronização Firestore em tempo real das listas, hábitos, finanças, eventos,
-  amigos e gamificação.
+  amigos, atividade do perfil, avatar e inventário.
 - Pesquisa, menu da casa, perfil, histórico, convites, membros, amigos, mensagens e
   ajuda dentro do processo Android.
 - Identidade visual Casinha restaurada para a experiência nativa: layout compacto,
   paleta rosa/roxo clara, cartões translúcidos e navegação original.
 - FCM nativo, canais de notificação, routing para a tab correta e lembretes locais de
   hábitos que consultam o estado partilhado antes de alertar.
+- Perfil sem XP ou níveis, mantendo estatísticas de atividade, conquistas por ações,
+  avatar e equipamento cosmético já adquirido.
 - APK debug testado por Gradle e disponibilizado no GitHub Actions.
 - Verificação automática que impede regressões para TWA/browser/WebView.
 
@@ -51,6 +55,8 @@ casa, pesquisa e perfil — usam o mesmo esquema Firestore da web.
 1. Links de aplicação verificados para convites e eventos partilhados.
 2. Distribuição pela faixa interna do Google Play e assinatura de produção.
 3. Testes instrumentados de screenshot e notificações nos dispositivos suportados.
+4. Qualquer proposta futura de progressão deve começar por investigação, regras,
+   propósito e testes de produto; não por reativar os campos históricos existentes.
 
 Cada domínio deve ter modelos, repositório, ViewModel, estados de erro/vazio e testes
 próprios. Paridade não significa copiar a estrutura de componentes React; significa
