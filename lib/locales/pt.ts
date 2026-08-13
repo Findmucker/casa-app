@@ -13,7 +13,7 @@ export const pt = {
   // Header
   "header.title": "A Nossa Casinha",
   "header.search": "Pesquisar",
-  "header.profile": "Perfil e gamificação",
+  "header.profile": "Perfil",
 
   // Menu sections
   "menu.navigate": "Navegar",
@@ -232,9 +232,6 @@ export const pt = {
   "profile.settings": "Definições",
   "profile.name": "Nome",
   "profile.updated": "Perfil atualizado!",
-  "profile.level": "Nível",
-  "profile.totalPoints": "pontos totais",
-
   // Messages
   "messages.title": "💌 Enviar Mensagem",
   "messages.close": "Fechar",
@@ -319,11 +316,11 @@ export const pt = {
   "help.friends.tip1": "Conecta casas por código de 6 caracteres ou pesquisa por nome",
   "help.friends.tip2": "Aniversários dos amigos aparecem no teu calendário",
   "help.friends.tip3": "Notificação push quando receberes um pedido de amizade",
-  "help.gamification.title": "Gamificação & Perfil",
-  "help.gamification.tip1": "Pontos por tarefas: +1 compra, +2 coisinha, +5 projeto, +2 hábito",
-  "help.gamification.tip2": "Nível sobe a cada 50 pontos com títulos progressivos",
-  "help.gamification.tip3": "Avatar pixel art com 11 animais e customização completa",
-  "help.gamification.tip4": "Loot boxes a cada 50 pontos com items cosméticos",
+  "help.profile.title": "Perfil & Conquistas",
+  "help.profile.tip1": "As atividades concluídas alimentam as tuas estatísticas",
+  "help.profile.tip2": "As conquistas desbloqueiam-se com ações e sequências de hábitos",
+  "help.profile.tip3": "Avatar pixel art com 11 animais e customização completa",
+  "help.profile.tip4": "Equipa e desequipa os itens que já tens no inventário",
   "menu.help": "Ajuda",
 
   // Tutorial
@@ -366,7 +363,7 @@ export const pt = {
   "tutorial.nav.tip1": "Swipe ← → para mudar de tab rapidamente",
   "tutorial.nav.tip2": "Tap no título para o menu rápido",
   "tutorial.nav.tip3": "🔍 no canto para pesquisar em tudo",
-  "tutorial.nav.tip4": "⚔️ no canto para o teu perfil RPG",
+  "tutorial.nav.tip4": "👤 no canto para o teu perfil",
 
   "tutorial.shopping.title": "Compras",
   "tutorial.shopping.text": "Lista de compras partilhada. Items organizam-se por categoria seguindo o fluxo do supermercado.",
@@ -387,7 +384,7 @@ export const pt = {
   "tutorial.projects.tip1": "3 estados: Pendente → A Fazer → Concluído",
   "tutorial.projects.tip2": "Subtarefas para dividir o trabalho",
   "tutorial.projects.tip3": "Orçamento para controlar custos",
-  "tutorial.projects.tip4": "Cada projeto concluído dá +5 XP! 🎮",
+  "tutorial.projects.tip4": "Marca um projeto como concluído quando terminares todas as tarefas",
 
   "tutorial.habits.title": "Rotinas",
   "tutorial.habits.text": "Hábitos diários com sistema de streaks. Cria rotinas saudáveis e acompanha o progresso.",
@@ -436,12 +433,12 @@ export const pt = {
   "tutorial.members.tip3": "💌 Mensagem abre diretamente o painel de envio",
   "tutorial.members.tip4": "👤 Perfil mostra stats e inventário do membro",
 
-  "tutorial.rpg.title": "Perfil RPG & Gamificação",
-  "tutorial.rpg.text": "Cada tarefa dá XP! Sobe de nível, desbloqueia equipamentos, coleciona badges e recebe loot.",
-  "tutorial.rpg.tip1": "+1 XP comprinhas  +2 coisinhas  +5 projetos  +2 hábitos",
-  "tutorial.rpg.tip2": "Loot boxes a cada 50 pontos com items cosméticos",
-  "tutorial.rpg.tip3": "4 raridades: Comum, Raro, Épico, Lendário ✨",
-  "tutorial.rpg.tip4": "Avatar 8-bit pixel art com customização total",
+  "tutorial.profile.title": "Perfil & Conquistas",
+  "tutorial.profile.text": "Personaliza o avatar, acompanha a atividade da casa e consulta as conquistas desbloqueadas.",
+  "tutorial.profile.tip1": "As estatísticas resumem compras, coisinhas, projetos e hábitos concluídos",
+  "tutorial.profile.tip2": "As conquistas dependem de ações e sequências de hábitos",
+  "tutorial.profile.tip3": "Consulta e equipa os itens que já tens no inventário",
+  "tutorial.profile.tip4": "Avatar 8-bit pixel art com customização total",
 
   "tutorial.vizinhos.title": "Vizinhos",
   "tutorial.vizinhos.text": "Conecta-te com outras casas amigas! Vê o que os vizinhos andam a fazer.",

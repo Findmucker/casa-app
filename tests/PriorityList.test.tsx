@@ -7,6 +7,7 @@ import type { SmallPriorityItem } from "@/lib/hooks";
 const mockAdd = jest.fn();
 const mockUpdate = jest.fn();
 const mockRemove = jest.fn();
+const mockRecordCompletedAction = jest.fn();
 let mockItems: SmallPriorityItem[] = [];
 let mockError: Error | null = null;
 
@@ -22,7 +23,12 @@ jest.mock("@/lib/hooks", () => ({
 }));
 
 jest.mock("@/lib/context", () => ({
+  useHouseContext: () => ({ userName: "Alex" }),
   useMemberNames: () => [{ key: "ambos", label: "Ambos", emoji: "👫" }],
+}));
+
+jest.mock("@/lib/gamification", () => ({
+  recordCompletedAction: (...args: unknown[]) => mockRecordCompletedAction(...args),
 }));
 
 jest.mock("@/lib/useUndoStack", () => ({
@@ -152,5 +158,42 @@ describe("PriorityList at household scale", () => {
 
     expect(screen.getAllByRole("button", { name: /^priority\.edit Coisinha/ })).toHaveLength(60);
     expect(screen.getAllByRole("button", { name: /^priority\.markDone Coisinha/ })).toHaveLength(60);
+  });
+});
+
+describe("PriorityList activity tracking", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockError = null;
+    mockUpdate.mockResolvedValue(undefined);
+    mockRecordCompletedAction.mockResolvedValue(undefined);
+    mockItems = [{
+      id: "activity-item",
+      name: "Trocar a lâmpada",
+      done: false,
+      order: 1,
+      category: "📦 Outros",
+      assignee: "ambos",
+      createdAt: null,
+    }];
+  });
+
+  it("records only the transition into the completed state", async () => {
+    const { rerender } = render(<PriorityList />);
+
+    fireEvent.click(screen.getByRole("button", { name: "priority.markDone Trocar a lâmpada" }));
+
+    await waitFor(() => {
+      expect(mockRecordCompletedAction).toHaveBeenCalledWith("Alex", "coisinha_done");
+    });
+
+    mockItems = [{ ...mockItems[0], done: true }];
+    rerender(<PriorityList />);
+    fireEvent.click(screen.getByRole("button", { name: "priority.uncheck Trocar a lâmpada" }));
+
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenLastCalledWith("activity-item", expect.objectContaining({ done: false }));
+    });
+    expect(mockRecordCompletedAction).toHaveBeenCalledTimes(1);
   });
 });

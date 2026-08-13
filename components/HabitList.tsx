@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import TabTip from "@/components/TabTip";
 import { useCollection, type HabitItem, type HabitCheck } from "@/lib/hooks";
 import { getToday, scheduleRepeatingNotification, cancelNotification, registerPushToken } from "@/lib/notifications";
-import { awardPoints, updateStreak } from "@/lib/gamification";
+import { recordCompletedAction, updateStreak } from "@/lib/gamification";
 import { useMemberNames, useHouseContext } from "@/lib/context";
 import MiniAvatar from "./MiniAvatar";
 import { useT } from "@/lib/i18n";
@@ -124,7 +124,7 @@ export default function HabitList() {
 
     const newStreak = getStreak(habit.id) + 1;
     await update(habit.id, { streak: newStreak, lastChecked: today });
-    await awardPoints(userName, 2, "habit_check");
+    await recordCompletedAction(userName, "habit_check");
     await updateStreak(userName, newStreak);
   };
 

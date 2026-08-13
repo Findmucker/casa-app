@@ -15,7 +15,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   // Header
   "header.title": "Our Little Home",
   "header.search": "Search",
-  "header.profile": "Profile & gamification",
+  "header.profile": "Profile",
 
   // Menu sections
   "menu.navigate": "Navigate",
@@ -234,9 +234,6 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "profile.settings": "Settings",
   "profile.name": "Name",
   "profile.updated": "Profile updated!",
-  "profile.level": "Level",
-  "profile.totalPoints": "total points",
-
   // Messages
   "messages.title": "💌 Send Message",
   "messages.close": "Close",
@@ -321,11 +318,11 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "help.friends.tip1": "Connect houses by 6-char code or search by name",
   "help.friends.tip2": "Friend birthdays appear on your calendar",
   "help.friends.tip3": "Push notification when you receive a friend request",
-  "help.gamification.title": "Gamification & Profile",
-  "help.gamification.tip1": "Points per task: +1 shopping, +2 task, +5 project, +2 habit",
-  "help.gamification.tip2": "Level up every 50 points with progressive titles",
-  "help.gamification.tip3": "Pixel art avatar with 11 animals and full customization",
-  "help.gamification.tip4": "Loot boxes every 50 points with cosmetic items",
+  "help.profile.title": "Profile & Achievements",
+  "help.profile.tip1": "Completed activities feed your activity stats",
+  "help.profile.tip2": "Achievements unlock through actions and habit streaks",
+  "help.profile.tip3": "Pixel art avatar with 11 animals and full customization",
+  "help.profile.tip4": "Equip and unequip the items already in your inventory",
   "menu.help": "Help",
 
   // Tutorial
@@ -368,7 +365,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.nav.tip1": "Swipe ← → to switch tabs quickly",
   "tutorial.nav.tip2": "Tap the title for the quick menu",
   "tutorial.nav.tip3": "🔍 in the corner to search everything",
-  "tutorial.nav.tip4": "⚔️ in the corner for your RPG profile",
+  "tutorial.nav.tip4": "👤 in the corner for your profile",
 
   "tutorial.shopping.title": "Shopping",
   "tutorial.shopping.text": "Shared shopping list. Items auto-organize by category following the supermarket flow.",
@@ -389,7 +386,7 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.projects.tip1": "3 states: Pending → In Progress → Done",
   "tutorial.projects.tip2": "Subtasks to break down the work",
   "tutorial.projects.tip3": "Budget to track costs",
-  "tutorial.projects.tip4": "Each completed project gives +5 XP! 🎮",
+  "tutorial.projects.tip4": "Mark a project as completed once all its tasks are finished",
 
   "tutorial.habits.title": "Habits",
   "tutorial.habits.text": "Daily habits with streak system. Build healthy routines and track your progress.",
@@ -438,12 +435,12 @@ export const en: Record<LocaleKeys, string | readonly string[]> = {
   "tutorial.members.tip3": "💌 Message opens the send panel directly",
   "tutorial.members.tip4": "👤 Profile shows member's stats and inventory",
 
-  "tutorial.rpg.title": "RPG Profile & Gamification",
-  "tutorial.rpg.text": "Every task gives XP! Level up, unlock equipment, collect badges and receive loot.",
-  "tutorial.rpg.tip1": "+1 XP shopping  +2 tasks  +5 projects  +2 habits",
-  "tutorial.rpg.tip2": "Loot boxes every 50 points with cosmetic items",
-  "tutorial.rpg.tip3": "4 rarities: Common, Rare, Epic, Legendary ✨",
-  "tutorial.rpg.tip4": "8-bit pixel art avatar with full customization",
+  "tutorial.profile.title": "Profile & Achievements",
+  "tutorial.profile.text": "Customize your avatar, review household activity, and see unlocked achievements.",
+  "tutorial.profile.tip1": "Stats summarize completed shopping, tasks, projects, and habits",
+  "tutorial.profile.tip2": "Achievements depend on actions and habit streaks",
+  "tutorial.profile.tip3": "Browse and equip the items already in your inventory",
+  "tutorial.profile.tip4": "8-bit pixel art avatar with full customization",
 
   "tutorial.vizinhos.title": "Neighbours",
   "tutorial.vizinhos.text": "Connect with other friendly houses! See what your neighbours are up to.",

@@ -130,7 +130,6 @@ export interface UserProfile {
   id: string;
   name: string;
   avatar: string;
-  points: number;
   badges: string[];
 }
 
