@@ -21,4 +21,30 @@ class SessionModelsTest {
         assertEquals(false, HouseSection.SHOPPING in dashboard.loading)
         assertEquals(true, HouseSection.HABITS in dashboard.loading)
     }
+
+    @Test
+    fun `native navigation matches the nine web tabs in order`() {
+        assertEquals(
+            listOf(
+                "Início",
+                "Compras",
+                "Coisinhas",
+                "Projetos",
+                "Rotinas",
+                "Finanças",
+                "Calendário",
+                "Eventos",
+                "Tempo",
+            ),
+            DashboardTab.entries.map { it.label },
+        )
+    }
+
+    @Test
+    fun `level progression matches the web profile`() {
+        assertEquals(1, levelForPoints(0))
+        assertEquals(1, levelForPoints(49))
+        assertEquals(2, levelForPoints(50))
+        assertEquals(11, levelForPoints(500))
+    }
 }

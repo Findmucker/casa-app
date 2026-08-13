@@ -1,6 +1,7 @@
 package com.findmucker.casa
 
 import android.content.Context
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,19 +17,13 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Mail
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -43,11 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,22 +53,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun CasaApp(casaViewModel: CasaViewModel = viewModel()) {
     val state by casaViewModel.uiState.collectAsState()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = CasinhaPalette.Background,
-    ) {
+    Surface(modifier = Modifier.fillMaxSize(), color = CasinhaPalette.Background) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            Color(0xFFFFEAF2),
-                            Color(0xFFFFF8FB),
-                            Color(0xFFF5EEFF),
-                        ),
-                    ),
-                )
+                .background(CasinhaBackgroundBrush)
                 .statusBarsPadding()
                 .navigationBarsPadding()
                 .imePadding(),
@@ -103,14 +84,28 @@ fun CasaApp(casaViewModel: CasaViewModel = viewModel()) {
                 is SessionState.Ready -> HouseWelcomeScreen(
                     profile = session.profile,
                     house = session.house,
-                    dashboard = state.dashboard,
-                    working = state.working,
-                    error = state.error,
+                    state = state,
                     onAdd = casaViewModel::addItem,
                     onToggle = casaViewModel::toggleItem,
                     onDelete = casaViewModel::deleteItem,
+                    onAddExpense = casaViewModel::addExpense,
+                    onAddIncome = casaViewModel::addIncome,
+                    onAddSavings = casaViewModel::addSavingsGoal,
+                    onDepositSavings = casaViewModel::depositSavings,
+                    onDeleteExtra = casaViewModel::deleteExtra,
+                    onAddEvent = casaViewModel::addEvent,
+                    onToggleEvent = casaViewModel::toggleEvent,
+                    onRenameHouse = casaViewModel::renameHouse,
+                    onUpdateProfile = casaViewModel::updateProfile,
+                    onCreateInvite = casaViewModel::createInvite,
+                    onLoadFriendCode = casaViewModel::loadFriendCode,
+                    onConnectFriend = casaViewModel::connectFriend,
+                    onRemoveFriend = casaViewModel::removeFriend,
+                    onSendMessage = casaViewModel::sendMessage,
+                    onRefreshWeather = casaViewModel::refreshWeather,
                     onSignOut = casaViewModel::signOut,
                     onClearError = casaViewModel::clearError,
+                    onClearNotice = casaViewModel::clearNotice,
                 )
             }
         }
@@ -121,15 +116,8 @@ fun CasaApp(casaViewModel: CasaViewModel = viewModel()) {
 private fun LoadingScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("🏡", fontSize = 54.sp)
-            Spacer(Modifier.height(14.dp))
-            CircularProgressIndicator(color = CasinhaPalette.Rose400)
-            Text(
-                "A abrir a nossa casinha…",
-                modifier = Modifier.padding(top = 12.dp),
-                color = CasinhaPalette.Rose500,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Text("🏡", fontSize = 62.sp)
+            CircularProgressIndicator(color = CasinhaPalette.Rose400, modifier = Modifier.padding(top = 18.dp))
         }
     }
 }
@@ -139,171 +127,97 @@ private fun AuthScreen(
     working: Boolean,
     error: String?,
     onSignIn: (String, String) -> Unit,
-    onRegister: (String, String, String) -> Unit,
+    onRegister: (String, String, String, String) -> Unit,
     onGoogle: (Context) -> Unit,
     onClearError: () -> Unit,
 ) {
     var registering by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
+    var birthDate by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var locale by remember { mutableStateOf("pt") }
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Spacer(Modifier.height(10.dp))
-        Text("✦", color = CasinhaPalette.Purple400, fontSize = 22.sp)
-        Text("🏡", fontSize = 68.sp)
-        Text(
-            text = "A Nossa Casinha",
-            fontSize = 30.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = CasinhaPalette.Rose500,
-        )
-        Text(
-            text = if (registering) "Vamos criar o teu cantinho" else "Bem-vindo de volta!",
-            color = CasinhaPalette.Purple500,
-            fontWeight = FontWeight.Medium,
-        )
-        Surface(
-            modifier = Modifier.padding(top = 9.dp),
-            shape = RoundedCornerShape(50),
-            color = Color.White.copy(alpha = 0.72f),
-        ) {
-            Text(
-                "ANDROID NATIVO · SEM BROWSER",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
-                color = CasinhaPalette.Rose500,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.8.sp,
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Row(modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            LanguagePill("🇵🇹 PT", locale == "pt") { locale = "pt" }
+            LanguagePill("🇬🇧 EN", locale == "en") { locale = "en" }
         }
-
-        AuthModeSelector(
-            registering = registering,
-            onSelect = {
-                registering = it
-                onClearError()
-            },
-        )
-
-        if (registering) {
-            CasinhaTextField(
-                value = name,
-                onValueChange = { name = it; onClearError() },
-                label = "O teu nome…",
-                icon = Icons.Rounded.Person,
-            )
-            Spacer(Modifier.height(11.dp))
-        }
-        CasinhaTextField(
-            value = email,
-            onValueChange = { email = it; onClearError() },
-            label = "Email…",
-            icon = Icons.Rounded.Mail,
-            keyboardType = KeyboardType.Email,
-        )
-        Spacer(Modifier.height(11.dp))
-        CasinhaTextField(
-            value = password,
-            onValueChange = { password = it; onClearError() },
-            label = "Palavra-passe…",
-            icon = Icons.Rounded.Lock,
-            keyboardType = KeyboardType.Password,
-            password = true,
-        )
-        ErrorText(error)
-        GradientPrimaryButton(
-            text = if (registering) "Criar conta" else "Entrar",
-            working = working,
-            enabled = !working,
-            onClick = {
-                if (registering) onRegister(name, email, password) else onSignIn(email, password)
-            },
-        )
-
-        Row(
-            modifier = Modifier.padding(vertical = 17.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f), color = CasinhaPalette.Pink200)
-            Text("ou", modifier = Modifier.padding(horizontal = 12.dp), color = CasinhaPalette.Rose300, fontSize = 12.sp)
-            HorizontalDivider(modifier = Modifier.weight(1f), color = CasinhaPalette.Pink200)
-        }
-        OutlinedButton(
-            onClick = { onGoogle(context) },
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            enabled = !working,
-            shape = RoundedCornerShape(18.dp),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CasinhaPalette.Pink200),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.White.copy(alpha = 0.82f),
-                contentColor = CasinhaPalette.Rose600,
-            ),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            Text("G", modifier = Modifier.padding(end = 10.dp), fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
-            Text("Continuar com Google", fontWeight = FontWeight.SemiBold)
-        }
-        TextButton(
-            onClick = {
-                registering = !registering
-                onClearError()
-            },
-            enabled = !working,
-        ) {
+            Text("🏡", fontSize = 70.sp)
+            Text("A Nossa Casinha", color = CasinhaPalette.Rose400, fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
             Text(
-                if (registering) "Já tenho conta" else "Ainda não tenho conta",
-                color = CasinhaPalette.Purple500,
+                if (registering) (if (locale == "pt") "Criar nova conta" else "Create a new account") else (if (locale == "pt") "Bem-vindo de volta!" else "Welcome back!"),
+                color = CasinhaPalette.Rose300, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp),
             )
-        }
-    }
-}
 
-@Composable
-private fun AuthModeSelector(registering: Boolean, onSelect: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 22.dp, bottom = 17.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(CasinhaPalette.Pink100.copy(alpha = 0.66f))
-            .padding(4.dp),
-    ) {
-        listOf(false to "Entrar", true to "Registar").forEach { (registerMode, label) ->
-            val selected = registering == registerMode
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(if (selected) Color.White else Color.Transparent)
-                    .clickable { onSelect(registerMode) }
-                    .padding(vertical = 11.dp),
-                contentAlignment = Alignment.Center,
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 24.dp).background(CasinhaPalette.Pink100.copy(alpha = 0.55f), RoundedCornerShape(16.dp)).padding(4.dp),
             ) {
-                Text(
-                    label,
-                    color = if (selected) CasinhaPalette.Rose600 else CasinhaPalette.Rose400,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                )
+                AuthModeButton(if (locale == "pt") "Entrar" else "Sign in", !registering, Modifier.weight(1f)) { registering = false; onClearError() }
+                AuthModeButton(if (locale == "pt") "Registar" else "Register", registering, Modifier.weight(1f)) { registering = true; onClearError() }
+            }
+
+            Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp), verticalArrangement = Arrangement.spacedBy(11.dp)) {
+                if (registering) {
+                    WebLikeInput(name, { name = it; onClearError() }, if (locale == "pt") "O teu nome..." else "Your name...")
+                    WebLikeInput(birthDate, { birthDate = it; onClearError() }, if (locale == "pt") "🎂 Data de nascimento (AAAA-MM-DD)" else "🎂 Birth date (YYYY-MM-DD)")
+                }
+                WebLikeInput(email, { email = it; onClearError() }, "Email...", KeyboardType.Email)
+                WebLikeInput(password, { password = it; onClearError() }, if (locale == "pt") "Password..." else "Password...", KeyboardType.Password, password = true)
+            }
+
+            if (error != null) Text(error, color = CasinhaPalette.Rose400, fontSize = 12.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 12.dp))
+            GradientActionButton(
+                text = if (working) "..." else if (registering) (if (locale == "pt") "Criar conta" else "Create account") else (if (locale == "pt") "Entrar" else "Sign in"),
+                onClick = { if (registering) onRegister(name, email, password, birthDate) else onSignIn(email, password) },
+                modifier = Modifier.fillMaxWidth().padding(top = 18.dp).height(48.dp),
+                enabled = !working && email.isNotBlank() && password.isNotBlank(),
+            )
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 17.dp), verticalAlignment = Alignment.CenterVertically) {
+                HorizontalDivider(modifier = Modifier.weight(1f), color = CasinhaPalette.Pink200.copy(alpha = 0.45f))
+                Text(if (locale == "pt") "ou" else "or", color = CasinhaPalette.Pink300, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 12.dp))
+                HorizontalDivider(modifier = Modifier.weight(1f), color = CasinhaPalette.Pink200.copy(alpha = 0.45f))
+            }
+            OutlinedButton(
+                onClick = { onGoogle(context) }, modifier = Modifier.fillMaxWidth().height(48.dp), enabled = !working,
+                shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, CasinhaPalette.Pink200.copy(alpha = 0.65f)),
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White.copy(alpha = 0.8f), contentColor = CasinhaPalette.Rose600),
+            ) {
+                Text("G", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 9.dp))
+                Text(if (locale == "pt") "Continuar com Google" else "Continue with Google", fontSize = 13.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
 }
 
 @Composable
-private fun CasinhaTextField(
+private fun LanguagePill(label: String, selected: Boolean, onClick: () -> Unit) {
+    Surface(modifier = Modifier.clickable(onClick = onClick), shape = CircleShape, color = if (selected) CasinhaPalette.Rose400 else Color.White.copy(alpha = 0.64f)) {
+        Text(label, color = if (selected) Color.White else CasinhaPalette.Rose400, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp))
+    }
+}
+
+@Composable
+private fun AuthModeButton(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Surface(modifier = modifier.clickable(onClick = onClick), shape = RoundedCornerShape(12.dp), color = if (selected) Color.White else Color.Transparent, shadowElevation = if (selected) 1.dp else 0.dp) {
+        Text(label, color = if (selected) CasinhaPalette.Rose600 else CasinhaPalette.Pink400, fontWeight = FontWeight.Medium, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 10.dp))
+    }
+}
+
+@Composable
+private fun WebLikeInput(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
-    icon: ImageVector,
+    placeholder: String,
     keyboardType: KeyboardType = KeyboardType.Text,
     password: Boolean = false,
 ) {
@@ -311,65 +225,24 @@ private fun CasinhaTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
-        label = { Text(label) },
-        leadingIcon = { Icon(icon, contentDescription = null, tint = CasinhaPalette.Rose300) },
-        visualTransformation = if (password) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        placeholder = { Text(placeholder, color = CasinhaPalette.Pink300, fontSize = 13.sp) },
         singleLine = true,
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(16.dp),
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = keyboardType),
+        visualTransformation = if (password) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = CasinhaPalette.Rose400,
-            unfocusedBorderColor = CasinhaPalette.Pink200,
-            focusedContainerColor = Color.White.copy(alpha = 0.92f),
-            unfocusedContainerColor = Color.White.copy(alpha = 0.82f),
-            cursorColor = CasinhaPalette.Rose500,
-            focusedLabelColor = CasinhaPalette.Rose500,
-            unfocusedLabelColor = CasinhaPalette.Rose300,
+            focusedBorderColor = CasinhaPalette.Pink300,
+            unfocusedBorderColor = CasinhaPalette.Pink200.copy(alpha = 0.62f),
+            focusedContainerColor = Color.White.copy(alpha = 0.82f),
+            unfocusedContainerColor = Color.White.copy(alpha = 0.78f),
+            cursorColor = CasinhaPalette.Rose400,
+            focusedTextColor = CasinhaPalette.Rose700,
+            unfocusedTextColor = CasinhaPalette.Rose700,
         ),
     )
 }
 
-@Composable
-private fun GradientPrimaryButton(
-    text: String,
-    working: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(18.dp)
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .alpha(if (enabled) 1f else 0.48f)
-            .background(
-                Brush.horizontalGradient(
-                    listOf(CasinhaPalette.Rose400, CasinhaPalette.Rose500, CasinhaPalette.Purple500),
-                ),
-                shape,
-            ),
-        enabled = enabled,
-        shape = shape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
-            contentColor = Color.White,
-            disabledContentColor = Color.White,
-        ),
-    ) {
-        if (working) {
-            CircularProgressIndicator(
-                modifier = Modifier.height(21.dp),
-                strokeWidth = 2.dp,
-                color = Color.White,
-            )
-        } else {
-            Text(text, fontWeight = FontWeight.Bold)
-        }
-    }
-}
+private enum class SetupMode { CHOOSE, CREATE, JOIN }
 
 @Composable
 private fun HouseSetupScreen(
@@ -381,109 +254,48 @@ private fun HouseSetupScreen(
     onSignOut: () -> Unit,
     onClearError: () -> Unit,
 ) {
-    var houseName by remember { mutableStateOf("") }
+    var mode by remember { mutableStateOf(SetupMode.CHOOSE) }
+    var houseName by remember { mutableStateOf("A Nossa Casinha") }
     var inviteCode by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("🏡", fontSize = 64.sp)
-        Text(
-            "Olá, ${profile.name}!",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = CasinhaPalette.Rose500,
-        )
-        Text(
-            "Vamos encontrar o teu cantinho.",
-            modifier = Modifier.padding(top = 4.dp, bottom = 22.dp),
-            textAlign = TextAlign.Center,
-            color = CasinhaPalette.Purple500,
-        )
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
-            color = Color.White.copy(alpha = 0.76f),
-            shadowElevation = 6.dp,
-        ) {
-            Column(modifier = Modifier.padding(18.dp)) {
-                Text("✨ Criar uma casa", color = CasinhaPalette.Rose600, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(10.dp))
-                CasinhaTextField(
-                    value = houseName,
-                    onValueChange = { houseName = it; onClearError() },
-                    label = "Nome da nova casa…",
-                    icon = Icons.Rounded.Person,
-                )
-                GradientPrimaryButton(
-                    text = "Criar casa",
-                    working = working,
-                    enabled = !working,
-                    onClick = { onCreate(houseName) },
-                    modifier = Modifier.padding(top = 12.dp),
-                )
-
-                Row(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = CasinhaPalette.Pink200)
-                    Text("ou", modifier = Modifier.padding(horizontal = 10.dp), color = CasinhaPalette.Rose300)
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = CasinhaPalette.Pink200)
-                }
-
-                Text("💌 Tenho um convite", color = CasinhaPalette.Purple500, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(10.dp))
-                CasinhaTextField(
-                    value = inviteCode,
-                    onValueChange = { inviteCode = it.uppercase(); onClearError() },
-                    label = "Código do convite…",
-                    icon = Icons.Rounded.Mail,
-                )
-                OutlinedButton(
-                    onClick = { onJoin(inviteCode) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .padding(top = 10.dp),
-                    enabled = !working,
-                    shape = RoundedCornerShape(18.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CasinhaPalette.Purple400),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = CasinhaPalette.Purple500),
-                ) { Text("Entrar na casa", fontWeight = FontWeight.Bold) }
+        Text("🏡", fontSize = 62.sp)
+        Text("Olá, ${profile.name}!", color = CasinhaPalette.Rose400, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
+        Text("Vamos configurar a tua casa", color = CasinhaPalette.Rose300, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp, bottom = 22.dp))
+        when (mode) {
+            SetupMode.CHOOSE -> {
+                SetupChoice("✨", "Criar nova casa", "Começar do zero") { mode = SetupMode.CREATE; onClearError() }
+                SetupChoice("🔗", "Tenho um convite", "Juntar-me a uma casa existente", Modifier.padding(top = 11.dp)) { mode = SetupMode.JOIN; onClearError() }
+            }
+            SetupMode.CREATE -> {
+                WebLikeInput(houseName, { houseName = it; onClearError() }, "Nome da casa...")
+                GradientActionButton(if (working) "A criar..." else "Criar casa 🏡", { onCreate(houseName) }, Modifier.fillMaxWidth().padding(top = 14.dp).height(48.dp), enabled = houseName.isNotBlank() && !working)
+                TextButton(onClick = { mode = SetupMode.CHOOSE }) { Text("← Voltar", color = CasinhaPalette.Pink400) }
+            }
+            SetupMode.JOIN -> {
+                WebLikeInput(inviteCode, { inviteCode = it.uppercase(); onClearError() }, "Código do convite...")
+                GradientActionButton(if (working) "A verificar..." else "Juntar-me 🔗", { onJoin(inviteCode) }, Modifier.fillMaxWidth().padding(top = 14.dp).height(48.dp), enabled = inviteCode.length >= 4 && !working)
+                TextButton(onClick = { mode = SetupMode.CHOOSE }) { Text("← Voltar", color = CasinhaPalette.Pink400) }
             }
         }
-        ErrorText(error)
-        TextButton(onClick = onSignOut, enabled = !working) {
-            Text("Terminar sessão", color = CasinhaPalette.MutedInk)
-        }
+        if (error != null) Text(error, color = CasinhaPalette.Rose400, fontSize = 12.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 12.dp))
+        TextButton(onClick = onSignOut, enabled = !working, modifier = Modifier.padding(top = 12.dp)) { Text("Sair", color = CasinhaPalette.Pink300, fontSize = 11.sp) }
     }
 }
 
 @Composable
-private fun ErrorText(error: String?) {
-    if (error != null) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            shape = RoundedCornerShape(14.dp),
-            color = Color(0xFFFFE4E8),
-        ) {
-            Text(
-                text = error,
-                modifier = Modifier.padding(12.dp),
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center,
-                fontSize = 13.sp,
-            )
+private fun SetupChoice(emoji: String, title: String, subtitle: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    GlassCard(modifier = modifier.fillMaxWidth().clickable(onClick = onClick), color = Color.White.copy(alpha = 0.8f), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp, vertical = 15.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(emoji, fontSize = 26.sp)
+            Column(modifier = Modifier.padding(start = 12.dp)) {
+                Text(title, color = CasinhaPalette.Rose700, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(subtitle, color = CasinhaPalette.Pink400, fontSize = 10.sp)
+            }
         }
-    } else {
-        Spacer(Modifier.height(15.dp))
     }
 }

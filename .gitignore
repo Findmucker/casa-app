@@ -45,6 +45,7 @@ next-env.d.ts
 
 # Android build outputs and signing material
 /android/.gradle/
+/android/.kotlin/
 /.gradle-user-home/
 /android/app/build/
 /android/build/

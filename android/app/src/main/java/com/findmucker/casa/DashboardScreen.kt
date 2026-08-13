@@ -1,13 +1,14 @@
 package com.findmucker.casa
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,704 +17,439 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Logout
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
-private enum class DashboardDestination(val label: String, val emoji: String) {
-    HOME("Início", "🏡"),
+enum class DashboardTab(val label: String, val emoji: String) {
+    HOME("Início", "✨"),
     SHOPPING("Compras", "🛒"),
-    SMALL_PRIORITIES("Coisas", "🪴"),
-    PROJECTS("Projetos", "🏠"),
-    HABITS("Hábitos", "✨");
+    SMALL("Coisinhas", "🪄"),
+    PROJECTS("Projetos", "🏡"),
+    HABITS("Rotinas", "🧘"),
+    EXPENSES("Finanças", "💰"),
+    CALENDAR("Calendário", "🗓️"),
+    EVENTS("Eventos", "🎉"),
+    WEATHER("Tempo", "🌤️");
 
     fun section(): HouseSection? = when (this) {
-        HOME -> null
         SHOPPING -> HouseSection.SHOPPING
-        SMALL_PRIORITIES -> HouseSection.SMALL_PRIORITIES
+        SMALL -> HouseSection.SMALL_PRIORITIES
         PROJECTS -> HouseSection.PROJECTS
         HABITS -> HouseSection.HABITS
+        else -> null
     }
 }
 
-private data class SectionStyle(
-    val start: Color,
-    val end: Color,
-    val accent: Color,
-    val border: Color,
-)
-
-private fun styleFor(section: HouseSection): SectionStyle = when (section) {
-    HouseSection.SHOPPING -> SectionStyle(
-        start = Color(0xFFFFEFF5),
-        end = Color(0xFFFFD6E5),
-        accent = CasinhaPalette.Rose500,
-        border = Color(0xFFF7A6C2),
-    )
-    HouseSection.SMALL_PRIORITIES -> SectionStyle(
-        start = Color(0xFFF8F0FF),
-        end = Color(0xFFE6D7FF),
-        accent = CasinhaPalette.Purple500,
-        border = Color(0xFFCBB5FA),
-    )
-    HouseSection.PROJECTS -> SectionStyle(
-        start = Color(0xFFEDF8FF),
-        end = Color(0xFFD2EEFF),
-        accent = Color(0xFF258AC2),
-        border = Color(0xFF9FD8F5),
-    )
-    HouseSection.HABITS -> SectionStyle(
-        start = Color(0xFFEBFFF7),
-        end = Color(0xFFCEF4E5),
-        accent = CasinhaPalette.Emerald500,
-        border = Color(0xFF9DE1CA),
-    )
+enum class DashboardOverlay {
+    MENU, SEARCH, PROFILE, HISTORY, INVITE, MEMBERS, FRIENDS, MESSAGE, HELP,
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HouseWelcomeScreen(
     profile: UserProfile,
     house: House,
-    dashboard: DashboardState,
-    working: Boolean,
-    error: String?,
+    state: CasaUiState,
     onAdd: (HouseSection, String) -> Unit,
     onToggle: (HouseSection, HouseItem) -> Unit,
     onDelete: (HouseSection, String) -> Unit,
+    onAddExpense: (String, String, String, String) -> Unit,
+    onAddIncome: (String, String, String, Boolean) -> Unit,
+    onAddSavings: (String, String, String) -> Unit,
+    onDepositSavings: (SavingsGoal, String) -> Unit,
+    onDeleteExtra: (String, String) -> Unit,
+    onAddEvent: (String, String, String) -> Unit,
+    onToggleEvent: (CasaEvent) -> Unit,
+    onRenameHouse: (String) -> Unit,
+    onUpdateProfile: (String, String?) -> Unit,
+    onCreateInvite: () -> Unit,
+    onLoadFriendCode: () -> Unit,
+    onConnectFriend: (String) -> Unit,
+    onRemoveFriend: (String) -> Unit,
+    onSendMessage: (String, String) -> Unit,
+    onRefreshWeather: () -> Unit,
     onSignOut: () -> Unit,
     onClearError: () -> Unit,
+    onClearNotice: () -> Unit,
 ) {
-    var destination by remember { mutableStateOf(DashboardDestination.HOME) }
-    val section = destination.section()
+    var selectedTab by remember { mutableStateOf(DashboardTab.HOME) }
+    var overlay by remember { mutableStateOf<DashboardOverlay?>(null) }
+    val navScroll = rememberScrollState()
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            if (section == null) "🏡  ${house.name}" else "${section.emoji}  ${section.title}",
-                            color = CasinhaPalette.Rose600,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp,
-                        )
-                        Text(
-                            if (section == null) "Olá, ${profile.name} ✨" else house.name,
-                            fontSize = 11.sp,
-                            color = CasinhaPalette.Purple500,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onSignOut) {
-                        Icon(
-                            Icons.AutoMirrored.Rounded.Logout,
-                            contentDescription = "Terminar sessão",
-                            tint = CasinhaPalette.Rose400,
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White.copy(alpha = 0.72f),
-                    scrolledContainerColor = Color.White.copy(alpha = 0.92f),
-                ),
-            )
-        },
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color.White.copy(alpha = 0.9f),
-                tonalElevation = 0.dp,
-            ) {
-                DashboardDestination.entries.forEach { item ->
-                    NavigationBarItem(
-                        selected = destination == item,
-                        onClick = { destination = item },
-                        icon = { Text(item.emoji, fontSize = 21.sp) },
-                        label = {
-                            Text(
-                                item.label,
-                                fontSize = 9.sp,
-                                maxLines = 1,
-                                fontWeight = if (destination == item) FontWeight.Bold else FontWeight.Medium,
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = CasinhaPalette.Rose600,
-                            selectedTextColor = CasinhaPalette.Rose600,
-                            indicatorColor = CasinhaPalette.Pink100.copy(alpha = 0.82f),
-                            unselectedTextColor = CasinhaPalette.MutedInk,
-                        ),
-                    )
-                }
-            }
-        },
-    ) { contentPadding ->
+    BackHandler(enabled = overlay != null || selectedTab != DashboardTab.HOME) {
+        if (overlay != null) overlay = null else selectedTab = DashboardTab.HOME
+    }
+
+    LaunchedEffect(selectedTab) {
+        val index = DashboardTab.entries.indexOf(selectedTab)
+        navScroll.animateScrollTo((index * 56 * navScroll.maxValue / (DashboardTab.entries.size * 56).coerceAtLeast(1)).coerceAtMost(navScroll.maxValue))
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        CompactHeader(
+            houseName = house.name,
+            profile = profile,
+            onSearch = { overlay = DashboardOverlay.SEARCH },
+            onMenu = { overlay = DashboardOverlay.MENU },
+            onProfile = { overlay = DashboardOverlay.PROFILE },
+        )
+
+        var horizontalDrag by remember { mutableFloatStateOf(0f) }
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
+                .weight(1f)
+                .fillMaxWidth()
+                .pointerInput(selectedTab, overlay) {
+                    if (overlay == null) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { horizontalDrag = 0f },
+                            onHorizontalDrag = { _, amount -> horizontalDrag += amount },
+                            onDragEnd = {
+                                val tabs = DashboardTab.entries
+                                val index = tabs.indexOf(selectedTab)
+                                if (horizontalDrag < -90f && index < tabs.lastIndex) selectedTab = tabs[index + 1]
+                                if (horizontalDrag > 90f && index > 0) selectedTab = tabs[index - 1]
+                                horizontalDrag = 0f
+                            },
+                        )
+                    }
+                },
         ) {
-            if (section == null) {
-                HomeDashboard(
-                    house = house,
-                    dashboard = dashboard,
-                    onOpen = { selected ->
-                        destination = when (selected) {
-                            HouseSection.SHOPPING -> DashboardDestination.SHOPPING
-                            HouseSection.SMALL_PRIORITIES -> DashboardDestination.SMALL_PRIORITIES
-                            HouseSection.PROJECTS -> DashboardDestination.PROJECTS
-                            HouseSection.HABITS -> DashboardDestination.HABITS
-                        }
-                    },
+            when (selectedTab) {
+                DashboardTab.HOME -> HomeDashboard(
+                    dashboard = state.dashboard,
+                    onNavigate = { selectedTab = it },
                 )
-            } else {
-                CollectionScreen(
-                    section = section,
-                    items = dashboard.forSection(section),
-                    loading = section in dashboard.loading,
-                    working = working,
-                    error = error,
-                    onAdd = { onAdd(section, it) },
-                    onToggle = { onToggle(section, it) },
-                    onDelete = { onDelete(section, it) },
-                    onClearError = onClearError,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun HomeDashboard(
-    house: House,
-    dashboard: DashboardState,
-    onOpen: (HouseSection) -> Unit,
-) {
-    val allItems = dashboard.items.values.flatten()
-    val done = allItems.count { it.done }
-    val total = allItems.size
-    val progress = if (total == 0) 0f else done.toFloat() / total
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(13.dp),
-    ) {
-        item {
-            HeroProgressCard(done = done, total = total, progress = progress)
-        }
-
-        item {
-            val habits = dashboard.forSection(HouseSection.HABITS)
-            val habitsDone = habits.count { it.done }
-            val habitsComplete = habits.isNotEmpty() && habitsDone == habits.size
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onOpen(HouseSection.HABITS) },
-                shape = RoundedCornerShape(20.dp),
-                color = if (habitsComplete) Color(0xFFD9F8EA) else Color(0xFFEDE4FF),
-                border = BorderStroke(
-                    1.dp,
-                    if (habitsComplete) Color(0xFF98DDBE) else Color(0xFFC9B5F5),
-                ),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(if (habitsComplete) "✅" else "🧘", fontSize = 25.sp)
-                    Column(modifier = Modifier.weight(1f).padding(horizontal = 11.dp)) {
-                        Text(
-                            if (habitsComplete) "Hábitos de hoje completos!" else "Hábitos de hoje",
-                            color = if (habitsComplete) CasinhaPalette.Emerald500 else CasinhaPalette.Purple500,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            "$habitsDone/${habits.size} feitos · toca para continuar",
-                            color = CasinhaPalette.MutedInk,
-                            fontSize = 11.sp,
-                        )
-                    }
-                    val maxStreak = habits.maxOfOrNull { it.streak } ?: 0
-                    if (maxStreak > 0) Text("🔥 $maxStreak", color = Color(0xFFE37335), fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-
-        item {
-            Text(
-                "A tua casa num relance",
-                color = CasinhaPalette.Rose600,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.ExtraBold,
-            )
-        }
-
-        items(HouseSection.entries.chunked(2)) { sections ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(11.dp),
-            ) {
-                sections.forEach { section ->
-                    OverviewCard(
-                        modifier = Modifier.weight(1f),
+                DashboardTab.SHOPPING,
+                DashboardTab.SMALL,
+                DashboardTab.PROJECTS,
+                DashboardTab.HABITS -> {
+                    val section = requireNotNull(selectedTab.section())
+                    DomainCollectionScreen(
                         section = section,
-                        sectionItems = dashboard.forSection(section),
-                        loading = section in dashboard.loading,
-                        onClick = { onOpen(section) },
+                        items = state.dashboard.forSection(section),
+                        loading = section in state.dashboard.loading,
+                        working = state.working,
+                        error = state.error,
+                        notice = state.notice,
+                        onAdd = { onAdd(section, it) },
+                        onToggle = { onToggle(section, it) },
+                        onDelete = { onDelete(section, it) },
+                        onClearFeedback = { onClearError(); onClearNotice() },
                     )
                 }
-                if (sections.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-
-        item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp),
-                color = Color.White.copy(alpha = 0.72f),
-                border = BorderStroke(1.dp, CasinhaPalette.Pink100),
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("💕", fontSize = 25.sp)
-                    Column(modifier = Modifier.padding(start = 12.dp)) {
-                        Text("A nossa equipa", color = CasinhaPalette.Rose600, fontWeight = FontWeight.Bold)
-                        Text(
-                            house.members.joinToString(" · ") { "${it.avatar} ${it.name}" },
-                            color = CasinhaPalette.MutedInk,
-                            fontSize = 12.sp,
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HeroProgressCard(done: Int, total: Int, progress: Float) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFFE75082), Color(0xFFE85D9A), Color(0xFF9B6CE8)),
-                ),
-            )
-            .padding(20.dp),
-    ) {
-        Column {
-            Row(verticalAlignment = Alignment.Top) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "O que fazemos hoje?",
-                        color = Color.White.copy(alpha = 0.82f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        if (done == total && total > 0) "🏆 Casa em dia!" else "✨ Um passo de cada vez",
-                        color = Color.White,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 20.sp,
-                    )
-                }
-                Text(
-                    "${(progress * 100).toInt()}%",
-                    color = Color.White,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 26.sp,
+                DashboardTab.EXPENSES -> FinanceScreen(
+                    dashboard = state.dashboard,
+                    house = house,
+                    working = state.working,
+                    error = state.error,
+                    notice = state.notice,
+                    onAddExpense = onAddExpense,
+                    onAddIncome = onAddIncome,
+                    onAddSavings = onAddSavings,
+                    onDeposit = onDepositSavings,
+                    onDelete = onDeleteExtra,
+                )
+                DashboardTab.CALENDAR -> CalendarScreen(dashboard = state.dashboard)
+                DashboardTab.EVENTS -> EventsScreen(
+                    events = state.dashboard.events,
+                    working = state.working,
+                    error = state.error,
+                    notice = state.notice,
+                    onAdd = onAddEvent,
+                    onToggle = onToggleEvent,
+                    onDelete = { onDeleteExtra("events", it) },
+                )
+                DashboardTab.WEATHER -> WeatherScreen(
+                    weather = state.dashboard.weather,
+                    onRefresh = onRefreshWeather,
                 )
             }
-            Spacer(Modifier.height(14.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.26f)),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(progress.coerceIn(0f, 1f))
-                        .height(10.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
-                )
-            }
-            Text(
-                "$done de $total concluídos",
-                modifier = Modifier.padding(top = 7.dp),
-                color = Color.White.copy(alpha = 0.84f),
-                fontSize = 10.sp,
-            )
         }
+
+        BottomTabs(
+            selected = selectedTab,
+            panelOpen = overlay != null,
+            scrollState = navScroll,
+            onSelect = {
+                selectedTab = it
+                overlay = null
+            },
+        )
     }
-}
 
-@Composable
-private fun OverviewCard(
-    modifier: Modifier,
-    section: HouseSection,
-    sectionItems: List<HouseItem>,
-    loading: Boolean,
-    onClick: () -> Unit,
-) {
-    val style = styleFor(section)
-    val pending = sectionItems.count { !it.done }
-    val total = sectionItems.size
-    val progress = if (total == 0) 0f else (total - pending).toFloat() / total
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(22.dp))
-            .background(Brush.linearGradient(listOf(style.start, style.end)))
-            .border(1.dp, style.border, RoundedCornerShape(22.dp))
-            .clickable(onClick = onClick)
-            .padding(15.dp),
-    ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(section.emoji, fontSize = 27.sp)
-                Spacer(Modifier.weight(1f))
-                if (pending > 5) {
-                    Surface(shape = CircleShape, color = style.accent.copy(alpha = 0.16f)) {
-                        Text(
-                            "muito!",
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
-                            color = style.accent,
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                }
-            }
-            Text(
-                if (loading) "…" else pending.toString(),
-                modifier = Modifier.padding(top = 9.dp),
-                color = CasinhaPalette.Ink,
-                fontSize = 27.sp,
-                fontWeight = FontWeight.ExtraBold,
-            )
-            Text(
-                when (section) {
-                    HouseSection.HABITS -> "por fazer hoje"
-                    HouseSection.PROJECTS -> "projetos ativos"
-                    else -> "por fazer"
-                },
-                color = CasinhaPalette.MutedInk,
-                fontSize = 10.sp,
-            )
-            MiniProgress(progress = progress, color = style.accent, modifier = Modifier.padding(top = 10.dp))
-            Text(
-                section.title,
-                modifier = Modifier.padding(top = 8.dp),
-                color = style.accent,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-    }
-}
-
-@Composable
-private fun MiniProgress(progress: Float, color: Color, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(5.dp)
-            .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.72f)),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(progress.coerceIn(0f, 1f))
-                .height(5.dp)
-                .clip(CircleShape)
-                .background(color),
+    if (overlay != null) {
+        DashboardOverlayScreen(
+            overlay = requireNotNull(overlay),
+            selectedTab = selectedTab,
+            profile = profile,
+            house = house,
+            state = state,
+            onClose = { overlay = null },
+            onOpen = { overlay = it },
+            onNavigate = {
+                selectedTab = it
+                overlay = null
+            },
+            onRenameHouse = onRenameHouse,
+            onUpdateProfile = onUpdateProfile,
+            onCreateInvite = onCreateInvite,
+            onLoadFriendCode = onLoadFriendCode,
+            onConnectFriend = onConnectFriend,
+            onRemoveFriend = onRemoveFriend,
+            onSendMessage = onSendMessage,
+            onSignOut = onSignOut,
         )
     }
 }
 
 @Composable
-private fun CollectionScreen(
-    section: HouseSection,
-    items: List<HouseItem>,
-    loading: Boolean,
-    working: Boolean,
-    error: String?,
-    onAdd: (String) -> Unit,
-    onToggle: (HouseItem) -> Unit,
-    onDelete: (String) -> Unit,
-    onClearError: () -> Unit,
+private fun CompactHeader(
+    houseName: String,
+    profile: UserProfile,
+    onSearch: () -> Unit,
+    onMenu: () -> Unit,
+    onProfile: () -> Unit,
 ) {
-    var newItem by remember(section) { mutableStateOf("") }
-    val style = styleFor(section)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 14.dp),
-    ) {
-        CollectionSummary(section = section, items = items, style = style)
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 11.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(9.dp),
-        ) {
-            OutlinedTextField(
-                value = newItem,
-                onValueChange = { newItem = it; onClearError() },
-                modifier = Modifier.weight(1f),
-                label = { Text(addLabel(section)) },
-                singleLine = true,
-                shape = RoundedCornerShape(18.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = style.accent,
-                    unfocusedBorderColor = style.border,
-                    focusedContainerColor = Color.White.copy(alpha = 0.94f),
-                    unfocusedContainerColor = Color.White.copy(alpha = 0.82f),
-                    cursorColor = style.accent,
-                    focusedLabelColor = style.accent,
-                ),
-            )
-            val addShape = RoundedCornerShape(18.dp)
-            Button(
-                onClick = {
-                    onAdd(newItem)
-                    newItem = ""
-                },
-                modifier = Modifier
-                    .size(58.dp)
-                    .alpha(if (newItem.isNotBlank() && !working) 1f else 0.42f)
-                    .background(
-                        Brush.linearGradient(listOf(style.accent, CasinhaPalette.Purple500)),
-                        addShape,
-                    ),
-                enabled = newItem.isNotBlank() && !working,
-                shape = addShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                ),
-                contentPadding = PaddingValues(0.dp),
-            ) {
-                Icon(Icons.Rounded.Add, contentDescription = "Adicionar", tint = Color.White)
-            }
-        }
-
-        if (error != null) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 9.dp),
-                color = Color(0xFFFFE3E8),
-                shape = RoundedCornerShape(14.dp),
-            ) {
-                Text(
-                    error,
-                    modifier = Modifier.padding(11.dp),
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp,
-                )
-            }
-        }
-
-        when {
-            loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = style.accent)
-            }
-            items.isEmpty() -> EmptyCollection(section)
-            else -> LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(9.dp),
-            ) {
-                items(items, key = { it.id }) { item ->
-                    HouseItemRow(
-                        section = section,
-                        style = style,
-                        item = item,
-                        enabled = !working,
-                        onToggle = { onToggle(item) },
-                        onDelete = { onDelete(item.id) },
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CollectionSummary(section: HouseSection, items: List<HouseItem>, style: SectionStyle) {
-    val done = items.count { it.done }
-    val total = items.size
-    val progress = if (total == 0) 0f else done.toFloat() / total
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 12.dp, bottom = 11.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(Brush.horizontalGradient(listOf(style.start, style.end)))
-            .border(1.dp, style.border, RoundedCornerShape(20.dp))
-            .padding(horizontal = 15.dp, vertical = 12.dp),
+            .background(Color.White.copy(alpha = 0.55f))
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(section.emoji, fontSize = 28.sp)
-            Column(modifier = Modifier.weight(1f).padding(horizontal = 11.dp)) {
-                Text(
-                    if (section == HouseSection.HABITS) "$done/$total feitos hoje" else "${total - done} por fazer",
-                    color = style.accent,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-                MiniProgress(progress = progress, color = style.accent, modifier = Modifier.padding(top = 6.dp))
+        Surface(
+            modifier = Modifier.size(36.dp).clickable(onClick = onSearch),
+            shape = CircleShape,
+            color = CasinhaPalette.Pink50,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.Rounded.Search, contentDescription = "Pesquisar", tint = CasinhaPalette.Pink400, modifier = Modifier.size(19.dp))
             }
-            Text("${(progress * 100).toInt()}%", color = style.accent, fontWeight = FontWeight.Bold)
+        }
+        Text(
+            text = "🏡 $houseName",
+            modifier = Modifier.weight(1f).clickable(onClick = onMenu),
+            color = CasinhaPalette.Rose400,
+            fontWeight = FontWeight.Bold,
+            fontSize = 17.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+        )
+        Surface(
+            modifier = Modifier.size(36.dp).clickable(onClick = onProfile),
+            shape = CircleShape,
+            color = CasinhaPalette.Pink100.copy(alpha = 0.72f),
+            border = BorderStroke(1.dp, CasinhaPalette.Pink200.copy(alpha = 0.7f)),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(profile.avatar.ifBlank { "👤" }, fontSize = 20.sp)
+            }
         }
     }
 }
 
 @Composable
-private fun HouseItemRow(
-    section: HouseSection,
-    style: SectionStyle,
-    item: HouseItem,
-    enabled: Boolean,
-    onToggle: () -> Unit,
-    onDelete: () -> Unit,
+private fun BottomTabs(
+    selected: DashboardTab,
+    panelOpen: Boolean,
+    scrollState: androidx.compose.foundation.ScrollState,
+    onSelect: (DashboardTab) -> Unit,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (item.done) style.start.copy(alpha = 0.72f) else Color.White.copy(alpha = 0.9f),
-        ),
-        border = BorderStroke(1.dp, if (item.done) style.border.copy(alpha = 0.55f) else CasinhaPalette.Pink100),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (item.done) 0.dp else 2.dp),
-        shape = RoundedCornerShape(19.dp),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White.copy(alpha = 0.66f))
+            .horizontalScroll(scrollState),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 7.dp, vertical = 7.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Surface(
+        DashboardTab.entries.forEach { tab ->
+            val active = tab == selected && !panelOpen
+            Column(
                 modifier = Modifier
-                    .size(43.dp)
-                    .clickable(
-                        enabled = enabled && !(section == HouseSection.HABITS && item.done),
-                        onClick = onToggle,
-                    ),
-                shape = CircleShape,
-                color = if (item.done) style.accent else style.start,
-                border = BorderStroke(2.dp, style.accent),
+                    .width(64.dp)
+                    .clickable { onSelect(tab) }
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = when {
-                            item.done -> Icons.Rounded.Check
-                            section == HouseSection.PROJECTS -> Icons.Rounded.Refresh
-                            else -> Icons.Rounded.RadioButtonUnchecked
-                        },
-                        contentDescription = toggleDescription(section, item),
-                        tint = if (item.done) Color.White else style.accent,
-                        modifier = Modifier.size(23.dp),
+                Box(modifier = Modifier.height(3.dp).width(32.dp).clip(CircleShape).background(
+                    if (active) Brush.horizontalGradient(listOf(CasinhaPalette.Pink400, CasinhaPalette.Rose400))
+                    else Brush.horizontalGradient(listOf(Color.Transparent, Color.Transparent)),
+                ))
+                Text(tab.emoji, fontSize = if (active) 20.sp else 18.sp, modifier = Modifier.padding(top = 4.dp))
+                Text(
+                    tab.label,
+                    color = if (active) CasinhaPalette.Rose500 else Color(0xFF9CA3AF),
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeDashboard(dashboard: DashboardState, onNavigate: (DashboardTab) -> Unit) {
+    val today = todayKey()
+    val month = today.take(7)
+    val weekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).toString()
+    val shopping = dashboard.forSection(HouseSection.SHOPPING)
+    val coisinhas = dashboard.forSection(HouseSection.SMALL_PRIORITIES)
+    val projects = dashboard.forSection(HouseSection.PROJECTS)
+    val habits = dashboard.forSection(HouseSection.HABITS)
+    val shoppingPending = shopping.count { !it.done }
+    val shoppingDone = shopping.count { it.done }
+    val coisinhasPending = coisinhas.count { !it.done }
+    val coisinhasDone = coisinhas.count { it.done }
+    val projectsInProgress = projects.count { it.status == "em progresso" }
+    val projectsDone = projects.count { it.status == "concluido" }
+    val todayChecks = dashboard.habitChecks.count { it.date == today }.coerceAtMost(habits.size)
+    val monthExpenses = dashboard.expenses.filter { it.date.startsWith(month) }.sumOf { it.amount }
+    val weeklyDone = (shopping + coisinhas).count { it.done && (it.completedAt ?: "") >= weekStart }
+    val weeklyTotal = (weeklyDone + shoppingPending + coisinhasPending).coerceAtLeast(1)
+    val weeklyProgress = (weeklyDone.toFloat() / weeklyTotal).coerceIn(0f, 1f)
+    val weeklyPct = (weeklyProgress * 100).toInt()
+    val urgent = shopping.count { !it.done && it.urgent }
+    val maxStreak = habits.maxOfOrNull { it.streak } ?: 0
+    val habitsComplete = habits.isNotEmpty() && todayChecks >= habits.size
+    val hour = java.time.LocalTime.now().hour
+    val moment = when (hour) {
+        in 6..11 -> "esta manhã?"
+        in 12..18 -> "esta tarde?"
+        else -> "esta noite?"
+    }
+    val motivation = when {
+        weeklyPct >= 80 -> "🏆 Incrível!"
+        weeklyPct >= 60 -> "💪 Bom trabalho!"
+        weeklyPct >= 30 -> "🚀 Vamos a isso!"
+        else -> "🌱 Um passo de cada vez"
+    }
+
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 14.dp),
+    ) {
+        item {
+            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) {
+                Row(verticalAlignment = Alignment.Top) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("O que fazemos $moment", color = CasinhaPalette.Purple400, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text(motivation, color = CasinhaPalette.Rose600, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 2.dp))
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("$weeklyPct%", color = CasinhaPalette.Rose500, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text("esta semana", color = CasinhaPalette.Purple400, fontSize = 9.sp)
+                    }
+                }
+                CasinhaProgress(
+                    progress = weeklyProgress,
+                    color = CasinhaPalette.Pink400,
+                    modifier = Modifier.padding(top = 12.dp),
+                    height = 12,
+                )
+                Text("$weeklyDone concluídos esta semana", color = CasinhaPalette.Purple400, fontSize = 10.sp, modifier = Modifier.padding(top = 5.dp))
+            }
+        }
+
+        if (urgent > 0) item {
+            Surface(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp).clickable { onNavigate(DashboardTab.SHOPPING) },
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFFFF1F2),
+                border = BorderStroke(1.dp, CasinhaPalette.Rose200.copy(alpha = 0.6f)),
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("🚨 Urgente", color = CasinhaPalette.Red500, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("$urgent ${if (urgent == 1) "compra precisa" else "compras precisam"} de atenção", color = CasinhaPalette.Rose600, fontSize = 11.sp)
+                }
+            }
+        }
+
+        item {
+            Surface(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp).clickable { onNavigate(DashboardTab.HABITS) },
+                shape = RoundedCornerShape(12.dp),
+                color = if (habitsComplete) CasinhaPalette.Emerald50 else CasinhaPalette.Purple50,
+                border = BorderStroke(1.dp, if (habitsComplete) CasinhaPalette.Emerald200.copy(alpha = 0.6f) else CasinhaPalette.Purple200.copy(alpha = 0.45f)),
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (habitsComplete) "✅" else "🧘", fontSize = 22.sp)
+                        Column(modifier = Modifier.weight(1f).padding(start = 9.dp)) {
+                            Text(if (habitsComplete) "Rotinas completas!" else "Rotinas de hoje", color = if (habitsComplete) CasinhaPalette.Emerald600 else CasinhaPalette.Purple600, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("$todayChecks/${habits.size} feitas", color = CasinhaPalette.MutedInk, fontSize = 10.sp)
+                        }
+                        if (maxStreak > 0) Text("🔥 $maxStreak", color = CasinhaPalette.Amber500, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    }
+                    if (habits.isNotEmpty()) CasinhaProgress(
+                        progress = todayChecks.toFloat() / habits.size,
+                        color = CasinhaPalette.Emerald400,
+                        modifier = Modifier.padding(top = 8.dp),
+                        trackColor = Color(0xFFE5E7EB),
                     )
                 }
             }
-            if (item.emoji != null) {
-                Text(item.emoji, modifier = Modifier.padding(start = 9.dp), fontSize = 23.sp)
-            }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 11.dp),
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text(
-                    item.name,
-                    color = if (item.done) CasinhaPalette.Rose300 else CasinhaPalette.Ink,
-                    fontWeight = FontWeight.SemiBold,
-                    textDecoration = if (item.done) TextDecoration.LineThrough else null,
+                HomeStatCard(
+                    modifier = Modifier.weight(1f), emoji = "🛒", value = shoppingPending.toString(),
+                    label = "compras por fazer", progress = ratio(shoppingDone, shopping.size),
+                    colors = listOf(CasinhaPalette.Pink50, CasinhaPalette.Rose100), accent = CasinhaPalette.Pink400,
+                    onClick = { onNavigate(DashboardTab.SHOPPING) },
                 )
-                Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Surface(shape = CircleShape, color = style.accent.copy(alpha = 0.12f)) {
-                        Text(
-                            itemDetail(section, item),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                            color = style.accent,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                    if (item.urgent) Text("  🔥 urgente", color = Color(0xFFD9523C), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
+                HomeStatCard(
+                    modifier = Modifier.weight(1f), emoji = "🪄", value = coisinhasPending.toString(),
+                    label = "coisinhas por fazer", progress = ratio(coisinhasDone, coisinhas.size),
+                    colors = listOf(CasinhaPalette.Purple50, Color(0xFFE0E7FF)), accent = CasinhaPalette.Purple400,
+                    onClick = { onNavigate(DashboardTab.SMALL) },
+                )
             }
-            IconButton(onClick = onDelete, enabled = enabled) {
-                Icon(
-                    Icons.Rounded.Delete,
-                    contentDescription = "Apagar ${item.name}",
-                    tint = CasinhaPalette.Rose300,
-                    modifier = Modifier.size(21.dp),
+        }
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                HomeStatCard(
+                    modifier = Modifier.weight(1f), emoji = "🏡", value = projectsInProgress.toString(),
+                    label = "projetos em curso", detail = if (projectsDone > 0) "✓ $projectsDone concluídos" else null,
+                    colors = listOf(Color(0xFFEFF6FF), Color(0xFFCFFAFE)), accent = CasinhaPalette.Blue400,
+                    onClick = { onNavigate(DashboardTab.PROJECTS) },
+                )
+                HomeStatCard(
+                    modifier = Modifier.weight(1f), emoji = "💰", value = monthExpenses.asEuro(),
+                    label = "gastos este mês", colors = listOf(CasinhaPalette.Emerald50, Color(0xFFCCFBF1)),
+                    accent = CasinhaPalette.Emerald500, onClick = { onNavigate(DashboardTab.EXPENSES) },
                 )
             }
         }
@@ -721,41 +457,31 @@ private fun HouseItemRow(
 }
 
 @Composable
-private fun EmptyCollection(section: HouseSection) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(section.emoji, fontSize = 50.sp)
-            Text("Tudo tranquilo por aqui", color = CasinhaPalette.Rose600, fontWeight = FontWeight.ExtraBold)
-            Text(
-                "Adiciona o primeiro item acima ✨",
-                modifier = Modifier.padding(top = 4.dp),
-                color = CasinhaPalette.Purple500,
-                fontSize = 12.sp,
-            )
+private fun HomeStatCard(
+    modifier: Modifier,
+    emoji: String,
+    value: String,
+    label: String,
+    colors: List<Color>,
+    accent: Color,
+    progress: Float? = null,
+    detail: String? = null,
+    onClick: () -> Unit,
+) {
+    Surface(
+        modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.25f)),
+    ) {
+        Column(modifier = Modifier.background(Brush.linearGradient(colors)).padding(14.dp)) {
+            Text(emoji, fontSize = 24.sp)
+            Text(value, color = CasinhaPalette.Ink, fontSize = if (value.length > 6) 18.sp else 21.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 6.dp))
+            Text(label, color = CasinhaPalette.MutedInk, fontSize = 11.sp)
+            if (progress != null) CasinhaProgress(progress, accent, modifier = Modifier.padding(top = 8.dp), height = 4)
+            if (detail != null) Text(detail, color = CasinhaPalette.Emerald500, fontSize = 9.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 5.dp))
         }
     }
 }
 
-private fun addLabel(section: HouseSection): String = when (section) {
-    HouseSection.SHOPPING -> "Adicionar às compras…"
-    HouseSection.SMALL_PRIORITIES -> "Nova coisinha…"
-    HouseSection.PROJECTS -> "Novo projeto…"
-    HouseSection.HABITS -> "Novo hábito…"
-}
-
-private fun toggleDescription(section: HouseSection, item: HouseItem): String = when (section) {
-    HouseSection.PROJECTS -> "Avançar estado de ${item.name}"
-    HouseSection.HABITS -> "Marcar ${item.name} como feito hoje"
-    else -> if (item.done) "Reabrir ${item.name}" else "Concluir ${item.name}"
-}
-
-private fun itemDetail(section: HouseSection, item: HouseItem): String = when (section) {
-    HouseSection.SHOPPING -> if (item.done) "Comprado" else if (item.urgent) "Urgente" else "Por comprar"
-    HouseSection.SMALL_PRIORITIES -> if (item.done) "Concluído" else item.notes?.takeIf { it.isNotBlank() } ?: "Pendente"
-    HouseSection.PROJECTS -> when (item.status) {
-        "em progresso" -> "Em progresso"
-        "concluido" -> "Concluído"
-        else -> "Pendente"
-    }
-    HouseSection.HABITS -> if (item.done) "Feito hoje · sequência ${item.streak}" else "Sequência ${item.streak}"
-}
+private fun ratio(done: Int, total: Int): Float = if (total <= 0) 0f else done.toFloat() / total
