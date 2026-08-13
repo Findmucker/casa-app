@@ -4,7 +4,10 @@ A household management PWA and Android app for couples and families — organize
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Release model:** rolling deployment from `master` to production. See [CHANGELOG.md](CHANGELOG.md) for notable changes.
+**Release model:** the web client deploys continuously from `master`; Android is
+verified separately and uses a gated private beta channel. See
+[CHANGELOG.md](CHANGELOG.md) for notable changes and
+[docs/ANDROID.md](docs/ANDROID.md) for Android delivery.
 
 ## Features
 
@@ -253,7 +256,8 @@ npm run android:check  # Run native unit tests and Android lint
 
 Android contributors can build locally with JDK 17+ and Android SDK 36, or download
 the debug APK produced by GitHub Actions. See [docs/ANDROID.md](docs/ANDROID.md) for
-phone installation, Firebase registration, signing, and Play release instructions.
+phone installation, private Firebase beta delivery, signing, and Play release
+instructions.
 
 ## Project Structure
 
@@ -338,9 +342,35 @@ The Android client is released independently from the Vercel web client. Both us
 the same Firebase project and house-scoped Firestore documents; schema changes must
 remain compatible across clients. See [docs/ANDROID.md](docs/ANDROID.md).
 
+### Private Android beta
+
+Firebase App Distribution is the private Android testing channel. A signed,
+non-debuggable beta is delivered over Wi-Fi to the Firebase group
+`casinha-testers`; tester addresses stay in Firebase and are never stored in this
+repository. Firebase sends the first invitation and a notification email for each
+subsequent build. Testers install or update from Firebase App Tester and Android
+asks them to confirm each installation. This is a stable beta channel, not a public
+release and not a silent or automatic updater.
+
+The **Android APK** workflow can deliver a beta after Android-relevant changes are
+pushed to `master`, or from a manual run on `master` with `distribute` enabled. It
+never distributes pull-request builds. Beta builds use the same package and stable
+tester certificate, with CI `versionCode` values in the `100000+` range, so future
+beta APKs update the existing installation. A tester moving from an older APK signed
+with another certificate must uninstall Casinha once before the first beta; shared
+Firebase data remains available after signing in again.
+
+Delivery is currently gated off: Workload Identity Federation still needs its
+repository authorization and the `android-testers` variable
+`ANDROID_DISTRIBUTION_ENABLED` remains `false` until setup and the first device test
+are complete. Authentication uses short-lived GitHub OIDC credentials through WIF,
+not a committed or stored service-account JSON key. Google Play Internal Testing is
+the planned next channel for Play-managed installation and real automatic updates.
+
 ### CI/CD Pipeline (GitHub Actions)
 
-On every pull request to `master` and every push to `master`:
+GitHub Actions provides these checks and release jobs according to their event and
+path gates:
 - TypeScript typecheck
 - ESLint
 - Build verification
@@ -350,6 +380,7 @@ On every pull request to `master` and every push to `master`:
 - Auto-labeling
 - PR stats comment
 - Android configuration validation and a downloadable debug APK when Android files change
+- gated, master-only Firebase App Distribution delivery to the private Android beta group
 
 ```bash
 # Manual deploy (if needed)

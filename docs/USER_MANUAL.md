@@ -1,6 +1,6 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Última atualização: 14 de julho de 2026 | Deploy contínuo
+> Última atualização: 13 de agosto de 2026 | Web contínua + beta Android privada
 
 ## O que e a app?
 
@@ -392,10 +392,32 @@ A app suporta **Portugues** 🇵🇹 e **Ingles** 🇬🇧.
 A app funciona como **aplicacao Android nativa** e, separadamente, como
 **Progressive Web App (PWA)**. As duas versoes usam a mesma conta e a mesma casa.
 
-### Instalar a app
-- **APK Android de teste:** descarrega o artefacto `casinha-android-debug-*` do workflow
-  **Android APK**, extrai o ZIP e instala `app-debug.apk`. O Android pode pedir para
-  autorizar temporariamente a instalacao de apps desconhecidas para o browser ou gestor de ficheiros.
+### Instalar a beta Android privada
+
+A beta nativa é distribuída de forma privada através do **Firebase App
+Distribution**, pelo grupo `casinha-testers`. Não é necessário ligar o telemóvel ao
+PC: o convite e as builds chegam pela internet/Wi-Fi. Os endereços dos testers são
+geridos no Firebase e não aparecem no repositório.
+
+Na primeira instalação:
+
+1. Abre no telemóvel o convite enviado pelo Firebase e aceita-o com a conta Google
+   que vais continuar a usar para testar.
+2. Instala a aplicação **Firebase App Tester** quando for sugerida e inicia sessão
+   com a mesma conta.
+3. Se o Android pedir, permite temporariamente que o App Tester instale aplicações
+   desta origem.
+4. Se já tinhas uma APK nativa Casinha assinada de outra forma, desinstala essa app
+   nativa uma única vez antes de instalar a beta. A sessão, permissões e preferências
+   locais são repostas, mas os dados da casa guardados no Firebase não são apagados.
+5. No App Tester, descarrega Casinha e confirma a instalação apresentada pelo
+   Android. Abre a app, inicia sessão e confirma que estás na casa certa.
+
+O canal ainda está a concluir a autorização técnica de Workload Identity Federation.
+Enquanto essa validação não terminar, a distribuição mantém-se desativada e não são
+enviados convites ou updates beta. O artefacto APK do GitHub Actions continua a
+existir apenas como alternativa técnica para desenvolvimento.
+
 - **Android nativo:** abre **Casinha** no ecra de aplicacoes; o login e as listas nao
   abrem Chrome nem Brave.
 - **Paridade Android:** a app nativa apresenta as mesmas 9 tabs, pela mesma ordem,
@@ -409,12 +431,21 @@ A app funciona como **aplicacao Android nativa** e, separadamente, como
 - **iOS/Safari:** Botao de partilha → "Adicionar ao ecra inicial"
 
 Se aparecerem dois icones, um deles e a PWA antiga instalada pelo browser. Remove a
-PWA nas informacoes dessa aplicacao e conserva o APK nativo `com.findmucker.casa`.
+PWA nas informacoes dessa aplicacao e conserva a app nativa `com.findmucker.casa`.
 
-### Atualizacoes automaticas
+### Atualizações
+
 - O **service worker** usa `skipWaiting` + **cache purge** para garantir que recebes sempre a versao mais recente
 - As funcionalidades web atualizam automaticamente na proxima abertura da PWA
-- A aplicacao Android recebe funcionalidades novas atraves de um APK/Play Store atualizado
+- Cada beta Android nova gera um email do Firebase. Abre o App Tester, escolhe a
+  build nova e confirma o pedido de atualização do Android.
+- Depois da primeira migração, as betas usam sempre o mesmo package e assinatura:
+  instalam por cima da versão anterior, sem USB, sem nova desinstalação e sem perder
+  o estado local.
+- App Distribution não instala updates automaticamente. A confirmação no Android é
+  obrigatória em cada build.
+- **Google Play Internal Testing** é o passo futuro para instalação e atualizações
+  automáticas geridas pela Play Store.
 
 ---
 

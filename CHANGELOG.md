@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   untouched for compatibility with avatar, activity, and inventory documents.
 
 ### Added
+- A gated private Android beta channel through Firebase App Distribution, with a
+  stable tester signature, monotonic `100000+` CI version codes, master-only
+  delivery to `casinha-testers`, WIF authentication without stored JSON credentials,
+  and package/signer verification. Delivery remains disabled until WIF authorization
+  and the first two-device test are complete.
 - Global weather location search, temporary selection, and up to 10 private favorites per user.
 - Product, architecture, Android, service-cost, and backlog review documentation.
 - Android application package based on a Bubblewrap Trusted Web Activity, with

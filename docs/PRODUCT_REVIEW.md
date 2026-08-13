@@ -50,10 +50,43 @@ casa, pesquisa e perfil — usam o mesmo esquema Firestore da web.
 - APK debug testado por Gradle e disponibilizado no GitHub Actions.
 - Verificação automática que impede regressões para TWA/browser/WebView.
 
+### Preparado, mas ainda não ativado
+
+O workflow Android inclui um canal beta privado pelo Firebase App Distribution. A
+beta é não-debuggable, mantém o package `com.findmucker.casa`, usa uma assinatura
+estável e recebe `versionCode` monotónico no intervalo `100000+`. Antes do upload, a
+CI valida package, versão, modo de build e certificado. A entrega destina-se apenas ao
+grupo Firebase `casinha-testers`; identidades e endereços dos testers não são
+versionados.
+
+O rollout ainda aguarda a autorização do repositório no Workload Identity Federation
+e o primeiro teste completo nos dois dispositivos. Até lá, a variável
+`ANDROID_DISTRIBUTION_ENABLED` do environment `android-testers` permanece `false` e
+o job termina com skip explícito, conservando o APK debug verificado. WIF troca o
+token OIDC do GitHub por credenciais temporárias, sem guardar uma chave JSON de
+service account ou um token Firebase de longa duração.
+
+Depois da ativação, alterações Android relevantes enviadas para `master` distribuem
+a beta automaticamente; também é possível iniciar manualmente o workflow em
+`master`, escolhendo `distribute`. Pull requests nunca são distribuídos. O Firebase
+envia o convite inicial e um email por build, mas cada tester continua a descarregar
+pelo Firebase App Tester e a confirmar a instalação Android. É um beta estável e
+privado por Wi-Fi, não uma atualização automática de loja.
+
+A primeira passagem de uma APK antiga, assinada com outro certificado, exige uma
+desinstalação. Depois dessa migração única, a assinatura e a sequência de versões
+estáveis permitem instalar as betas seguintes por cima. A cópia recuperável da chave
+fica apenas na máquina de manutenção, dentro de `.local-signing/` ignorado pelo Git,
+e a JKS codificada e as três credenciais de acesso usadas pela CI ficam nos secrets
+protegidos do environment. Apenas o fingerprint SHA-256 público do certificado é
+versionado, em `android/CASINHA_BETA_CERT_SHA256`, para a CI poder auditar o signer.
+
 ### Evolução posterior à paridade base
 
 1. Links de aplicação verificados para convites e eventos partilhados.
-2. Distribuição pela faixa interna do Google Play e assinatura de produção.
+2. Distribuição pela faixa interna do Google Play e assinatura de produção, para
+   instalação pela loja e atualizações automáticas reais depois de validar a beta
+   privada.
 3. Testes instrumentados de screenshot e notificações nos dispositivos suportados.
 4. Qualquer proposta futura de progressão deve começar por investigação, regras,
    propósito e testes de produto; não por reativar os campos históricos existentes.
@@ -69,6 +102,7 @@ preservar a experiência reconhecível, o comportamento e os dados com padrões 
 | Base de dados e autenticação | Firebase | mantém o plano e quotas existentes; listeners Android também contam como leituras |
 | Web e APIs | Vercel | sem alteração provocada pelo cliente nativo |
 | Build Android | GitHub Actions | usa minutos de CI e guarda APK debug por 14 dias |
+| Beta Android privada | Firebase App Distribution | entrega APK assinada ao grupo fechado; gera convite inicial, notificação por release e confirmação de instalação |
 | Distribuição pública | Google Play | requer conta, assinatura, políticas e testes internos |
 | Google login | Firebase/Google Identity | sem browser; requer package ID e certificados Android registados |
 | Push nativo | Firebase Cloud Messaging | sem custo de envio; exige monitorização e QA Android por fabricante |
@@ -78,6 +112,8 @@ Referências oficiais:
 - [Arquitetura recomendada Android](https://developer.android.com/topic/architecture)
 - [Jetpack Compose](https://developer.android.com/compose)
 - [Firebase Authentication Android](https://firebase.google.com/docs/auth/android/start)
+- [Firebase App Distribution para Android](https://firebase.google.com/docs/app-distribution/android/distribute-cli)
+- [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation-with-deployment-pipelines)
 - [Firebase pricing](https://firebase.google.com/pricing)
 - [Google Play app signing](https://developer.android.com/studio/publish/app-signing)
 
@@ -86,4 +122,7 @@ Referências oficiais:
 Toda alteração Android deve nascer numa issue com resultado e critérios de aceitação,
 seguir num commit focado, passar `android:verify`, testes, lint e build, e ser testada
 num dispositivo real antes de fechar a issue. Binários, SDKs, keystores e segredos não
-são versionados.
+são versionados. Uma entrega beta só pode partir de `master`, usar a assinatura
+estável e o intervalo reservado de `versionCode`, e ser confirmada nos dois
+dispositivos. Emails de testers pertencem ao grupo Firebase, nunca ao workflow ou à
+documentação.

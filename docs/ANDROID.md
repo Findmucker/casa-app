@@ -15,6 +15,8 @@ Firebase Authentication and Firestore are called directly from the Android proce
 | Language and UI | Kotlin 2.1, Jetpack Compose and Material 3 |
 | Data and messaging | Firebase Auth, Firestore and Cloud Messaging |
 | Firebase Android app ID | `1:776757654663:android:723d4443cad6dd283ff422` |
+| Private beta | Firebase App Distribution group `casinha-testers` |
+| Beta version range | CI-generated `versionCode` `100000+` |
 
 The hand-maintained Android project is under `android/`. `MainActivity` owns the
 foreground UI and `FirebaseCasaRepository` preserves the existing web data model:
@@ -50,7 +52,111 @@ The PWA remains available separately. Installing the PWA and the APK may show tw
 launcher icons; use the APK labelled **Casinha** for the native client and remove the
 PWA from the browser when it is no longer wanted.
 
-## Download and install a debug APK
+## Private beta with Firebase App Distribution
+
+Firebase App Distribution is the normal private testing channel. It sends a signed,
+non-debuggable beta APK over the internet/Wi-Fi to the Firebase group
+`casinha-testers`. Tester membership is managed in Firebase; do not put names,
+addresses, invitation links, or other tester information in source control.
+
+This channel is intentionally not the same as Google Play:
+
+- Firebase sends an invitation for the first release and a notification email for
+  each later build distributed to the group;
+- testers use Firebase App Tester, or the tester web page, to download the build;
+- Android asks the tester to confirm every install or update;
+- App Distribution does not silently install or automatically update the app;
+- the GitHub Actions debug APK remains a developer fallback, not the tester channel.
+
+### Current rollout status
+
+The workflow is prepared but private delivery is not active yet. The WIF identity
+still needs repository authorization and the `android-testers` environment variable
+`ANDROID_DISTRIBUTION_ENABLED` must remain `false` until the WIF setup, signing
+certificate, Firebase group, and first end-to-end device test are ready. While the
+flag is not `true`, the workflow reports a clear skip and preserves the verified
+debug artifact. A partially configured secret set, or a missing public fingerprint,
+fails instead of publishing an unverifiable build.
+
+### One-time operator setup
+
+1. In Firebase App Distribution, create the private group with alias
+   `casinha-testers` and add testers there. Keep tester details only in Firebase.
+2. Generate one long-lived beta signing key. Keep the recoverable local source copy
+   under `.local-signing/` on the trusted maintainer machine; that entire directory
+   and all common keystore extensions are ignored by Git. Back it up securely and
+   never commit it. Losing or rotating this key prevents an APK from updating the
+   existing beta installation.
+3. Register that certificate's SHA-1 and SHA-256 for the Firebase Android app so
+   Google sign-in works in the beta. Commit only its public SHA-256 fingerprint to
+   `android/CASINHA_BETA_CERT_SHA256`; the verifier and release job use that file to
+   reject an APK signed by any unexpected key. A certificate fingerprint identifies
+   a public certificate and is not a signing secret.
+4. Configure the protected GitHub Environment `android-testers`. Leave its variable
+   `ANDROID_DISTRIBUTION_ENABLED` set to `false` while setup is incomplete. Store the
+   private beta material only in these four environment secrets, without documenting
+   their values:
+   - `ANDROID_TESTER_KEYSTORE_BASE64`
+   - `ANDROID_TESTER_STORE_PASSWORD`
+   - `ANDROID_TESTER_KEY_ALIAS`
+   - `ANDROID_TESTER_KEY_PASSWORD`
+5. Authorize the repository's GitHub OIDC identity to impersonate the dedicated,
+   least-privilege distribution service account through the WIF provider configured
+   in `.github/workflows/android.yml`. WIF issues a short-lived credential; do not
+   create or store a service-account JSON key or `FIREBASE_TOKEN`. Before enabling
+   delivery, the provider condition must require immutable repository ID
+   `1226468580`, `refs/heads/master`, and environment `android-testers`; grant
+   `roles/iam.workloadIdentityUser` only from that principal set to the dedicated
+   service account. The account itself receives only
+   `roles/firebaseappdistro.admin`, never Firebase Admin, Editor, or Owner.
+6. When every prerequisite is ready, enable the variable and run **Android APK**
+   manually from `master` with `distribute` selected. Confirm the workflow, first
+   invitation, APK signer, Google login, and installation on both test devices before
+   leaving automatic delivery enabled.
+
+### Delivery rules
+
+- An Android-relevant push to `master` automatically runs the verified beta delivery
+  job when `ANDROID_DISTRIBUTION_ENABLED=true`.
+- A maintainer can start a new manual workflow run only from `master`, with the
+  boolean `distribute` input enabled. Re-running an existing Actions run does not
+  redistribute its build; this prevents duplicate release emails and reused version
+  codes.
+- Pull requests build, test, and retain a debug APK but never reach testers.
+- Every beta runs native tests and lint, uses the stable beta certificate, verifies
+  package `com.findmucker.casa`, signer, non-debuggable mode, and expected version,
+  then distributes release notes to `casinha-testers`.
+- CI assigns `versionCode = 100000 + github.run_number` and a `beta.<run>` version
+  label. This monotonically increasing range lets a newer beta update an older one;
+  it must not be reused by lower-priority local artifacts. A failed distribution job
+  must be retried as a new manual workflow run, not by re-running an older attempt,
+  because Android will reject an older or reused version code after a newer beta.
+
+### First beta installation
+
+1. Connect the phone to Wi-Fi or mobile data and open the Firebase invitation email.
+2. Accept the invitation with the Google account that will be used in Firebase App
+   Tester. Install App Tester when prompted and allow it to install apps from that
+   source if Android asks.
+3. If an older native Casinha APK is already installed with another certificate,
+   uninstall that native app once. This removes its local session, preferences, and
+   permissions, but not the shared house data stored in Firebase. The browser PWA is
+   a separate installation and can also be removed if it causes a duplicate icon.
+4. In App Tester, download Casinha and confirm the Android installation prompt.
+5. Open the app, sign in, confirm the expected house and beta version, allow
+   notifications, and run the device checklist below.
+
+### Later beta updates
+
+For each distributed build, Firebase sends a new release email. Open App Tester,
+choose the new build, and confirm the Android update. Because the package name and
+beta certificate remain stable and the version code increases, it installs over the
+existing beta without USB, without another uninstall, and without resetting local
+app state. An `INSTALL_FAILED_UPDATE_INCOMPATIBLE` error indicates a certificate
+mismatch and should stop the release for investigation; repeated uninstalling is not
+the normal update process.
+
+## Download and install a debug APK (developer fallback)
 
 1. Open GitHub Actions and select **Android APK**.
 2. Open a successful run for the desired commit.
@@ -61,7 +167,8 @@ PWA from the browser when it is no longer wanted.
    adb install -r android/app/build/outputs/apk/debug/app-debug.apk
    ```
 
-The debug artifact is retained for 14 days and is not suitable for Play Store release.
+The debug artifact is retained for 14 days. Its ephemeral debug signature is not a
+stable tester update path and it is not suitable for Play Store release.
 
 ## Build locally
 
@@ -103,9 +210,9 @@ security rules remain the enforcement boundary.
 Google sign-in uses the registered Android Firebase application for package
 `com.findmucker.casa`. Add the SHA-1 and SHA-256 fingerprints of every signing
 certificate and keep the web OAuth client ID passed to Credential Manager current.
-The local debug certificate installed on the Samsung is already registered; CI and
-Google Play builds use different certificates and must be registered separately.
-Print the debug certificate with:
+Local debug, stable App Distribution beta, and future Google Play builds may use
+different certificates and must each be registered separately. Print a local debug
+certificate with:
 
 ```bash
 keytool -list -v -alias androiddebugkey \
@@ -120,18 +227,39 @@ Official references:
 
 - [Firebase Authentication on Android](https://firebase.google.com/docs/auth/android/start)
 - [Google sign-in with Credential Manager](https://firebase.google.com/docs/auth/android/google-signin)
+- [Distribute Android apps with Firebase App Distribution](https://firebase.google.com/docs/app-distribution/android/distribute-cli)
+- [Set up an Android App Distribution tester](https://firebase.google.com/docs/app-distribution/get-set-up-as-a-tester?platform=android)
+- [Workload Identity Federation for deployment pipelines](https://cloud.google.com/iam/docs/workload-identity-federation-with-deployment-pipelines)
 - [Jetpack Compose setup](https://developer.android.com/develop/ui/compose/setup)
 - [Android app signing](https://developer.android.com/studio/publish/app-signing)
 
 ## Release process
 
 1. Create a focused GitHub issue before changing the Android client.
-2. Increment `versionCode` for every artifact that can reach Google Play and update
-   `versionName` for user-visible releases.
+2. Update the checked-in base `versionName` for user-visible releases. CI reserves
+   monotonically increasing build codes; private betas use the `100000+` range.
 3. Keep implementation, tests/CI, and docs in focused commits linked to their issues.
 4. Run the native verification, tests, lint, and debug build.
-5. Generate a signed Android App Bundle using a protected upload key.
-6. Test through the Play internal track before promotion.
+5. Merge Android changes to `master`; when private distribution is enabled, the
+   workflow sends the signed beta automatically. For a deliberate later delivery,
+   start a new manual workflow run from `master` with `distribute` enabled; do not
+   use **Re-run jobs** on an existing run.
+6. Install the beta on both registered test devices, complete the checklist, and
+   record the tested version and outcome in the issue.
+
+### Future Google Play Internal Testing
+
+Firebase App Distribution is appropriate for the current private beta, but it still
+requires a tester to accept Android's install confirmation for each release. Google
+Play Internal Testing remains the next release step for Play-managed installation
+and real automatic updates. That migration requires a protected upload key, Play App
+Signing, an Android App Bundle, Play certificate fingerprints registered in Firebase,
+and a version-code plan above every relevant installed build. If the Play signing
+certificate is not compatible with the beta certificate, testers will need one
+explicit uninstall/reinstall during that later migration; document and schedule it
+rather than presenting it as a routine update.
+
+Official reference: [Set up an internal test](https://support.google.com/googleplay/android-developer/answer/9845334).
 
 ## Device test checklist
 
@@ -156,6 +284,8 @@ Official references:
 - [ ] Compare login, dashboard, cards, spacing, colors, labels, and emojis with the web
       client at the same 720 px viewport.
 - [ ] Back and system navigation do not open a browser.
+- [ ] The app information screen shows the expected beta version and an update installs
+      over the previous beta without an uninstall.
 
 ## Troubleshooting
 
@@ -164,6 +294,13 @@ Official references:
 Add the installed APK certificate SHA-1/SHA-256 to the Android app in Firebase, verify
 the package ID, and rebuild. A debug APK and a Play-installed build normally use
 different certificates.
+
+### A beta update will not install
+
+Confirm that the new APK has a higher `versionCode` and the same SHA-256 signing
+certificate as the installed beta. The CI signer check is authoritative. Do not
+replace the stable key or ask testers to uninstall for normal updates; restore the
+correct signing configuration and rebuild.
 
 ### Gradle cannot find API 36
 
