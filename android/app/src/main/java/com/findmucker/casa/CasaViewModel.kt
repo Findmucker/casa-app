@@ -71,7 +71,7 @@ class CasaViewModel(
 
     fun toggleItem(section: HouseSection, item: HouseItem) {
         val ready = readySession() ?: return
-        runAction { repository.toggleItem(ready.house.id, section, item) }
+        runAction { repository.toggleItem(ready.house.id, ready.profile.name, section, item) }
     }
 
     fun deleteItem(section: HouseSection, itemId: String) {
@@ -237,20 +237,6 @@ class CasaViewModel(
     fun saveAvatar(avatar: AvatarConfig) {
         val ready = readySession() ?: return
         runAction("Avatar guardado.") { repository.saveAvatar(ready.profile.name, avatar) }
-    }
-
-    fun openLootBox() {
-        val ready = readySession() ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(working = true, error = null, notice = null) }
-            runCatching { repository.openLootBox(ready.profile.name) }
-                .onSuccess { reward ->
-                    _uiState.update { it.copy(working = false, notice = "${reward.emoji} Recebeste ${reward.name}!") }
-                }
-                .onFailure { error ->
-                    _uiState.update { it.copy(working = false, error = FirebaseCasaRepository.friendlyError(error)) }
-                }
-        }
     }
 
     fun createInvite() {

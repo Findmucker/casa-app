@@ -142,6 +142,3 @@ fun rpgStats(profile: GamificationProfile): List<RpgStat> = listOf(
     RpgStat("Vitalidade", "❤️", (profile.habitsDone * 2).coerceAtMost(100)),
     RpgStat("Sorte", "🍀", (profile.maxStreak * 4).coerceAtMost(100)),
 )
-
-fun pendingLootBoxes(profile: GamificationProfile): Int =
-    (profile.points / 50 - profile.boxesOpened).coerceAtLeast(0)

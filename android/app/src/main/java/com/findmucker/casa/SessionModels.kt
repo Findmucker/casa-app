@@ -147,6 +147,38 @@ data class GamificationProfile(
     val avatar: AvatarConfig = AvatarConfig(),
 )
 
+fun isCompletionTransition(wasCompleted: Boolean, isCompleted: Boolean): Boolean =
+    !wasCompleted && isCompleted
+
+fun GamificationProfile.withCompletedActivity(
+    section: HouseSection,
+    streak: Int = 0,
+): GamificationProfile = copy(
+    totalCompleted = totalCompleted + 1,
+    maxStreak = if (section == HouseSection.HABITS) maxOf(maxStreak, streak) else maxStreak,
+    shoppingDone = shoppingDone + if (section == HouseSection.SHOPPING) 1 else 0,
+    coisinhasDone = coisinhasDone + if (section == HouseSection.SMALL_PRIORITIES) 1 else 0,
+    projectsDone = projectsDone + if (section == HouseSection.PROJECTS) 1 else 0,
+    habitsDone = habitsDone + if (section == HouseSection.HABITS) 1 else 0,
+)
+
+fun GamificationProfile.activityStatsAsFirestoreMap(lastAction: String): Map<String, Any> = mapOf(
+    "totalCompleted" to totalCompleted,
+    "maxStreak" to maxStreak,
+    "shoppingDone" to shoppingDone,
+    "coisinhasDone" to coisinhasDone,
+    "projectsDone" to projectsDone,
+    "habitsDone" to habitsDone,
+    "lastAction" to lastAction,
+)
+
+fun HouseSection.completedAction(): String = when (this) {
+    HouseSection.SHOPPING -> "shopping_done"
+    HouseSection.SMALL_PRIORITIES -> "coisinha_done"
+    HouseSection.PROJECTS -> "project_done"
+    HouseSection.HABITS -> "habit_check"
+}
+
 data class WeatherDay(
     val date: String,
     val minimum: Int,
@@ -217,5 +249,3 @@ fun nextProjectStatus(status: String?): String = when (status) {
     "em progresso" -> "concluido"
     else -> "pendente"
 }
-
-fun levelForPoints(points: Int): Int = (points / 50).coerceAtLeast(0) + 1

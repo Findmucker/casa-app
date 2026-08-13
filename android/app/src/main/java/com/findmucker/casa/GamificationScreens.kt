@@ -50,8 +50,6 @@ private val achievements = listOf(
     Achievement("shopaholic", "Compradora", "🛒", "50 comprinhas feitas") { it.shoppingDone >= 50 },
     Achievement("doer", "Faz-tudo", "🦸", "25 coisinhas feitas") { it.coisinhasDone >= 25 },
     Achievement("architect", "Arquiteto", "🏗️", "5 projetos concluídos") { it.projectsDone >= 5 },
-    Achievement("century", "Centenário", "🏆", "100 pontos totais") { it.points >= 100 },
-    Achievement("five_hundred", "Top scorer", "💎", "500 pontos totais") { it.points >= 500 },
 )
 
 @Composable
@@ -149,29 +147,15 @@ fun GamificationStatsTab(profile: GamificationProfile) {
 @Composable
 fun InventoryProfileTab(
     profile: GamificationProfile,
-    working: Boolean,
     readOnly: Boolean = false,
     onEquip: (String, LootSlot) -> Unit = { _, _ -> },
     onUnequip: (LootSlot) -> Unit = {},
-    onOpenBox: () -> Unit = {},
 ) {
     var filter by remember { mutableStateOf<LootSlot?>(null) }
     val owned = profile.inventory.mapNotNull { inventory ->
         CasinhaLoot.firstOrNull { it.id == inventory.itemId }?.let { it to inventory.count }
     }.filter { filter == null || it.first.slot == filter }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (!readOnly && pendingLootBoxes(profile) > 0) {
-            GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = CasinhaPalette.Purple200) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🎁", fontSize = 32.sp)
-                    Column(modifier = Modifier.weight(1f).padding(horizontal = 10.dp)) {
-                        Text("${pendingLootBoxes(profile)} caixa(s) por abrir", color = CasinhaPalette.Rose700, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                        Text("Cada 50 XP desbloqueia uma recompensa", color = CasinhaPalette.Purple500, fontSize = 9.sp)
-                    }
-                    GradientActionButton("Abrir", onOpenBox, enabled = !working)
-                }
-            }
-        }
         GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = CasinhaPalette.Rose200) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Text("EQUIPAMENTO", color = CasinhaPalette.Rose600, fontSize = 10.sp, fontWeight = FontWeight.Bold)
@@ -194,7 +178,7 @@ fun InventoryProfileTab(
                         }
                     }
                 }
-                Text("Nv. ${levelForPoints(profile.points)}  ·  ${profile.points} pts  ·  ${profile.totalCompleted} feitos", color = CasinhaPalette.Purple500, fontSize = 9.sp, modifier = Modifier.padding(top = 9.dp))
+                Text("${profile.totalCompleted} atividades concluídas", color = CasinhaPalette.Purple500, fontSize = 9.sp, modifier = Modifier.padding(top = 9.dp))
             }
         }
         Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(5.dp)) {

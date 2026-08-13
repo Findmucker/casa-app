@@ -28,7 +28,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 class FirebaseCasaRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
@@ -395,54 +394,6 @@ class FirebaseCasaRepository(
             .await()
     }
 
-    suspend fun openLootBox(owner: String): LootItem {
-        val ref = firestore.collection("gamification").document(owner)
-        return firestore.runTransaction { transaction ->
-            val document = transaction.get(ref)
-            require(document.exists()) { "Ainda não tens um perfil de recompensas." }
-            val points = document.getLong("points")?.toInt() ?: 0
-            val boxesOpened = document.getLong("boxesOpened")?.toInt() ?: 0
-            require(points / 50 - boxesOpened > 0) { "Não tens caixas por abrir." }
-
-            val rarityRoll = Random.nextInt(100)
-            val rarity = when {
-                rarityRoll < 5 -> LootRarity.LEGENDARY
-                rarityRoll < 20 -> LootRarity.EPIC
-                rarityRoll < 50 -> LootRarity.RARE
-                else -> LootRarity.COMMON
-            }
-            val candidates = CasinhaLoot.filter { it.rarity == rarity }
-            val reward = candidates[Random.nextInt(candidates.size)]
-            val inventory = (document.get("inventory") as? List<*>)
-                ?.mapNotNull { raw ->
-                    val item = raw as? Map<*, *> ?: return@mapNotNull null
-                    val itemId = item["itemId"] as? String ?: return@mapNotNull null
-                    mutableMapOf<String, Any>(
-                        "itemId" to itemId,
-                        "count" to ((item["count"] as? Number)?.toInt() ?: 1),
-                    )
-                }
-                ?.toMutableList()
-                ?: mutableListOf()
-            val existing = inventory.firstOrNull { it["itemId"] == reward.id }
-            val updates = mutableMapOf<String, Any>("boxesOpened" to boxesOpened + 1)
-            if (existing == null) {
-                inventory += mutableMapOf("itemId" to reward.id, "count" to 1)
-                updates["inventory"] = inventory
-            } else {
-                val bonus = when (reward.rarity) {
-                    LootRarity.COMMON -> 5
-                    LootRarity.RARE -> 15
-                    LootRarity.EPIC -> 30
-                    LootRarity.LEGENDARY -> 50
-                }
-                updates["points"] = points + bonus
-            }
-            transaction.update(ref, updates)
-            reward
-        }.await()
-    }
-
     suspend fun addItem(houseId: String, section: HouseSection, draft: ItemDraft, addedBy: String) {
         val cleanName = draft.name.trim()
         require(cleanName.isNotEmpty()) { "Escreve o nome do item." }
@@ -516,27 +467,85 @@ class FirebaseCasaRepository(
         updateItem(houseId, HouseSection.PROJECTS, project.id, mapOf("subtasks" to subtasks.map { it.asMap() }))
     }
 
-    suspend fun toggleItem(houseId: String, section: HouseSection, item: HouseItem) {
+    suspend fun toggleItem(houseId: String, owner: String, section: HouseSection, item: HouseItem) {
+        require(owner.isNotBlank()) { "Não foi possível identificar quem concluiu a atividade." }
         val document = houseCollection(houseId, section.collection).document(item.id)
-        val today = today()
-        when (section) {
-            HouseSection.SHOPPING, HouseSection.SMALL_PRIORITIES -> document.update(
-                mapOf("done" to !item.done, "completedAt" to if (!item.done) today else FieldValue.delete()),
-            ).await()
-            HouseSection.PROJECTS -> {
-                val next = nextProjectStatus(item.status)
-                document.update(
-                    mapOf("status" to next, "completedAt" to if (next == "concluido") today else FieldValue.delete()),
-                ).await()
-            }
-            HouseSection.HABITS -> {
-                if (item.done) return
-                houseCollection(houseId, "habit_checks").add(
-                    mapOf("habitId" to item.id, "date" to today, "createdAt" to FieldValue.serverTimestamp()),
-                ).await()
-                document.update(mapOf("streak" to item.streak + 1, "lastChecked" to today)).await()
-            }
+        val activityDocument = firestore.collection("gamification").document(owner)
+        val habitCheck = if (section == HouseSection.HABITS) {
+            houseCollection(houseId, "habit_checks").document()
+        } else {
+            null
         }
+        val today = today()
+
+        firestore.runTransaction { transaction ->
+            val storedItem = transaction.get(document)
+            require(storedItem.exists()) { "A atividade já não existe." }
+
+            val currentCompleted = when (section) {
+                HouseSection.PROJECTS -> storedItem.getString("status") == "concluido"
+                HouseSection.HABITS -> storedItem.getString("lastChecked") == today
+                else -> storedItem.getBoolean("done") ?: false
+            }
+            val projectStatus = if (section == HouseSection.PROJECTS) {
+                nextProjectStatus(storedItem.getString("status"))
+            } else {
+                null
+            }
+            val nextCompleted = when (section) {
+                HouseSection.PROJECTS -> projectStatus == "concluido"
+                HouseSection.HABITS -> true
+                else -> !currentCompleted
+            }
+            val newHabitStreak = if (section == HouseSection.HABITS) {
+                (storedItem.getLong("streak")?.toInt() ?: 0) + 1
+            } else {
+                0
+            }
+
+            if (isCompletionTransition(currentCompleted, nextCompleted)) {
+                val currentActivity = transaction.get(activityDocument).activityStatsProfile()
+                val updatedActivity = currentActivity.withCompletedActivity(section, newHabitStreak)
+                transaction.set(
+                    activityDocument,
+                    updatedActivity.activityStatsAsFirestoreMap(section.completedAction()),
+                    SetOptions.merge(),
+                )
+            }
+
+            when (section) {
+                HouseSection.SHOPPING, HouseSection.SMALL_PRIORITIES -> transaction.update(
+                    document,
+                    mapOf(
+                        "done" to nextCompleted,
+                        "completedAt" to if (nextCompleted) today else FieldValue.delete(),
+                    ),
+                )
+                HouseSection.PROJECTS -> transaction.update(
+                    document,
+                    mapOf(
+                        "status" to requireNotNull(projectStatus),
+                        "completedAt" to if (nextCompleted) today else FieldValue.delete(),
+                    ),
+                )
+                HouseSection.HABITS -> {
+                    if (!currentCompleted) {
+                        transaction.set(
+                            requireNotNull(habitCheck),
+                            mapOf(
+                                "habitId" to item.id,
+                                "date" to today,
+                                "createdAt" to FieldValue.serverTimestamp(),
+                            ),
+                        )
+                        transaction.update(
+                            document,
+                            mapOf("streak" to newHabitStreak, "lastChecked" to today),
+                        )
+                    }
+                }
+            }
+        }.await()
     }
 
     suspend fun deleteItem(houseId: String, section: HouseSection, itemId: String) {
@@ -978,6 +987,15 @@ class FirebaseCasaRepository(
     ).toMap()
 
     private fun DocumentSnapshot.number(field: String): Double? = (get(field) as? Number)?.toDouble()
+
+    private fun DocumentSnapshot.activityStatsProfile(): GamificationProfile = GamificationProfile(
+        totalCompleted = getLong("totalCompleted")?.toInt() ?: 0,
+        maxStreak = getLong("maxStreak")?.toInt() ?: 0,
+        shoppingDone = getLong("shoppingDone")?.toInt() ?: 0,
+        coisinhasDone = getLong("coisinhasDone")?.toInt() ?: 0,
+        projectsDone = getLong("projectsDone")?.toInt() ?: 0,
+        habitsDone = getLong("habitsDone")?.toInt() ?: 0,
+    )
 
     private fun Subtask.asMap(): Map<String, Any> = mapOf("id" to id, "name" to name, "done" to done)
 

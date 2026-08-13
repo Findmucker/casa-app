@@ -86,6 +86,23 @@ const notificationRouting = readText(
   "casa",
   "NotificationRouting.kt",
 );
+const composeSourceDirectory = fromRoot(
+  "android",
+  "app",
+  "src",
+  "main",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+);
+// Firestore models and mappings intentionally retain legacy read compatibility.
+// Product copy is guarded across every Kotlin file that actually exposes Compose UI.
+const nativeComposeUi = readdirSync(composeSourceDirectory, { withFileTypes: true })
+  .filter((entry) => entry.isFile() && entry.name.endsWith(".kt"))
+  .map((entry) => readFileSync(join(composeSourceDirectory, entry.name), "utf8"))
+  .filter((source) => /@Composable\b/.test(source))
+  .join("\n");
 
 assert.match(appGradle, /applicationId ['"]com\.findmucker\.casa['"]/);
 assert.match(appGradle, /minSdk 23/);
@@ -168,6 +185,19 @@ assert.doesNotMatch(firebaseApplication, /:web:/);
 assert.match(notificationRouting, /habit-.*DashboardTab\.HABITS/s);
 assert.match(notificationRouting, /urgent-shopping.*DashboardTab\.SHOPPING/s);
 assert.match(notificationRouting, /new-event.*DashboardTab\.EVENTS/s);
+
+assert.doesNotMatch(
+  nativeComposeUi,
+  /\bXP\b|\bpoints?\b|\bpontos?\b|\bpts\b|N[ií]vel|\bLevel\b|\bNv\./iu,
+  "Native Compose surfaces must not reintroduce points, XP, or level UI.",
+);
+assert.doesNotMatch(
+  nativeComposeUi,
+  /\b(?:levelForPoints|pendingLootBoxes|openLootBox|profileTitle)\b/,
+  "Legacy progression helpers must stay outside the native product UI.",
+);
+assert.match(repository, /getLong\(["']points["']\)/);
+assert.match(repository, /getLong\(["']boxesOpened["']\)/);
 
 assert.equal(existsSync(fromRoot("android", "twa-manifest.json")), false);
 

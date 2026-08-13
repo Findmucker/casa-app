@@ -1,6 +1,8 @@
 package com.findmucker.casa
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SessionModelsTest {
@@ -41,11 +43,64 @@ class SessionModelsTest {
     }
 
     @Test
-    fun `level progression matches the web profile`() {
-        assertEquals(1, levelForPoints(0))
-        assertEquals(1, levelForPoints(49))
-        assertEquals(2, levelForPoints(50))
-        assertEquals(11, levelForPoints(500))
+    fun `legacy point fields stay readable without affecting activity stats`() {
+        val activity = GamificationProfile(
+            totalCompleted = 8,
+            maxStreak = 4,
+            shoppingDone = 3,
+            coisinhasDone = 2,
+            projectsDone = 1,
+            habitsDone = 4,
+        )
+        val legacy = activity.copy(points = 500, boxesOpened = 7)
+
+        assertEquals(500, legacy.points)
+        assertEquals(7, legacy.boxesOpened)
+        assertEquals(rpgStats(activity), rpgStats(legacy))
+    }
+
+    @Test
+    fun `activity is recorded only when persisted state becomes complete`() {
+        assertTrue(isCompletionTransition(wasCompleted = false, isCompleted = true))
+        assertFalse(isCompletionTransition(wasCompleted = false, isCompleted = false))
+        assertFalse(isCompletionTransition(wasCompleted = true, isCompleted = true))
+        assertFalse(isCompletionTransition(wasCompleted = true, isCompleted = false))
+    }
+
+    @Test
+    fun `completed activities increment their own counters and habit streak maximum`() {
+        val initial = GamificationProfile(
+            totalCompleted = 10,
+            maxStreak = 4,
+            shoppingDone = 3,
+            coisinhasDone = 2,
+            projectsDone = 1,
+            habitsDone = 4,
+        )
+        val afterShopping = initial.withCompletedActivity(HouseSection.SHOPPING)
+        val afterPriority = afterShopping.withCompletedActivity(HouseSection.SMALL_PRIORITIES)
+        val afterProject = afterPriority.withCompletedActivity(HouseSection.PROJECTS)
+        val afterHabit = afterProject.withCompletedActivity(HouseSection.HABITS, streak = 7)
+
+        assertEquals(14, afterHabit.totalCompleted)
+        assertEquals(4, afterHabit.shoppingDone)
+        assertEquals(3, afterHabit.coisinhasDone)
+        assertEquals(2, afterHabit.projectsDone)
+        assertEquals(5, afterHabit.habitsDone)
+        assertEquals(7, afterHabit.maxStreak)
+        assertEquals(7, afterHabit.withCompletedActivity(HouseSection.HABITS, streak = 3).maxStreak)
+    }
+
+    @Test
+    fun `activity firestore updates never contain legacy progression fields`() {
+        val update = GamificationProfile(points = 500, boxesOpened = 7)
+            .withCompletedActivity(HouseSection.PROJECTS)
+            .activityStatsAsFirestoreMap(HouseSection.PROJECTS.completedAction())
+
+        assertEquals("project_done", update["lastAction"])
+        assertEquals(1, update["totalCompleted"])
+        assertFalse(update.containsKey("points"))
+        assertFalse(update.containsKey("boxesOpened"))
     }
 
     @Test
@@ -63,12 +118,6 @@ class SessionModelsTest {
 
         assertEquals(AvatarSlot.entries.map { it.ordinal + 1 }, AvatarSlot.entries.map(avatar::value))
         assertEquals(AvatarSlot.entries.map { it.key }.toSet(), avatar.asFirestoreMap().keys)
-    }
-
-    @Test
-    fun `pending loot boxes follow the web fifty point threshold`() {
-        assertEquals(0, pendingLootBoxes(GamificationProfile(points = 49)))
-        assertEquals(2, pendingLootBoxes(GamificationProfile(points = 150, boxesOpened = 1)))
     }
 
     @Test

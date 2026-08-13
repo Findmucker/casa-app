@@ -137,7 +137,6 @@ fun CasaApp(casaViewModel: CasaViewModel = viewModel()) {
                     onEquipItem = casaViewModel::equipItem,
                     onUnequipItem = casaViewModel::unequipItem,
                     onSaveAvatar = casaViewModel::saveAvatar,
-                    onOpenLootBox = casaViewModel::openLootBox,
                     onCreateInvite = casaViewModel::createInvite,
                     onLoadFriendCode = casaViewModel::loadFriendCode,
                     onConnectFriend = casaViewModel::connectFriend,

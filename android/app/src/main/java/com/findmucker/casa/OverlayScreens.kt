@@ -62,7 +62,6 @@ fun DashboardOverlayScreen(
     onEquipItem: (String, LootSlot) -> Unit,
     onUnequipItem: (LootSlot) -> Unit,
     onSaveAvatar: (AvatarConfig) -> Unit,
-    onOpenLootBox: () -> Unit,
     onCreateInvite: () -> Unit,
     onLoadFriendCode: () -> Unit,
     onConnectFriend: (String) -> Unit,
@@ -80,7 +79,7 @@ fun DashboardOverlayScreen(
                 DashboardOverlay.SEARCH -> SearchOverlay(state.dashboard, onClose, onNavigate)
                 DashboardOverlay.PROFILE -> ProfileOverlay(
                     profile, state.dashboard, state.working, state.error, state.notice,
-                    onClose, onUpdateProfile, onEquipItem, onUnequipItem, onSaveAvatar, onOpenLootBox,
+                    onClose, onUpdateProfile, onEquipItem, onUnequipItem, onSaveAvatar,
                 )
                 DashboardOverlay.HISTORY -> HistoryOverlay(state.dashboard, onClose)
                 DashboardOverlay.INVITE -> InviteOverlay(state.inviteCode, state.working, state.error, state.notice, onClose, onCreateInvite)
@@ -142,8 +141,6 @@ private fun MainMenuOverlay(
                                         Box(modifier = Modifier.size(52.dp), contentAlignment = Alignment.Center) { Text(member.avatar.ifBlank { "👤" }, fontSize = 27.sp) }
                                     }
                                     Text(member.name, color = CasinhaPalette.Rose700, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 5.dp))
-                                    val level = if (member.uid == profile.uid) levelForPoints(dashboard.gamification.points) else 1
-                                    Surface(shape = CircleShape, color = CasinhaPalette.Pink100) { Text("Nv.$level", color = CasinhaPalette.Pink500, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)) }
                                 }
                             }
                         }
@@ -294,22 +291,15 @@ private fun ProfileOverlay(
     onEquipItem: (String, LootSlot) -> Unit,
     onUnequipItem: (LootSlot) -> Unit,
     onSaveAvatar: (AvatarConfig) -> Unit,
-    onOpenLootBox: () -> Unit,
 ) {
     var tab by remember { mutableStateOf(ProfileTab.STATS) }
     var name by remember(profile.name) { mutableStateOf(profile.name) }
     var birthDate by remember(profile.birthDate) { mutableStateOf(profile.birthDate.orEmpty()) }
-    val points = dashboard.gamification.points
-    val level = levelForPoints(points)
-    val xp = points % 50
     Column(modifier = Modifier.fillMaxSize()) {
-        OverlayTopBar("Perfil e gamificação", onClose)
+        OverlayTopBar("Perfil", onClose)
         Column(modifier = Modifier.fillMaxWidth().background(Color.White.copy(alpha = 0.42f)).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             AvatarCharacter(dashboard.gamification.avatar, dashboard.gamification.equipped, Modifier.size(84.dp), compact = true)
             Text(profile.name, color = CasinhaPalette.Rose700, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(top = 8.dp))
-            Text("Nível $level · ${profileTitle(level)}", color = CasinhaPalette.Purple500, fontSize = 11.sp)
-            CasinhaProgress(xp / 50f, CasinhaPalette.Pink400, Modifier.fillMaxWidth(0.7f).padding(top = 8.dp))
-            Text("$xp/50 XP", color = CasinhaPalette.Pink400, fontSize = 9.sp, modifier = Modifier.padding(top = 3.dp))
         }
         Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             ProfileTab.entries.forEach { item ->
@@ -326,10 +316,8 @@ private fun ProfileOverlay(
                 ProfileTab.INVENTORY -> item {
                     InventoryProfileTab(
                         profile = dashboard.gamification,
-                        working = working,
                         onEquip = onEquipItem,
                         onUnequip = onUnequipItem,
-                        onOpenBox = onOpenLootBox,
                     )
                 }
                 ProfileTab.AVATAR -> item {
@@ -439,7 +427,6 @@ private fun MembersOverlay(profile: UserProfile, house: House, dashboard: Dashbo
                         Column(modifier = Modifier.weight(1f).padding(horizontal = 11.dp)) {
                             Text(member.name, color = CasinhaPalette.Rose700, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             Text(if (member.role == "admin") "Administrador" else "Membro", color = CasinhaPalette.Pink400, fontSize = 9.sp)
-                            Text("Nv.${levelForPoints(game.points)} · ${profileTitle(levelForPoints(game.points))}", color = CasinhaPalette.Purple500, fontSize = 9.sp)
                         }
                         if (member.uid != profile.uid) TextButton(onClick = { onOpen(DashboardOverlay.MESSAGE) }) { Text("💌 Mensagem", color = CasinhaPalette.Rose500, fontSize = 10.sp) }
                     }
@@ -457,7 +444,6 @@ private fun ReadOnlyMemberProfile(member: HouseMember, game: GamificationProfile
         Column(modifier = Modifier.fillMaxWidth().background(Color.White.copy(alpha = 0.42f)).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             AvatarCharacter(game.avatar, game.equipped, Modifier.size(88.dp), compact = true)
             Text(member.name, color = CasinhaPalette.Rose700, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(top = 8.dp))
-            Text("Nível ${levelForPoints(game.points)} · ${profileTitle(levelForPoints(game.points))}", color = CasinhaPalette.Purple500, fontSize = 11.sp)
         }
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.Center) {
             listOf(false to "⚔️ Stats", true to "🎒 Inventário").forEach { (value, label) ->
@@ -468,7 +454,7 @@ private fun ReadOnlyMemberProfile(member: HouseMember, game: GamificationProfile
         }
         LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
             item {
-                if (inventory) InventoryProfileTab(game, working = false, readOnly = true)
+                if (inventory) InventoryProfileTab(game, readOnly = true)
                 else GamificationStatsTab(game)
             }
         }
@@ -610,15 +596,4 @@ private fun OverlayGrid(items: List<Triple<String, String, DashboardOverlay>>, o
             }
         }
     }
-}
-
-private fun profileTitle(level: Int): String = when {
-    level >= 30 -> "Divindade do Lar"
-    level >= 20 -> "Rei/Rainha da Casa"
-    level >= 15 -> "Lenda Doméstica"
-    level >= 10 -> "Guardião da Casa"
-    level >= 7 -> "Mestre das Tarefas"
-    level >= 5 -> "Organizador"
-    level >= 3 -> "Ajudante Doméstico"
-    else -> "Aprendiz da Casa"
 }
