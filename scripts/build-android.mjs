@@ -10,9 +10,10 @@ const wrapper = join(
   isWindows ? "gradlew.bat" : "gradlew",
 );
 const command = isWindows ? wrapper : "sh";
+const gradleTasks = process.argv.slice(2);
 const args = isWindows
-  ? ["--no-daemon", "assembleDebug"]
-  : [wrapper, "--no-daemon", "assembleDebug"];
+  ? ["--no-daemon", ...(gradleTasks.length > 0 ? gradleTasks : ["assembleDebug"])]
+  : [wrapper, "--no-daemon", ...(gradleTasks.length > 0 ? gradleTasks : ["assembleDebug"])];
 
 const result = spawnSync(command, args, {
   cwd: androidDirectory,

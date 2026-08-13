@@ -2,88 +2,64 @@
 
 ## Runtime boundaries
 
-- The Next.js App Router hosts the client PWA and authenticated route handlers.
-- Firebase Authentication owns user identity; Firestore stores house-scoped data.
-- Firebase Admin runs only in server route handlers and sends FCM notifications.
-- GitHub Actions schedules habit reminders. Vercel hosts the endpoint and provides
-  a daily fallback invocation.
+- The web client is a Next.js PWA hosted by Vercel.
+- The Android client is a separate Kotlin/Jetpack Compose application.
+- Both clients use Firebase Authentication and the same house-scoped Firestore data.
+- Firebase Admin and secrets stay in authenticated Next.js route handlers.
+- GitHub Actions schedules server-side reminders; Vercel provides a daily fallback.
 
-## Android runtime
+## Native Android runtime
 
-The Android package is a Trusted Web Activity (TWA), generated from
-`android/twa-manifest.json`. It opens `https://casa-app-zeta.vercel.app` in the
-device's supported browser engine. The APK contains the launcher, splash assets,
-deep-link intent filters, and notification delegation service; it does not embed a
-second copy of the Next.js frontend or server.
+Android launches `com.findmucker.casa.MainActivity`. Compose renders every screen in
+the application process. The APK has no TWA, browser helper, Custom Tab, WebView, or
+production-origin launcher.
 
-This boundary is deliberate: Firebase Auth, Firestore, browser storage, the FCM
-service worker, and Next.js route handlers retain the same origin and behavior on
-web and Android. Web releases deploy through Vercel independently of Android shell
-releases. Digital Asset Links at `/.well-known/assetlinks.json` prove that the
-website and signed package belong to the same publisher; without a matching
-certificate fingerprint, Android safely falls back to a Custom Tab with browser UI.
+`CasaApplication` initializes the public Firebase client configuration.
+`FirebaseCasaRepository` owns authentication, household onboarding, real-time
+listeners, and mutations. `CasaViewModel` exposes immutable screen state and removes
+Firestore listeners when the session or ViewModel ends. Compose screens contain no
+direct Firebase calls.
+
+The Android and web UIs can evolve independently, but stored document fields remain
+compatible. Every cross-client schema change must be implemented and tested in both.
 
 ## Data ownership
 
 User profiles live at `users/{uid}`. Household data belongs under
-`houses/{houseId}` and its subcollections. A signed-in user may access a house only
-when their UID is present in that house's member list. Public event access uses a
-share document rather than exposing arbitrary house IDs.
+`houses/{houseId}` and its subcollections. A signed-in user can access a house only
+when their UID is present in `memberUids`. Joining via `invites/{code}` appends the
+member and then assigns `houseId` to the user profile, matching the web flow.
 
-New event-share documents contain a read-only snapshot of the selected event and
-its items. Public pages never query the private `houses/{houseId}/events` collection.
-
-Weather preferences live at `users/{uid}/preferences/weather`. They contain a
-maximum of 10 favorite geocoded places and a default-mode reference. Firestore rules
-make this subcollection owner-only: house members cannot read another user's saved
-locations. Current device coordinates are session-only and are never persisted.
+Public event access uses a share document rather than exposing arbitrary house IDs.
+Weather preferences remain private under `users/{uid}/preferences/weather`.
+Firestore rules, not either client, are the security boundary.
 
 ## Client data flow
 
-`HouseIdContext` identifies the active tenant. `useCollection` creates real-time
-Firestore listeners and exposes loading and error state to feature components.
-Dashboard collection data is shared through `CollectionDataContext` where possible
-to avoid duplicate listeners.
+On Android, `CasaViewModel` restores the Firebase session and emits one of four
+states: loading, signed out, needs a house, or ready. The ready state starts one
+real-time listener for each native collection. Snapshots are mapped to shared
+`HouseItem` models and flow into Compose through `StateFlow`.
 
-Financial amount validation, currency formatting, and six-month aggregation are pure
-helpers in `lib/finance.ts`. UI components consume normalized positive values and keep
-locale-specific presentation separate from Firestore data.
+On web, `HouseIdContext`, `useCollection`, and `CollectionDataContext` provide the
+equivalent house scoping and real-time updates.
 
-`WeatherLocationProvider` owns the active weather location for the authenticated
-dashboard. Weather, Calendar, and Events consume that same state and the shared
-30-minute forecast cache. Manual search uses Open-Meteo geocoding with debouncing and
-request cancellation. Device geolocation is an explicit, one-shot low-accuracy request;
-the provider never starts a position watcher or prompts automatically. API dates and
-hours use the returned IANA timezone. Public event pages have no user provider and use
-the explicit Óbidos fallback.
+## Notifications
 
-## Notification flow
+Web FCM tokens continue to receive server-scheduled reminders. Native Android push
+delivery requires an Android Firebase app registration and a dedicated FCM service;
+until that release is configured, the native UI does not claim browser notification
+delegation. Server-side scheduling and Firestore delivery deduplication are unchanged.
 
-1. The browser, including the Android TWA browser session, registers an FCM token
-   under the authenticated user's UID.
-2. A scheduler calls `/api/cron/habits` with `Authorization: Bearer CRON_SECRET`.
-3. The route calculates due occurrences in `Europe/Lisbon`.
-4. A Firestore delivery record leases and deduplicates each recipient occurrence.
-5. Firebase Admin sends the data-only FCM message and removes invalid tokens.
-
-Operational details are in [CRON_SETUP.md](CRON_SETUP.md). Security policy is
-enforced by [../firestore.rules](../firestore.rules).
-Android packaging and certificate operations are in [ANDROID.md](ANDROID.md).
-
-## Product and platform direction
-
-The app remains web-first and PWA-based. Android distribution uses the TWA shell
-described above; native-only work remains conditional on a separate widget pilot.
-A full Kotlin rewrite and background geofencing are not planned.
-Architecture priorities, service limits, and the cost analysis are maintained in
-[PRODUCT_REVIEW.md](PRODUCT_REVIEW.md).
+Operational details are in [CRON_SETUP.md](CRON_SETUP.md). Android build and device
+operations are in [ANDROID.md](ANDROID.md).
 
 ## Change guidelines
 
-- Keep Firebase Admin and secrets out of client modules.
-- Preserve house scoping for every new collection and query.
-- Put user-visible text in both locale dictionaries.
-- Prefer small pure helpers for date, categorization, and calculation logic; cover
-  them with unit tests.
-- Route-handler changes must follow the documentation bundled with the installed
-  Next.js version in `node_modules/next/dist/docs`.
+- Keep Firebase Admin and secrets out of both clients.
+- Preserve house scoping for every collection and query.
+- Keep Android Firebase access in the repository layer and UI state in ViewModels.
+- Treat the Firestore document shape as a cross-client contract.
+- Cover pure state transitions with unit tests and run Android lint on each change.
+- Route-handler changes must follow the installed Next.js documentation under
+  `node_modules/next/dist/docs`.

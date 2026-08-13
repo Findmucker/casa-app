@@ -397,24 +397,25 @@ A app suporta **Portugues** 🇵🇹 e **Ingles** 🇬🇧.
 
 ## Android, PWA e Atualizacoes
 
-A app funciona como **aplicacao Android** e como **Progressive Web App (PWA)**.
-As duas versoes usam a mesma conta, os mesmos dados e as mesmas funcionalidades.
+A app funciona como **aplicacao Android nativa** e, separadamente, como
+**Progressive Web App (PWA)**. As duas versoes usam a mesma conta e a mesma casa.
 
 ### Instalar a app
 - **APK Android de teste:** descarrega o artefacto `casinha-android-debug-*` do workflow
   **Android APK**, extrai o ZIP e instala `app-debug.apk`. O Android pode pedir para
   autorizar temporariamente a instalacao de apps desconhecidas para o browser ou gestor de ficheiros.
-- **Android/Chrome (PWA):** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
+- **Android nativo:** abre **Casinha** no ecra de aplicacoes; o login e as listas nao
+  abrem Chrome nem Brave.
+- **Android/Chrome (PWA web opcional):** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
 - **iOS/Safari:** Botao de partilha → "Adicionar ao ecra inicial"
 
-O APK Android usa o browser do dispositivo de forma segura. Se a assinatura do APK
-ainda nao estiver associada ao site, aparece uma barra do browser; a app continua
-funcional e a barra desaparece quando a verificacao de publicacao estiver configurada.
+Se aparecerem dois icones, um deles e a PWA antiga instalada pelo browser. Remove a
+PWA nas informacoes dessa aplicacao e conserva o APK nativo `com.findmucker.casa`.
 
 ### Atualizacoes automaticas
 - O **service worker** usa `skipWaiting` + **cache purge** para garantir que recebes sempre a versao mais recente
-- As funcionalidades web atualizam automaticamente na proxima abertura, tanto na PWA como no APK Android
-- Alteracoes ao icone, splash screen ou integracao Android exigem uma nova versao do APK ou uma atualizacao pela Play Store
+- As funcionalidades web atualizam automaticamente na proxima abertura da PWA
+- A aplicacao Android recebe funcionalidades novas atraves de um APK/Play Store atualizado
 
 ---
 

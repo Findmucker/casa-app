@@ -6,19 +6,17 @@ on:
     branches: [master]
     paths:
       - "android/**"
-      - "app/.well-known/**"
-      - "public/manifest.json"
       - "scripts/*android.mjs"
       - "package.json"
+      - "docs/ANDROID.md"
       - ".github/workflows/android.yml"
   push:
     branches: [master]
     paths:
       - "android/**"
-      - "app/.well-known/**"
-      - "public/manifest.json"
       - "scripts/*android.mjs"
       - "package.json"
+      - "docs/ANDROID.md"
       - ".github/workflows/android.yml"
 
 concurrency:
@@ -56,6 +54,9 @@ jobs:
 
       - name: Verify Android configuration
         run: npm run android:verify
+
+      - name: Test and lint native app
+        run: npm run android:check
 
       - name: Build debug APK
         run: npm run android:build

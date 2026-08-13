@@ -1,196 +1,128 @@
-# Android App
+# Native Android app
 
-The Android edition of A Nossa Casinha is a Trusted Web Activity (TWA). The package
-opens the production PWA at `https://casa-app-zeta.vercel.app` in a supported
-Android browser, preserving Firebase Auth, Firestore, web push, browser storage,
-and the server-backed Next.js route handlers.
+Casinha for Android is a dedicated Kotlin application built with Jetpack Compose.
+It does not open the web product in Chrome, Brave, a Custom Tab, or a WebView.
+Firebase Authentication and Firestore are called directly from the Android process.
 
-## Current configuration
+## Configuration
 
 | Setting | Value |
 |---|---|
 | Package ID | `com.findmucker.casa` |
-| App version | `1.0.0` (`versionCode` 1) |
-| Minimum Android version | API 23 (Android 6.0) |
+| Version | `2.0.0-native` (`versionCode` 2) |
+| Minimum Android | API 23 (Android 6.0) |
 | Compile/target API | 36 |
-| Production origin | `https://casa-app-zeta.vercel.app` |
-| Generator | Bubblewrap CLI 1.24.1 |
-| Browser fallback | Chrome Custom Tab |
+| Language and UI | Kotlin 2.1, Jetpack Compose and Material 3 |
+| Data | Firebase Auth and Firestore |
 
-The source of truth is [../android/twa-manifest.json](../android/twa-manifest.json).
-The remaining files under `android/` are generated Android Gradle project files.
+The hand-maintained Android project is under `android/`. `MainActivity` owns the
+foreground UI and `FirebaseCasaRepository` preserves the existing web data model:
+`users/{uid}`, `houses/{houseId}`, invites, and house subcollections.
 
-## Download and test the debug APK
+## What is native
 
-This is the fastest path and does not require Android Studio:
+- email/password authentication;
+- Google account selection through Android Credential Manager;
+- household creation and invite-code joining;
+- dashboard and real-time Firestore lists for shopping, coisinhas, projects, and habits;
+- add, complete/update, and delete actions without browser navigation.
 
-1. Open the repository's **Actions** tab and select **Android APK**.
-2. Open the latest successful run for the relevant branch or pull request.
-3. Download the `casinha-android-debug-<commit>` artifact.
-4. Extract the ZIP and copy `app-debug.apk` to an Android device.
-5. Open the APK. Android may ask to allow installs from the browser or file manager;
-   grant that temporary permission and complete installation.
-6. Launch **Casinha**, sign in, and test navigation, data sync, Google sign-in,
-   notifications, invite links, and shared event links.
+The PWA remains available separately. Installing the PWA and the APK may show two
+launcher icons; use the APK labelled **Casinha** for the native client and remove the
+PWA from the browser when it is no longer wanted.
 
-The artifact is retained for 14 days. It is debug-signed and must not be uploaded
-to Google Play. A visible browser bar is expected until the debug certificate is
-included in the deployed Digital Asset Links response; all app features remain
-testable in that safe fallback mode.
+## Download and install a debug APK
+
+1. Open GitHub Actions and select **Android APK**.
+2. Open a successful run for the desired commit.
+3. Download and extract `casinha-android-debug-<commit>`.
+4. Transfer `app-debug.apk` to the phone and open it, or install by USB:
+
+   ```bash
+   adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+The debug artifact is retained for 14 days and is not suitable for Play Store release.
 
 ## Build locally
 
-Install these prerequisites:
-
-- Node.js 20 or newer.
-- JDK 17.
-- Android SDK Platform 36 and Build Tools 36.0.0 (Android Studio can install both).
-- A supported Android browser such as Chrome 72 or newer.
-- Optional: Android Platform Tools (`adb`) for USB installation and logs.
-
-Then run:
+Install JDK 17 or 21 and Android SDK Platform 36 with Build Tools 36.0.0. Set
+`JAVA_HOME` and `ANDROID_HOME`, then run from the repository root:
 
 ```bash
 npm run android:verify
+npm run android:check
 npm run android:build
 ```
 
-The APK is written to:
+The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-```text
-android/app/build/outputs/apk/debug/app-debug.apk
-```
+`android:verify` is an architectural guard: it checks the package, native entry
+point, Compose/Firebase dependencies and rejects Bubblewrap, TWA, Custom Tab,
+WebView, or browser-helper code.
 
-With USB debugging enabled, install or replace it with:
+## Firebase setup
 
-```bash
-adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-```
+The current public Firebase project identifiers are initialized in
+`CasaApplication.kt`; no secret or administrator credential is embedded. Firestore
+security rules remain the enforcement boundary.
 
-## Change Android configuration
-
-1. Edit `android/twa-manifest.json`.
-2. Increment `appVersionCode` for every build that may be uploaded to Play. Update
-   `appVersion` when the user-visible Android shell changes.
-3. Regenerate the project:
-
-   ```bash
-   npm run android:update
-   ```
-
-4. Review every generated file. Bubblewrap regeneration replaces generated Android
-   files and must not be run over uncommitted manual changes.
-5. Run `npm run android:verify` and the normal web quality gates.
-6. Build the APK locally or let the **Android APK** workflow build it.
-
-The generator is pinned in `package.json`; changing it is a dependency upgrade and
-should have its own issue, commit, and clean Android build.
-
-## Digital Asset Links and full-screen verification
-
-A TWA removes browser UI only after Android verifies that the signed app and the
-website belong to the same publisher. The app already declares the production web
-origin. The website publishes the reverse association at:
-
-```text
-https://casa-app-zeta.vercel.app/.well-known/assetlinks.json
-```
-
-Set the Vercel environment variable below to a comma- or newline-separated list of
-SHA-256 certificate fingerprints:
-
-```env
-ANDROID_SHA256_CERT_FINGERPRINTS=AA:BB:...:FF,11:22:...:99
-```
-
-Include every certificate used to install a trusted build:
-
-- the local upload certificate for directly installed release APKs;
-- the **App signing key certificate** from Play Console for Play-installed builds;
-- optionally a developer debug certificate while testing.
-
-Retrieve a local certificate fingerprint with JDK `keytool`:
+For Google sign-in, register an Android Firebase application with package
+`com.findmucker.casa`, add the SHA-1 and SHA-256 fingerprints of each signing
+certificate, and keep the web OAuth client ID passed to Credential Manager current.
+Print the debug certificate with:
 
 ```bash
-keytool -printcert -jarfile path/to/app.apk
+keytool -list -v -alias androiddebugkey \
+  -keystore "$HOME/.android/debug.keystore" -storepass android -keypass android
 ```
 
-After changing the Vercel variable, redeploy and confirm that the endpoint returns
-`com.findmucker.casa` plus the expected fingerprints. Never publish private keys,
-keystores, aliases with passwords, or Play service-account JSON.
+After changing the registered certificates, download the refreshed Firebase Android
+configuration or update the equivalent programmatic options. Never commit private
+keys, keystores, service-account JSON, or passwords.
 
-For temporary full-screen debugging without deploying a debug fingerprint, Chrome's
-documented development override can be enabled on a USB-connected test device. Use
-it only on a development device and remove the override afterwards:
+Official references:
 
-```bash
-adb shell "echo '_ --disable-digital-asset-link-verification-for-url=\"https://casa-app-zeta.vercel.app\"' > /data/local/tmp/chrome-command-line"
-```
+- [Firebase Authentication on Android](https://firebase.google.com/docs/auth/android/start)
+- [Google sign-in with Credential Manager](https://firebase.google.com/docs/auth/android/google-signin)
+- [Jetpack Compose setup](https://developer.android.com/develop/ui/compose/setup)
+- [Android app signing](https://developer.android.com/studio/publish/app-signing)
 
-Chrome must have **Enable command line on non-rooted devices** enabled in
-`chrome://flags`, and Chrome must be force-stopped before relaunching the app.
+## Release process
 
-## Production signing and Play release
+1. Create a focused GitHub issue before changing the Android client.
+2. Increment `versionCode` for every artifact that can reach Google Play and update
+   `versionName` for user-visible releases.
+3. Keep implementation, tests/CI, and docs in focused commits linked to their issues.
+4. Run the native verification, tests, lint, and debug build.
+5. Generate a signed Android App Bundle using a protected upload key.
+6. Test through the Play internal track before promotion.
 
-Use [Google Play App Signing](https://developer.android.com/studio/publish/app-signing)
-and keep the upload key separate from the Play-managed app signing key.
+## Device test checklist
 
-1. Create or select the Play Console application for `com.findmucker.casa`.
-   Package IDs cannot be changed after publication.
-2. Generate an upload key outside the repository and back it up securely.
-3. In Android Studio, choose **Build → Generate Signed Bundle / APK → Android App
-   Bundle** and select the upload key.
-4. Upload the generated `.aab` to the Play internal testing track first.
-5. Copy both SHA-256 fingerprints shown under **Play Console → Setup → App
-   integrity** into `ANDROID_SHA256_CERT_FINGERPRINTS` and redeploy Vercel.
-6. Install the internal-test build from Play and verify that it opens full-screen,
-   deep links stay in the app, notifications arrive, and Google sign-in completes.
-7. Promote the tested bundle through the desired Play tracks.
-
-Signing files are ignored by Git. Do not weaken the ignore rules or add signing
-values to Gradle files, workflow YAML, documentation, or issue comments.
-
-## Release checklist
-
-- [ ] Android issue exists and the change has its own focused commit.
-- [ ] `appVersionCode` is greater than every previously uploaded code.
-- [ ] `npm run android:verify` passes.
-- [ ] Web typecheck, lint, tests, and production build pass.
-- [ ] **Android APK** workflow passes and its artifact installs.
-- [ ] Email/password and Google sign-in are tested.
-- [ ] Firestore reads/writes and household real-time sync are tested.
-- [ ] Push permission, delivery, and notification routing are tested.
-- [ ] Invite and public event deep links are tested.
-- [ ] Digital Asset Links contains the certificate used by the installed build.
-- [ ] No signing key or generated binary is staged in Git.
+- [ ] `adb shell am start -n com.findmucker.casa/.MainActivity` opens the app itself.
+- [ ] The foreground package is `com.findmucker.casa`, not a browser.
+- [ ] Existing email/password login reaches the correct house.
+- [ ] Google login shows the native Android account chooser and reaches the same house.
+- [ ] Creating or joining a house writes compatible Firestore documents.
+- [ ] Each dashboard collection loads and updates in real time.
+- [ ] Add, complete/status/check, and delete actions persist after relaunch.
+- [ ] Back and system navigation do not open a browser.
 
 ## Troubleshooting
 
-### Browser bar is visible
+### Google says the app is not configured
 
-The certificate fingerprint does not match the deployed Digital Asset Links response,
-or the response has not propagated. Compare the APK fingerprint with the endpoint.
-Chrome logs verification details under `OriginVerifier` and `digital_asset_links`.
+Add the installed APK certificate SHA-1/SHA-256 to the Android app in Firebase, verify
+the package ID, and rebuild. A debug APK and a Play-installed build normally use
+different certificates.
 
 ### Gradle cannot find API 36
 
-Install `platforms;android-36` and `build-tools;36.0.0` with Android Studio's SDK
-Manager or `sdkmanager`, then rebuild.
+Install `platforms;android-36` and `build-tools;36.0.0` using Android Studio or
+`sdkmanager`, then check that `ANDROID_HOME` points to that SDK.
 
-### Notifications are disabled
+### There are two Casinha icons
 
-On Android 13+, grant the app/browser notification permission. In Casinha, open
-**Ajuda** to inspect the permission and FCM registration status. Notification state
-belongs to the browser profile used by the TWA.
-
-### Web changes do not appear
-
-Confirm the production Vercel deployment completed, then fully close and reopen the
-app. The APK is a shell around the production origin; routine web releases do not
-require a new Android binary.
-
-Official background material:
-
-- [Trusted Web Activity overview](https://developer.chrome.com/docs/android/trusted-web-activity/)
-- [Bubblewrap quick start](https://developer.chrome.com/docs/android/trusted-web-activity/quick-start/)
-- [Android signing](https://developer.android.com/studio/publish/app-signing)
+One is the old browser-installed PWA. Long-press it, open app information, and
+uninstall it. The dedicated APK is package `com.findmucker.casa`.

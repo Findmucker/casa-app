@@ -1,52 +1,85 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const fromRoot = (...segments) => join(repositoryRoot, ...segments);
 const readText = (...segments) => readFileSync(fromRoot(...segments), "utf8");
 
-const twaManifest = JSON.parse(readText("android", "twa-manifest.json"));
-const webManifest = JSON.parse(readText("public", "manifest.json"));
-const androidGradle = readText("android", "app", "build.gradle");
-const androidManifest = readText(
+const appGradle = readText("android", "app", "build.gradle");
+const manifest = readText("android", "app", "src", "main", "AndroidManifest.xml");
+const mainActivity = readText(
   "android",
   "app",
   "src",
   "main",
-  "AndroidManifest.xml",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+  "MainActivity.kt",
+);
+const repository = readText(
+  "android",
+  "app",
+  "src",
+  "main",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+  "FirebaseCasaRepository.kt",
 );
 
-assert.equal(twaManifest.packageId, "com.findmucker.casa");
-assert.equal(twaManifest.host, "casa-app-zeta.vercel.app");
-assert.equal(twaManifest.webManifestUrl, `https://${twaManifest.host}/manifest.json`);
-assert.equal(twaManifest.enableNotifications, true);
-assert.equal(twaManifest.fallbackType, "customtabs");
-assert.equal(twaManifest.appVersionCode > 0, true);
-assert.match(twaManifest.appVersion, /^\d+\.\d+\.\d+$/);
+assert.match(appGradle, /applicationId ['"]com\.findmucker\.casa['"]/);
+assert.match(appGradle, /minSdk 23/);
+assert.match(appGradle, /targetSdk 36/);
+assert.match(appGradle, /versionCode [1-9]\d*/);
+assert.match(appGradle, /versionName ['"]\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?['"]/i);
+assert.match(appGradle, /org\.jetbrains\.kotlin\.plugin\.compose/);
+assert.match(appGradle, /androidx\.compose\.material3:material3/);
+assert.match(appGradle, /com\.google\.firebase:firebase-auth/);
+assert.match(appGradle, /com\.google\.firebase:firebase-firestore/);
 
-assert.equal(webManifest.id, "/");
-assert.equal(webManifest.start_url, twaManifest.startUrl);
-assert.equal(webManifest.scope, "/");
-assert.equal(webManifest.display, twaManifest.display);
-assert.equal(
-  webManifest.icons.some((icon) => icon.sizes === "512x512" && icon.purpose.includes("maskable")),
-  true,
-);
+assert.match(manifest, /android:name="\.CasaApplication"/);
+assert.match(manifest, /android:name="\.MainActivity"/);
+assert.match(manifest, /android\.permission\.INTERNET/);
+assert.match(manifest, /android\.intent\.category\.LAUNCHER/);
+assert.match(mainActivity, /setContent\s*\{/);
+assert.match(mainActivity, /CasaApp\(\)/);
+assert.match(repository, /FirebaseAuth\.getInstance\(\)/);
+assert.match(repository, /FirebaseFirestore\.getInstance\(\)/);
+assert.match(repository, /CredentialManager\.create/);
 
-assert.equal(androidGradle.includes(`applicationId "${twaManifest.packageId}"`), true);
-assert.equal(androidGradle.includes(`versionCode ${twaManifest.appVersionCode}`), true);
-assert.equal(androidGradle.includes(`versionName "${twaManifest.appVersion}"`), true);
-assert.equal(androidManifest.includes('android:autoVerify="true"'), true);
-assert.equal(androidManifest.includes("DelegationService"), true);
+assert.equal(existsSync(fromRoot("android", "twa-manifest.json")), false);
 
-assert.equal(
-  existsSync(fromRoot("android", twaManifest.signingKey.path)),
-  false,
-  "Signing keys must not be committed inside the Android project.",
-);
+const textExtensions = new Set([".gradle", ".java", ".json", ".kt", ".kts", ".xml"]);
+const sourceFiles = [];
+function collectTextFiles(directory) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.name === "build" || entry.name === ".gradle") continue;
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) collectTextFiles(path);
+    else if (textExtensions.has(extname(entry.name))) sourceFiles.push(path);
+  }
+}
+collectTextFiles(fromRoot("android"));
 
+const androidSource = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
+assert.doesNotMatch(androidSource, /androidbrowserhelper/i);
+assert.doesNotMatch(androidSource, /TrustedWebActivity/i);
+assert.doesNotMatch(androidSource, /CustomTabs?/i);
+assert.doesNotMatch(androidSource, /WebView/i);
+assert.doesNotMatch(androidSource, /bubblewrap/i);
+
+const signingFiles = readdirSync(fromRoot("android"), { recursive: true })
+  .map(String)
+  .filter((path) => /\.(?:jks|keystore|p12)$/i.test(path));
+assert.deepEqual(signingFiles, [], "Signing keys must never be committed.");
+
+const versionName = appGradle.match(/versionName ['"]([^'"]+)['"]/)?.[1];
+const versionCode = appGradle.match(/versionCode (\d+)/)?.[1];
 console.log(
-  `Android configuration verified: ${twaManifest.packageId} ${twaManifest.appVersion} (${twaManifest.appVersionCode})`,
+  `Native Android configuration verified: com.findmucker.casa ${versionName} (${versionCode})`,
 );
