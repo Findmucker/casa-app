@@ -88,7 +88,14 @@ fun CasaApp(casaViewModel: CasaViewModel = viewModel()) {
                 is SessionState.Ready -> HouseWelcomeScreen(
                     profile = session.profile,
                     house = session.house,
+                    dashboard = state.dashboard,
+                    working = state.working,
+                    error = state.error,
+                    onAdd = casaViewModel::addItem,
+                    onToggle = casaViewModel::toggleItem,
+                    onDelete = casaViewModel::deleteItem,
                     onSignOut = casaViewModel::signOut,
+                    onClearError = casaViewModel::clearError,
                 )
             }
         }
@@ -273,34 +280,6 @@ private fun HouseSetupScreen(
         ErrorText(error)
         if (working) CircularProgressIndicator(modifier = Modifier.padding(8.dp))
         TextButton(onClick = onSignOut, enabled = !working) { Text("Terminar sessão") }
-    }
-}
-
-@Composable
-private fun HouseWelcomeScreen(profile: UserProfile, house: House, onSignOut: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(28.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(Icons.Rounded.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        Text(house.name, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-        Text(
-            "Sessão nativa iniciada como ${profile.name}",
-            modifier = Modifier.padding(top = 8.dp),
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            "${house.members.size} ${if (house.members.size == 1) "membro" else "membros"}",
-            modifier = Modifier.padding(top = 6.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        TextButton(onClick = onSignOut, modifier = Modifier.padding(top = 24.dp)) {
-            Text("Terminar sessão")
-        }
     }
 }
 

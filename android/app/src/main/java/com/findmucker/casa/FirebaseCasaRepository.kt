@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -145,6 +146,133 @@ class FirebaseCasaRepository(
         auth.signOut()
     }
 
+    fun observeItems(
+        houseId: String,
+        section: HouseSection,
+        onResult: (Result<List<HouseItem>>) -> Unit,
+    ): ListenerRegistration = firestore
+        .collection("houses")
+        .document(houseId)
+        .collection(section.collection)
+        .addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                onResult(Result.failure(error))
+                return@addSnapshotListener
+            }
+
+            val today = today()
+            val items = snapshot?.documents.orEmpty().map { document ->
+                val status = document.getString("status")
+                HouseItem(
+                    id = document.id,
+                    name = document.getString("name") ?: "Sem nome",
+                    done = when (section) {
+                        HouseSection.PROJECTS -> status == "concluido"
+                        HouseSection.HABITS -> document.getString("lastChecked") == today
+                        else -> document.getBoolean("done") ?: false
+                    },
+                    status = status,
+                    emoji = document.getString("emoji"),
+                    urgent = document.getBoolean("urgent") ?: false,
+                    streak = document.getLong("streak")?.toInt() ?: 0,
+                    notes = document.getString("notes"),
+                    order = document.getLong("order") ?: 0,
+                )
+            }.let { unsorted ->
+                when (section) {
+                    HouseSection.SMALL_PRIORITIES, HouseSection.PROJECTS -> unsorted.sortedBy { it.order }
+                    else -> unsorted.sortedWith(compareBy<HouseItem> { it.done }.thenBy { it.name.lowercase() })
+                }
+            }
+            onResult(Result.success(items))
+        }
+
+    suspend fun addItem(houseId: String, section: HouseSection, name: String, addedBy: String) {
+        val cleanName = name.trim()
+        require(cleanName.isNotEmpty()) { "Escreve o nome do item." }
+        val common = mutableMapOf<String, Any?>(
+            "name" to cleanName,
+            "createdAt" to FieldValue.serverTimestamp(),
+        )
+        when (section) {
+            HouseSection.SHOPPING -> common += mapOf(
+                "addedBy" to addedBy,
+                "done" to false,
+                "urgent" to false,
+            )
+            HouseSection.SMALL_PRIORITIES -> common += mapOf(
+                "done" to false,
+                "order" to System.currentTimeMillis(),
+                "assignee" to "ambos",
+            )
+            HouseSection.PROJECTS -> common += mapOf(
+                "status" to "pendente",
+                "order" to System.currentTimeMillis(),
+                "notes" to "",
+                "budget" to 0,
+                "spent" to 0,
+                "subtasks" to emptyList<Map<String, Any?>>(),
+            )
+            HouseSection.HABITS -> common += mapOf(
+                "emoji" to "✨",
+                "assignee" to "ambos",
+                "streak" to 0,
+            )
+        }
+        firestore.collection("houses").document(houseId)
+            .collection(section.collection)
+            .add(common)
+            .await()
+    }
+
+    suspend fun toggleItem(houseId: String, section: HouseSection, item: HouseItem) {
+        val document = firestore.collection("houses").document(houseId)
+            .collection(section.collection).document(item.id)
+        val today = today()
+        when (section) {
+            HouseSection.SHOPPING, HouseSection.SMALL_PRIORITIES -> document.update(
+                mapOf(
+                    "done" to !item.done,
+                    "completedAt" to if (!item.done) today else FieldValue.delete(),
+                ),
+            ).await()
+            HouseSection.PROJECTS -> {
+                val next = nextProjectStatus(item.status)
+                document.update(
+                    mapOf(
+                        "status" to next,
+                        "completedAt" to if (next == "concluido") today else FieldValue.delete(),
+                    ),
+                ).await()
+            }
+            HouseSection.HABITS -> {
+                if (item.done) return
+                firestore.collection("houses").document(houseId)
+                    .collection("habit_checks")
+                    .add(
+                        mapOf(
+                            "habitId" to item.id,
+                            "date" to today,
+                            "createdAt" to FieldValue.serverTimestamp(),
+                        ),
+                    ).await()
+                document.update(
+                    mapOf(
+                        "streak" to item.streak + 1,
+                        "lastChecked" to today,
+                    ),
+                ).await()
+            }
+        }
+    }
+
+    suspend fun deleteItem(houseId: String, section: HouseSection, itemId: String) {
+        firestore.collection("houses").document(houseId)
+            .collection(section.collection).document(itemId)
+            .delete()
+            .await()
+    }
+
     private suspend fun loadSession(user: FirebaseUser): SessionState {
         val userRef = firestore.collection("users").document(user.uid)
         var snapshot = userRef.get().await()
@@ -209,5 +337,7 @@ class FirebaseCasaRepository(
             }
             else -> error.message ?: "Ocorreu um erro inesperado."
         }
+
+        private fun today(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
     }
 }

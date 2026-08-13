@@ -3,6 +3,7 @@ package com.findmucker.casa
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +15,7 @@ class CasaViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CasaUiState())
     val uiState: StateFlow<CasaUiState> = _uiState.asStateFlow()
+    private val itemListeners = mutableListOf<ListenerRegistration>()
 
     init {
         runOperation { repository.restoreSession() }
@@ -54,8 +56,24 @@ class CasaViewModel(
     }
 
     fun signOut() {
+        stopItemListeners()
         repository.signOut()
         _uiState.value = CasaUiState(session = SessionState.SignedOut)
+    }
+
+    fun addItem(section: HouseSection, name: String) {
+        val ready = _uiState.value.session as? SessionState.Ready ?: return
+        runAction { repository.addItem(ready.house.id, section, name, ready.profile.name) }
+    }
+
+    fun toggleItem(section: HouseSection, item: HouseItem) {
+        val ready = _uiState.value.session as? SessionState.Ready ?: return
+        runAction { repository.toggleItem(ready.house.id, section, item) }
+    }
+
+    fun deleteItem(section: HouseSection, itemId: String) {
+        val ready = _uiState.value.session as? SessionState.Ready ?: return
+        runAction { repository.deleteItem(ready.house.id, section, itemId) }
     }
 
     fun clearError() {
@@ -66,7 +84,7 @@ class CasaViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(working = true, error = null) }
             runCatching { operation() }
-                .onSuccess { session -> _uiState.value = CasaUiState(session = session) }
+                .onSuccess { session -> applySession(session) }
                 .onFailure { error ->
                     _uiState.update {
                         it.copy(
@@ -79,7 +97,60 @@ class CasaViewModel(
         }
     }
 
+    private fun runAction(action: suspend () -> Unit) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(working = true, error = null) }
+            runCatching { action() }
+                .onSuccess { _uiState.update { it.copy(working = false) } }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            working = false,
+                            error = FirebaseCasaRepository.friendlyError(error),
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun applySession(session: SessionState) {
+        _uiState.value = CasaUiState(session = session)
+        if (session is SessionState.Ready) observeItems(session.house.id)
+    }
+
+    private fun observeItems(houseId: String) {
+        stopItemListeners()
+        HouseSection.entries.forEach { section ->
+            itemListeners += repository.observeItems(houseId, section) { result ->
+                result
+                    .onSuccess { items ->
+                        _uiState.update { state ->
+                            state.copy(dashboard = state.dashboard.withItems(section, items))
+                        }
+                    }
+                    .onFailure { error ->
+                        _uiState.update { state ->
+                            state.copy(
+                                dashboard = state.dashboard.copy(loading = state.dashboard.loading - section),
+                                error = FirebaseCasaRepository.friendlyError(error),
+                            )
+                        }
+                    }
+            }
+        }
+    }
+
+    private fun stopItemListeners() {
+        itemListeners.forEach(ListenerRegistration::remove)
+        itemListeners.clear()
+    }
+
     private fun showError(message: String) {
         _uiState.update { it.copy(error = message) }
+    }
+
+    override fun onCleared() {
+        stopItemListeners()
+        super.onCleared()
     }
 }
