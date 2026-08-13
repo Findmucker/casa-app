@@ -289,24 +289,77 @@ class FirebaseCasaRepository(
             )))
         }
 
-    suspend fun addItem(houseId: String, section: HouseSection, name: String, addedBy: String) {
-        val cleanName = name.trim()
+    suspend fun addItem(houseId: String, section: HouseSection, draft: ItemDraft, addedBy: String) {
+        val cleanName = draft.name.trim()
         require(cleanName.isNotEmpty()) { "Escreve o nome do item." }
         val common = mutableMapOf<String, Any?>("name" to cleanName, "createdAt" to FieldValue.serverTimestamp())
         when (section) {
-            HouseSection.SHOPPING -> common += mapOf("addedBy" to addedBy, "done" to false, "urgent" to false)
-            HouseSection.SMALL_PRIORITIES -> common += mapOf("done" to false, "order" to System.currentTimeMillis(), "assignee" to "ambos")
+            HouseSection.SHOPPING -> common += mapOf(
+                "addedBy" to addedBy,
+                "done" to false,
+                "urgent" to draft.urgent,
+                "category" to (draft.category ?: classifyItem(cleanName)),
+            )
+            HouseSection.SMALL_PRIORITIES -> common += mapOf(
+                "done" to false,
+                "order" to System.currentTimeMillis(),
+                "assignee" to draft.assignee,
+                "category" to (draft.category ?: "🌸 Outros"),
+                "notes" to draft.notes.orEmpty(),
+                "price" to draft.price,
+            ).filterValues { it != null }
             HouseSection.PROJECTS -> common += mapOf(
                 "status" to "pendente",
                 "order" to System.currentTimeMillis(),
-                "notes" to "",
-                "budget" to 0,
-                "spent" to 0,
+                "notes" to draft.notes.orEmpty(),
+                "budget" to (draft.budget ?: 0.0),
+                "spent" to (draft.spent ?: 0.0),
+                "category" to (draft.category ?: "🏠 Casa"),
                 "subtasks" to emptyList<Map<String, Any?>>(),
             )
-            HouseSection.HABITS -> common += mapOf("emoji" to "✨", "assignee" to "ambos", "streak" to 0)
+            HouseSection.HABITS -> common += mapOf(
+                "emoji" to draft.emoji,
+                "assignee" to draft.assignee,
+                "streak" to 0,
+                "reminderTime" to draft.reminderTime,
+                "days" to draft.days,
+            ).filterValues { it != null }
         }
         houseCollection(houseId, section.collection).add(common).await()
+    }
+
+    suspend fun updateItem(houseId: String, section: HouseSection, itemId: String, values: Map<String, Any?>) {
+        val clean = values.mapValues { (_, value) -> value ?: FieldValue.delete() }
+        houseCollection(houseId, section.collection).document(itemId).update(clean).await()
+    }
+
+    suspend fun moveItem(houseId: String, section: HouseSection, item: HouseItem, before: HouseItem) {
+        require(section == HouseSection.SMALL_PRIORITIES || section == HouseSection.PROJECTS)
+        val collection = houseCollection(houseId, section.collection)
+        firestore.runBatch { batch ->
+            batch.update(collection.document(item.id), "order", before.order)
+            batch.update(collection.document(before.id), "order", item.order)
+        }.await()
+    }
+
+    suspend fun addSubtask(houseId: String, project: HouseItem, name: String) {
+        require(name.trim().isNotEmpty()) { "Escreve o nome da subtarefa." }
+        val subtasks = project.subtasks + Subtask(
+            id = System.currentTimeMillis().toString(),
+            name = name.trim(),
+            done = false,
+        )
+        updateItem(houseId, HouseSection.PROJECTS, project.id, mapOf("subtasks" to subtasks.map { it.asMap() }))
+    }
+
+    suspend fun toggleSubtask(houseId: String, project: HouseItem, subtask: Subtask) {
+        val subtasks = project.subtasks.map { if (it.id == subtask.id) it.copy(done = !it.done) else it }
+        updateItem(houseId, HouseSection.PROJECTS, project.id, mapOf("subtasks" to subtasks.map { it.asMap() }))
+    }
+
+    suspend fun deleteSubtask(houseId: String, project: HouseItem, subtaskId: String) {
+        val subtasks = project.subtasks.filterNot { it.id == subtaskId }
+        updateItem(houseId, HouseSection.PROJECTS, project.id, mapOf("subtasks" to subtasks.map { it.asMap() }))
     }
 
     suspend fun toggleItem(houseId: String, section: HouseSection, item: HouseItem) {
@@ -556,6 +609,8 @@ class FirebaseCasaRepository(
 
     private fun DocumentSnapshot.number(field: String): Double? = (get(field) as? Number)?.toDouble()
 
+    private fun Subtask.asMap(): Map<String, Any> = mapOf("id" to id, "name" to name, "done" to done)
+
     companion object {
         private const val WEB_CLIENT_ID =
             "776757654663-4j0u4nelqulc5v28asuq972ots5cd8a8.apps.googleusercontent.com"
@@ -578,5 +633,18 @@ class FirebaseCasaRepository(
         }
 
         private fun today(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+
+        private fun classifyItem(name: String): String {
+            val value = name.lowercase()
+            return when {
+                listOf("leite", "queijo", "iogurte", "manteiga", "ovos").any(value::contains) -> "🥛 Laticínios & Ovos"
+                listOf("maçã", "banana", "laranja", "tomate", "alface", "batata", "fruta", "legumes").any(value::contains) -> "🥬 Fruta & Legumes"
+                listOf("carne", "frango", "peixe", "bacalhau", "fiambre").any(value::contains) -> "🥩 Carne & Peixe"
+                listOf("pão", "arroz", "massa", "farinha", "cereais").any(value::contains) -> "🍞 Despensa"
+                listOf("detergente", "lixívia", "esponja", "sacos", "limpeza").any(value::contains) -> "🧹 Limpeza"
+                listOf("champô", "shampoo", "gel", "pasta", "papel higiénico").any(value::contains) -> "🛁 Higiene"
+                else -> "🌸 Outros"
+            }
+        }
     }
 }

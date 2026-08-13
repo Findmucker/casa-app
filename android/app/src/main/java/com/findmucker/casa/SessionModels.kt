@@ -61,6 +61,20 @@ data class HouseItem(
     val subtasks: List<Subtask> = emptyList(),
 )
 
+data class ItemDraft(
+    val name: String,
+    val urgent: Boolean = false,
+    val category: String? = null,
+    val assignee: String = "ambos",
+    val price: Double? = null,
+    val notes: String? = null,
+    val budget: Double? = null,
+    val spent: Double? = null,
+    val emoji: String = "✨",
+    val reminderTime: String? = null,
+    val days: List<Int> = emptyList(),
+)
+
 data class HabitCheck(
     val id: String,
     val habitId: String,

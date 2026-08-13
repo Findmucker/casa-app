@@ -53,8 +53,12 @@ class CasaViewModel(
     }
 
     fun addItem(section: HouseSection, name: String) {
+        addItem(section, ItemDraft(name = name))
+    }
+
+    fun addItem(section: HouseSection, draft: ItemDraft) {
         val ready = readySession() ?: return
-        runAction { repository.addItem(ready.house.id, section, name, ready.profile.name) }
+        runAction { repository.addItem(ready.house.id, section, draft, ready.profile.name) }
     }
 
     fun toggleItem(section: HouseSection, item: HouseItem) {
@@ -65,6 +69,31 @@ class CasaViewModel(
     fun deleteItem(section: HouseSection, itemId: String) {
         val ready = readySession() ?: return
         runAction { repository.deleteItem(ready.house.id, section, itemId) }
+    }
+
+    fun updateItem(section: HouseSection, itemId: String, values: Map<String, Any?>) {
+        val ready = readySession() ?: return
+        runAction("Alterações guardadas.") { repository.updateItem(ready.house.id, section, itemId, values) }
+    }
+
+    fun moveItem(section: HouseSection, item: HouseItem, before: HouseItem) {
+        val ready = readySession() ?: return
+        runAction { repository.moveItem(ready.house.id, section, item, before) }
+    }
+
+    fun addSubtask(project: HouseItem, name: String) {
+        val ready = readySession() ?: return
+        runAction { repository.addSubtask(ready.house.id, project, name) }
+    }
+
+    fun toggleSubtask(project: HouseItem, subtask: Subtask) {
+        val ready = readySession() ?: return
+        runAction { repository.toggleSubtask(ready.house.id, project, subtask) }
+    }
+
+    fun deleteSubtask(project: HouseItem, subtaskId: String) {
+        val ready = readySession() ?: return
+        runAction { repository.deleteSubtask(ready.house.id, project, subtaskId) }
     }
 
     fun addExpense(name: String, amount: String, category: String, paidBy: String) {
