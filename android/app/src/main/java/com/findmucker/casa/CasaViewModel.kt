@@ -53,6 +53,13 @@ class CasaViewModel(
         _uiState.value = CasaUiState(session = SessionState.SignedOut)
     }
 
+    fun registerPushToken() {
+        val ready = readySession() ?: return
+        viewModelScope.launch {
+            runCatching { repository.registerNotificationToken(ready.profile.uid) }
+        }
+    }
+
     fun addItem(section: HouseSection, name: String) {
         addItem(section, ItemDraft(name = name))
     }

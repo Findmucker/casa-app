@@ -83,4 +83,14 @@ class SessionModelsTest {
         assertEquals("place-2", favorite.resolvedLocation().id)
         assertEquals(DefaultWeatherLocation, favorite.withoutFavorite("place-2").resolvedLocation())
     }
+
+    @Test
+    fun `native notification tags open the matching product tabs`() {
+        assertEquals(DashboardTab.HABITS, notificationTabForTag("habit-water"))
+        assertEquals(DashboardTab.SHOPPING, notificationTabForTag("urgent-shopping"))
+        assertEquals(DashboardTab.EVENTS, notificationTabForTag("new-event"))
+        assertEquals(DashboardTab.EVENTS, notificationTabForTag("event-reminder-party"))
+        assertEquals(DashboardTab.CALENDAR, notificationTabForTag("birthday-alex"))
+        assertEquals(DashboardTab.HOME, notificationTabForTag("message-house"))
+    }
 }

@@ -28,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -129,6 +130,39 @@ fun HouseWelcomeScreen(
     var selectedTab by remember { mutableStateOf(DashboardTab.HOME) }
     var overlay by remember { mutableStateOf<DashboardOverlay?>(null) }
     val navScroll = rememberScrollState()
+    val notificationTarget by NotificationNavigation.target.collectAsState()
+
+    LaunchedEffect(notificationTarget) {
+        notificationTarget?.let { target ->
+            selectedTab = target
+            overlay = null
+            NotificationNavigation.consume()
+        }
+    }
+
+    LaunchedEffect(
+        house.id,
+        profile.name,
+        state.dashboard.forSection(HouseSection.HABITS),
+        state.dashboard.habitChecks,
+    ) {
+        val reminders = state.dashboard.forSection(HouseSection.HABITS)
+            .filter { habit ->
+                !habit.reminderTime.isNullOrBlank() &&
+                    (habit.assignee.isNullOrBlank() || habit.assignee == "ambos" || habit.assignee.equals(profile.name, ignoreCase = true))
+            }
+            .map { habit ->
+                HabitReminder(
+                    houseId = house.id,
+                    habitId = habit.id,
+                    name = habit.name,
+                    emoji = habit.emoji ?: "💊",
+                    reminderTime = requireNotNull(habit.reminderTime),
+                    days = habit.days,
+                )
+            }
+        HabitReminderScheduler.sync(context, reminders, state.dashboard.habitChecks)
+    }
 
     LaunchedEffect(state.shareUrl) {
         val url = state.shareUrl ?: return@LaunchedEffect

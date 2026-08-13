@@ -19,5 +19,6 @@ class CasaApplication : Application() {
 
             FirebaseApp.initializeApp(this, options)
         }
+        CasinhaNotifications.createChannels(this)
     }
 }

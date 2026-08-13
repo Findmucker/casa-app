@@ -75,6 +75,17 @@ const sessionModels = readText(
   "casa",
   "SessionModels.kt",
 );
+const notificationRouting = readText(
+  "android",
+  "app",
+  "src",
+  "main",
+  "java",
+  "com",
+  "findmucker",
+  "casa",
+  "NotificationRouting.kt",
+);
 
 assert.match(appGradle, /applicationId ['"]com\.findmucker\.casa['"]/);
 assert.match(appGradle, /minSdk 23/);
@@ -85,11 +96,15 @@ assert.match(appGradle, /org\.jetbrains\.kotlin\.plugin\.compose/);
 assert.match(appGradle, /androidx\.compose\.material3:material3/);
 assert.match(appGradle, /com\.google\.firebase:firebase-auth/);
 assert.match(appGradle, /com\.google\.firebase:firebase-firestore/);
+assert.match(appGradle, /com\.google\.firebase:firebase-messaging/);
 
 assert.match(manifest, /android:name="\.CasaApplication"/);
 assert.match(manifest, /android:name="\.MainActivity"/);
 assert.match(manifest, /android\.permission\.INTERNET/);
+assert.match(manifest, /android\.permission\.POST_NOTIFICATIONS/);
 assert.match(manifest, /android\.intent\.category\.LAUNCHER/);
+assert.match(manifest, /android:name="\.CasinhaMessagingService"/);
+assert.match(manifest, /android:name="\.HabitReminderReceiver"/);
 assert.match(mainActivity, /setContent\s*\{/);
 assert.match(mainActivity, /CasaApp\(\)/);
 assert.match(repository, /FirebaseAuth\.getInstance\(\)/);
@@ -150,6 +165,9 @@ assert.match(
   "The native client must use its registered Firebase Android application ID.",
 );
 assert.doesNotMatch(firebaseApplication, /:web:/);
+assert.match(notificationRouting, /habit-.*DashboardTab\.HABITS/s);
+assert.match(notificationRouting, /urgent-shopping.*DashboardTab\.SHOPPING/s);
+assert.match(notificationRouting, /new-event.*DashboardTab\.EVENTS/s);
 
 assert.equal(existsSync(fromRoot("android", "twa-manifest.json")), false);
 

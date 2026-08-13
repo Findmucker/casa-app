@@ -15,6 +15,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -144,6 +145,18 @@ class FirebaseCasaRepository(
     }
 
     fun signOut() = auth.signOut()
+
+    suspend fun registerNotificationToken(userId: String) {
+        val token = FirebaseMessaging.getInstance().token.await()
+        firestore.collection("fcm_tokens").document(userId).set(
+            mapOf(
+                "uid" to userId,
+                "token" to token,
+                "platform" to "android",
+                "updatedAt" to FieldValue.serverTimestamp(),
+            ),
+        ).await()
+    }
 
     fun observeItems(
         houseId: String,
