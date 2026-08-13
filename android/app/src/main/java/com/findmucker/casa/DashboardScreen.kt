@@ -1,5 +1,6 @@
 package com.findmucker.casa
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -38,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -91,6 +93,15 @@ fun HouseWelcomeScreen(
     onDeleteExtra: (String, String) -> Unit,
     onAddEvent: (String, String, String) -> Unit,
     onToggleEvent: (CasaEvent) -> Unit,
+    onUpdateEvent: (String, Map<String, Any?>) -> Unit,
+    onAddEventItem: (String, String, String, String?) -> Unit,
+    onToggleEventItem: (String, EventItem) -> Unit,
+    onAssignEventItem: (String, String, String) -> Unit,
+    onRenameEventItem: (String, String, String) -> Unit,
+    onDeleteEventItem: (String, String) -> Unit,
+    onCloneEvent: (CasaEvent) -> Unit,
+    onShareEvent: (CasaEvent) -> Unit,
+    onConsumeShareUrl: () -> Unit,
     onRenameHouse: (String) -> Unit,
     onUpdateProfile: (String, String?) -> Unit,
     onEquipItem: (String, LootSlot) -> Unit,
@@ -107,9 +118,21 @@ fun HouseWelcomeScreen(
     onClearError: () -> Unit,
     onClearNotice: () -> Unit,
 ) {
+    val context = LocalContext.current
     var selectedTab by remember { mutableStateOf(DashboardTab.HOME) }
     var overlay by remember { mutableStateOf<DashboardOverlay?>(null) }
     val navScroll = rememberScrollState()
+
+    LaunchedEffect(state.shareUrl) {
+        val url = state.shareUrl ?: return@LaunchedEffect
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "Evento Casinha")
+            putExtra(Intent.EXTRA_TEXT, url)
+        }
+        context.startActivity(Intent.createChooser(sendIntent, "Partilhar evento"))
+        onConsumeShareUrl()
+    }
 
     BackHandler(enabled = overlay != null || selectedTab != DashboardTab.HOME) {
         if (overlay != null) overlay = null else selectedTab = DashboardTab.HOME
@@ -195,12 +218,21 @@ fun HouseWelcomeScreen(
                 DashboardTab.CALENDAR -> CalendarScreen(dashboard = state.dashboard)
                 DashboardTab.EVENTS -> EventsScreen(
                     events = state.dashboard.events,
+                    eventItems = state.dashboard.eventItems,
                     working = state.working,
                     error = state.error,
                     notice = state.notice,
                     onAdd = onAddEvent,
                     onToggle = onToggleEvent,
                     onDelete = { onDeleteExtra("events", it) },
+                    onUpdate = onUpdateEvent,
+                    onAddItem = onAddEventItem,
+                    onToggleItem = onToggleEventItem,
+                    onAssignItem = onAssignEventItem,
+                    onRenameItem = onRenameEventItem,
+                    onDeleteItem = onDeleteEventItem,
+                    onClone = onCloneEvent,
+                    onShare = onShareEvent,
                 )
                 DashboardTab.WEATHER -> WeatherScreen(
                     weather = state.dashboard.weather,

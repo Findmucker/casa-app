@@ -16,6 +16,7 @@ class CasaViewModel(
     private val _uiState = MutableStateFlow(CasaUiState())
     val uiState: StateFlow<CasaUiState> = _uiState.asStateFlow()
     private val listeners = mutableListOf<ListenerRegistration>()
+    private val eventItemListeners = mutableMapOf<String, ListenerRegistration>()
 
     init {
         runOperation { repository.restoreSession() }
@@ -136,6 +137,56 @@ class CasaViewModel(
         val ready = readySession() ?: return
         runAction { repository.toggleEvent(ready.house.id, event) }
     }
+
+    fun updateEvent(eventId: String, values: Map<String, Any?>) {
+        val ready = readySession() ?: return
+        runAction("Evento atualizado.") { repository.updateEvent(ready.house.id, eventId, values) }
+    }
+
+    fun addEventItem(eventId: String, name: String, type: String, assignee: String?) {
+        val ready = readySession() ?: return
+        runAction { repository.addEventItem(ready.house.id, eventId, name, type, assignee) }
+    }
+
+    fun toggleEventItem(eventId: String, item: EventItem) {
+        val ready = readySession() ?: return
+        runAction { repository.updateEventItem(ready.house.id, eventId, item.id, mapOf("done" to !item.done)) }
+    }
+
+    fun assignEventItem(eventId: String, itemId: String, assignee: String) {
+        val ready = readySession() ?: return
+        runAction { repository.updateEventItem(ready.house.id, eventId, itemId, mapOf("assignee" to assignee)) }
+    }
+
+    fun renameEventItem(eventId: String, itemId: String, name: String) {
+        val ready = readySession() ?: return
+        if (name.isBlank()) return
+        runAction { repository.updateEventItem(ready.house.id, eventId, itemId, mapOf("name" to name.trim())) }
+    }
+
+    fun deleteEventItem(eventId: String, itemId: String) {
+        val ready = readySession() ?: return
+        runAction { repository.deleteEventItem(ready.house.id, eventId, itemId) }
+    }
+
+    fun cloneEvent(event: CasaEvent) {
+        val ready = readySession() ?: return
+        runAction("Evento clonado.") { repository.cloneEvent(ready.house.id, event) }
+    }
+
+    fun shareEvent(event: CasaEvent) {
+        val ready = readySession() ?: return
+        runAction {
+            val url = repository.createEventShare(
+                ready.house.id,
+                event,
+                _uiState.value.dashboard.eventItems[event.id].orEmpty(),
+            )
+            _uiState.update { it.copy(shareUrl = url) }
+        }
+    }
+
+    fun consumeShareUrl() = _uiState.update { it.copy(shareUrl = null) }
 
     fun renameHouse(name: String) {
         val ready = readySession() ?: return
@@ -300,7 +351,10 @@ class CasaViewModel(
                 .onFailure(::showRealtimeError)
         }
         listeners += repository.observeEvents(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(events = value)) } }
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(events = value)) }
+                syncEventItemListeners(houseId, value)
+            }
                 .onFailure(::showRealtimeError)
         }
         listeners += repository.observeFriends(houseId) { result ->
@@ -326,6 +380,25 @@ class CasaViewModel(
     private fun stopListeners() {
         listeners.forEach(ListenerRegistration::remove)
         listeners.clear()
+        eventItemListeners.values.forEach(ListenerRegistration::remove)
+        eventItemListeners.clear()
+    }
+
+    private fun syncEventItemListeners(houseId: String, events: List<CasaEvent>) {
+        val activeIds = events.mapTo(mutableSetOf()) { it.id }
+        (eventItemListeners.keys - activeIds).forEach { staleId ->
+            eventItemListeners.remove(staleId)?.remove()
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(eventItems = it.dashboard.eventItems - staleId)) }
+        }
+        events.filterNot { eventItemListeners.containsKey(it.id) }.forEach { event ->
+            eventItemListeners[event.id] = repository.observeEventItems(houseId, event.id) { result ->
+                result.onSuccess { items ->
+                    _uiState.update {
+                        it.copy(dashboard = it.dashboard.copy(eventItems = it.dashboard.eventItems + (event.id to items)))
+                    }
+                }.onFailure(::showRealtimeError)
+            }
+        }
     }
 
     private fun readySession(): SessionState.Ready? = _uiState.value.session as? SessionState.Ready

@@ -266,6 +266,21 @@ class FirebaseCasaRepository(
             }.sortedWith(compareBy<CasaEvent> { it.done }.thenBy { it.date })))
         }
 
+    fun observeEventItems(houseId: String, eventId: String, onResult: (Result<List<EventItem>>) -> Unit): ListenerRegistration =
+        houseCollection(houseId, "events").document(eventId).collection("items")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener onResult(Result.failure(error))
+                onResult(Result.success(snapshot?.documents.orEmpty().map { document ->
+                    EventItem(
+                        id = document.id,
+                        name = document.getString("name") ?: "Item",
+                        done = document.getBoolean("done") ?: false,
+                        type = document.getString("type") ?: "todo",
+                        assignee = document.getString("assignee"),
+                    )
+                }))
+            }
+
     fun observeFriends(houseId: String, onResult: (Result<List<FriendHouse>>) -> Unit): ListenerRegistration =
         houseCollection(houseId, "friends").addSnapshotListener { snapshot, error ->
             if (error != null) return@addSnapshotListener onResult(Result.failure(error))
@@ -562,6 +577,89 @@ class FirebaseCasaRepository(
 
     suspend fun toggleEvent(houseId: String, event: CasaEvent) {
         houseCollection(houseId, "events").document(event.id).update("done", !event.done).await()
+    }
+
+    suspend fun updateEvent(houseId: String, eventId: String, values: Map<String, Any?>) {
+        houseCollection(houseId, "events").document(eventId).update(values).await()
+    }
+
+    suspend fun addEventItem(houseId: String, eventId: String, name: String, type: String, assignee: String?) {
+        require(name.trim().isNotEmpty()) { "Escreve o nome do item." }
+        val values = mutableMapOf<String, Any>(
+            "name" to name.trim(),
+            "type" to if (type == "compra") "compra" else "todo",
+            "done" to false,
+            "createdAt" to FieldValue.serverTimestamp(),
+        )
+        if (!assignee.isNullOrBlank()) values["assignee"] = assignee
+        houseCollection(houseId, "events").document(eventId).collection("items").add(values).await()
+    }
+
+    suspend fun updateEventItem(houseId: String, eventId: String, itemId: String, values: Map<String, Any?>) {
+        houseCollection(houseId, "events").document(eventId).collection("items").document(itemId)
+            .update(values).await()
+    }
+
+    suspend fun deleteEventItem(houseId: String, eventId: String, itemId: String) {
+        houseCollection(houseId, "events").document(eventId).collection("items").document(itemId)
+            .delete().await()
+    }
+
+    suspend fun cloneEvent(houseId: String, event: CasaEvent) {
+        val eventCollection = houseCollection(houseId, "events")
+        val clone = eventCollection.add(
+            mapOf(
+                "title" to "${event.title} (cópia)",
+                "date" to "",
+                "guests" to event.guests,
+                "participants" to emptyList<String>(),
+                "done" to false,
+                "createdAt" to FieldValue.serverTimestamp(),
+            ),
+        ).await()
+        val sourceItems = eventCollection.document(event.id).collection("items").get().await()
+        if (!sourceItems.isEmpty) {
+            val batch = firestore.batch()
+            sourceItems.documents.forEach { source ->
+                val target = clone.collection("items").document()
+                batch.set(target, mapOf(
+                    "name" to (source.getString("name") ?: "Item"),
+                    "type" to (source.getString("type") ?: "todo"),
+                    "done" to false,
+                    "assignee" to source.getString("assignee"),
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ).filterValues { it != null })
+            }
+            batch.commit().await()
+        }
+    }
+
+    suspend fun createEventShare(houseId: String, event: CasaEvent, items: List<EventItem>): String {
+        val alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
+        val shareId = (1..12).map { alphabet.random() }.joinToString("")
+        firestore.collection("event_shares").document(shareId).set(
+            mapOf(
+                "shareId" to shareId,
+                "houseId" to houseId,
+                "eventId" to event.id,
+                "event" to mapOf(
+                    "id" to event.id,
+                    "title" to event.title,
+                    "date" to event.date,
+                    "guests" to event.guests,
+                    "participants" to event.participants,
+                    "items" to items.map { item ->
+                        mapOf(
+                            "name" to item.name,
+                            "type" to item.type,
+                            "done" to item.done,
+                            "assignee" to item.assignee,
+                        ).filterValues { it != null }
+                    },
+                ),
+            ),
+        ).await()
+        return "https://casa-app-zeta.vercel.app/eventos/$shareId"
     }
 
     suspend fun deleteExtra(houseId: String, collection: String, id: String) {

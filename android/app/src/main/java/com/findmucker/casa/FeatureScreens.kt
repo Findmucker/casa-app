@@ -293,17 +293,27 @@ private fun SavingsCard(goal: SavingsGoal, working: Boolean, onDeposit: (Savings
 @Composable
 fun EventsScreen(
     events: List<CasaEvent>,
+    eventItems: Map<String, List<EventItem>>,
     working: Boolean,
     error: String?,
     notice: String?,
     onAdd: (String, String, String) -> Unit,
     onToggle: (CasaEvent) -> Unit,
     onDelete: (String) -> Unit,
+    onUpdate: (String, Map<String, Any?>) -> Unit,
+    onAddItem: (String, String, String, String?) -> Unit,
+    onToggleItem: (String, EventItem) -> Unit,
+    onAssignItem: (String, String, String) -> Unit,
+    onRenameItem: (String, String, String) -> Unit,
+    onDeleteItem: (String, String) -> Unit,
+    onClone: (CasaEvent) -> Unit,
+    onShare: (CasaEvent) -> Unit,
 ) {
     var showAdd by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
     var guests by remember { mutableStateOf("") }
+    var expandedId by remember { mutableStateOf<String?>(null) }
     val active = events.filterNot { it.done }
     val past = events.filter { it.done }
 
@@ -333,27 +343,171 @@ fun EventsScreen(
         LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
             if (events.isEmpty()) item { EmptyState("🎉", "Ainda não há eventos") }
             if (active.isNotEmpty()) item { FeatureGroupLabel("Próximos eventos", active.size, CasinhaPalette.Rose500) }
-            items(active, key = { it.id }) { event -> EventCard(event, working, onToggle, onDelete) }
+            items(active, key = { it.id }) { event ->
+                DetailedEventCard(
+                    event = event,
+                    items = eventItems[event.id].orEmpty(),
+                    expanded = expandedId == event.id,
+                    working = working,
+                    onExpand = { expandedId = if (expandedId == event.id) null else event.id },
+                    onToggle = { onToggle(event) },
+                    onDelete = { onDelete(event.id) },
+                    onUpdate = { onUpdate(event.id, it) },
+                    onAddItem = { name, type, assignee -> onAddItem(event.id, name, type, assignee) },
+                    onToggleItem = { onToggleItem(event.id, it) },
+                    onAssignItem = { itemId, assignee -> onAssignItem(event.id, itemId, assignee) },
+                    onRenameItem = { itemId, name -> onRenameItem(event.id, itemId, name) },
+                    onDeleteItem = { onDeleteItem(event.id, it) },
+                    onShare = { onShare(event) },
+                )
+            }
             if (past.isNotEmpty()) item { FeatureGroupLabel("Concluídos", past.size, CasinhaPalette.Pink300) }
-            items(past, key = { "past-${it.id}" }) { event -> EventCard(event, working, onToggle, onDelete) }
+            items(past, key = { "past-${it.id}" }) { event ->
+                GlassCard(modifier = Modifier.fillMaxWidth(), color = CasinhaPalette.Pink50) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🎉", fontSize = 21.sp)
+                        Column(modifier = Modifier.weight(1f).padding(horizontal = 9.dp)) {
+                            Text(event.title, color = CasinhaPalette.Pink500, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
+                            Text("${event.date}  ·  ${eventItems[event.id].orEmpty().count { it.done }}/${eventItems[event.id].orEmpty().size} itens", color = CasinhaPalette.Pink300, fontSize = 9.sp)
+                        }
+                        TextButton(onClick = { onClone(event) }, enabled = !working) { Text("📋 Clonar", color = CasinhaPalette.Purple500, fontSize = 9.sp) }
+                        IconButton(onClick = { onDelete(event.id) }, enabled = !working, modifier = Modifier.size(30.dp)) { Icon(Icons.Rounded.DeleteOutline, "Apagar", tint = CasinhaPalette.Pink300) }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun EventCard(event: CasaEvent, working: Boolean, onToggle: (CasaEvent) -> Unit, onDelete: (String) -> Unit) {
+private fun DetailedEventCard(
+    event: CasaEvent,
+    items: List<EventItem>,
+    expanded: Boolean,
+    working: Boolean,
+    onExpand: () -> Unit,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit,
+    onUpdate: (Map<String, Any?>) -> Unit,
+    onAddItem: (String, String, String?) -> Unit,
+    onToggleItem: (EventItem) -> Unit,
+    onAssignItem: (String, String) -> Unit,
+    onRenameItem: (String, String) -> Unit,
+    onDeleteItem: (String) -> Unit,
+    onShare: () -> Unit,
+) {
+    var title by remember(event.id, event.title) { mutableStateOf(event.title) }
+    var newParticipant by remember(event.id) { mutableStateOf("") }
+    var newItem by remember(event.id) { mutableStateOf("") }
+    var newType by remember(event.id) { mutableStateOf("compra") }
+    var assignee by remember(event.id) { mutableStateOf("") }
+    val completed = items.count { it.done }
     GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = CasinhaPalette.Rose100) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(modifier = Modifier.size(38.dp).clickable(enabled = !working) { onToggle(event) }, shape = CircleShape, color = if (event.done) CasinhaPalette.Emerald400 else CasinhaPalette.Rose50, border = BorderStroke(1.dp, CasinhaPalette.Rose200)) {
-                Box(contentAlignment = Alignment.Center) { if (event.done) Icon(Icons.Rounded.Check, "Reabrir", tint = Color.White) else Text("🎉", fontSize = 19.sp) }
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(onClick = onExpand)) {
+                Text("🎉", fontSize = 22.sp)
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 10.dp)) {
+                    Text(event.title, color = CasinhaPalette.Rose700, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (event.date.isNotBlank()) Text("📅 ${event.date}", color = CasinhaPalette.Pink400, fontSize = 9.sp)
+                        Text("👥 ${event.participants.size}/${event.guests.coerceAtLeast(event.participants.size)}", color = CasinhaPalette.Purple400, fontSize = 9.sp)
+                        if (items.isNotEmpty()) Text("$completed/${items.size}", color = CasinhaPalette.Purple500, fontSize = 9.sp)
+                    }
+                }
+                TextButton(onClick = onShare, enabled = !working) { Text("🔗 Partilhar", color = CasinhaPalette.Purple500, fontSize = 9.sp) }
+                Text(if (expanded) "▼" else "▶", color = CasinhaPalette.Pink300, fontSize = 10.sp)
             }
-            Column(modifier = Modifier.weight(1f).padding(horizontal = 10.dp)) {
-                Text(event.title, color = CasinhaPalette.Rose700, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                if (event.date.isNotBlank()) Text("📅 ${event.date}", color = CasinhaPalette.Pink400, fontSize = 10.sp)
-                Text("👥 ${event.participants.size}/${event.guests.coerceAtLeast(event.participants.size)} · ${event.participants.joinToString()}", color = CasinhaPalette.MutedInk, fontSize = 9.sp, maxLines = 1)
+            if (items.isNotEmpty()) CasinhaProgress(completed.toFloat() / items.size, CasinhaPalette.Purple400, Modifier.padding(top = 7.dp), height = 4)
+            if (expanded) {
+                Column(modifier = Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+                        CasinhaInput(title, { title = it }, "Nome do evento", Modifier.weight(1f))
+                        TextButton(onClick = { if (title.isNotBlank()) onUpdate(mapOf("title" to title.trim())) }, enabled = !working) { Text("Guardar", color = CasinhaPalette.Rose500, fontSize = 9.sp) }
+                    }
+                    Text("👥 PARTICIPANTES (${event.participants.size})", color = CasinhaPalette.Purple500, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    event.participants.forEach { participant ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(participant, color = CasinhaPalette.Rose700, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                            TextButton(onClick = { onUpdate(mapOf("participants" to event.participants.filterNot { it == participant })) }, enabled = !working) { Text("×", color = CasinhaPalette.Pink300) }
+                        }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+                        CasinhaInput(newParticipant, { newParticipant = it }, "Adicionar pessoa...", Modifier.weight(1f))
+                        GradientActionButton("+", {
+                            val clean = newParticipant.trim()
+                            if (clean.isNotBlank() && clean !in event.participants) {
+                                val people = event.participants + clean
+                                onUpdate(mapOf("participants" to people, "guests" to event.guests.coerceAtLeast(people.size)))
+                                newParticipant = ""
+                            }
+                        }, enabled = newParticipant.isNotBlank() && !working)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf("compra" to "🛒 Compra", "todo" to "✅ Tarefa").forEach { (value, label) ->
+                            Surface(modifier = Modifier.clickable { newType = value }, shape = CircleShape, color = if (newType == value) CasinhaPalette.Purple500 else CasinhaPalette.Purple50) {
+                                Text(label, color = if (newType == value) Color.White else CasinhaPalette.Purple500, fontSize = 9.sp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+                            }
+                        }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+                        CasinhaInput(newItem, { newItem = it }, if (newType == "compra") "O que comprar..." else "O que fazer...", Modifier.weight(1f))
+                        GradientActionButton("+", { onAddItem(newItem, newType, assignee.ifBlank { null }); newItem = "" }, enabled = newItem.isNotBlank() && !working, start = CasinhaPalette.Purple400, end = CasinhaPalette.Pink400)
+                    }
+                    if (event.participants.isNotEmpty()) {
+                        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            (listOf("") + event.participants).forEach { person ->
+                                Surface(modifier = Modifier.clickable { assignee = person }, shape = CircleShape, color = if (assignee == person) CasinhaPalette.Pink100 else Color.White) {
+                                    Text(if (person.isBlank()) "Sem responsável" else person, color = CasinhaPalette.Purple500, fontSize = 8.sp, modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp))
+                                }
+                            }
+                        }
+                    }
+                    listOf("compra" to "🛒 Compras", "todo" to "✅ Tarefas").forEach { (type, label) ->
+                        val typed = items.filter { it.type == type }
+                        if (typed.isNotEmpty()) {
+                            Text(label.uppercase(), color = CasinhaPalette.Purple500, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            typed.forEach { item ->
+                                EventItemRow(item, event.participants, working, onToggleItem, onAssignItem, onRenameItem, onDeleteItem)
+                            }
+                        }
+                    }
+                    Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                        TextButton(onClick = onToggle, enabled = !working) { Text("✓ Concluir evento", color = CasinhaPalette.Emerald600, fontSize = 10.sp) }
+                        TextButton(onClick = onDelete, enabled = !working) { Text("Apagar", color = CasinhaPalette.Pink400, fontSize = 10.sp) }
+                    }
+                }
             }
-            IconButton(onClick = { onDelete(event.id) }, enabled = !working, modifier = Modifier.size(34.dp)) { Icon(Icons.Rounded.DeleteOutline, "Apagar evento", tint = CasinhaPalette.Pink300) }
         }
+    }
+}
+
+@Composable
+private fun EventItemRow(
+    item: EventItem,
+    participants: List<String>,
+    working: Boolean,
+    onToggle: (EventItem) -> Unit,
+    onAssign: (String, String) -> Unit,
+    onRename: (String, String) -> Unit,
+    onDelete: (String) -> Unit,
+) {
+    var editing by remember(item.id) { mutableStateOf(false) }
+    var name by remember(item.id, item.name) { mutableStateOf(item.name) }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Checkbox(checked = item.done, onCheckedChange = { onToggle(item) }, enabled = !working, colors = CheckboxDefaults.colors(checkedColor = CasinhaPalette.Purple400), modifier = Modifier.size(30.dp))
+        if (editing) {
+            CasinhaInput(name, { name = it }, "Item", Modifier.weight(1f))
+            TextButton(onClick = { onRename(item.id, name); editing = false }) { Text("✓", color = CasinhaPalette.Emerald600) }
+        } else {
+            Text(item.name, color = if (item.done) CasinhaPalette.Purple300 else CasinhaPalette.Rose700, fontSize = 11.sp, textDecoration = if (item.done) androidx.compose.ui.text.style.TextDecoration.LineThrough else null, modifier = Modifier.weight(1f).clickable { editing = true })
+        }
+        if (participants.isNotEmpty() && !editing) {
+            val currentIndex = participants.indexOf(item.assignee)
+            TextButton(onClick = { onAssign(item.id, if (currentIndex >= participants.lastIndex) "" else participants[currentIndex + 1]) }) {
+                Text(item.assignee?.takeIf { it.isNotBlank() } ?: "—", color = CasinhaPalette.Purple500, fontSize = 8.sp, maxLines = 1)
+            }
+        }
+        if (!editing) IconButton(onClick = { onDelete(item.id) }, enabled = !working, modifier = Modifier.size(28.dp)) { Icon(Icons.Rounded.DeleteOutline, "Apagar item", tint = CasinhaPalette.Pink300, modifier = Modifier.size(16.dp)) }
     }
 }
 

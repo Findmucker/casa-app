@@ -117,6 +117,14 @@ data class CasaEvent(
     val done: Boolean,
 )
 
+data class EventItem(
+    val id: String,
+    val name: String,
+    val done: Boolean,
+    val type: String,
+    val assignee: String? = null,
+)
+
 data class FriendHouse(
     val id: String,
     val houseId: String,
@@ -165,6 +173,7 @@ data class DashboardState(
     val incomes: List<IncomeItem> = emptyList(),
     val savingsGoals: List<SavingsGoal> = emptyList(),
     val events: List<CasaEvent> = emptyList(),
+    val eventItems: Map<String, List<EventItem>> = emptyMap(),
     val friends: List<FriendHouse> = emptyList(),
     val gamification: GamificationProfile = GamificationProfile(),
     val memberGamification: Map<String, GamificationProfile> = emptyMap(),
@@ -193,6 +202,7 @@ data class CasaUiState(
     val notice: String? = null,
     val inviteCode: String? = null,
     val friendCode: String? = null,
+    val shareUrl: String? = null,
 )
 
 fun nextProjectStatus(status: String?): String = when (status) {
