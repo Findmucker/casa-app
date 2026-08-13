@@ -14,6 +14,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -25,6 +26,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class FirebaseCasaRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
@@ -282,12 +284,135 @@ class FirebaseCasaRepository(
     fun observeGamification(name: String, onResult: (Result<GamificationProfile>) -> Unit): ListenerRegistration =
         firestore.collection("gamification").document(name).addSnapshotListener { document, error ->
             if (error != null) return@addSnapshotListener onResult(Result.failure(error))
+            val equipped = (document?.get("equipped") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    val slot = LootSlot.fromKey(key as? String ?: return@mapNotNull null)
+                        ?: return@mapNotNull null
+                    val itemId = value as? String ?: return@mapNotNull null
+                    slot to itemId
+                }
+                ?.toMap()
+                .orEmpty()
+            val avatar = (document?.get("avatar") as? Map<*, *>)
+                ?.let(::avatarConfigFromMap)
+                ?: AvatarConfig()
             onResult(Result.success(GamificationProfile(
                 points = document?.getLong("points")?.toInt() ?: 0,
+                totalCompleted = document?.getLong("totalCompleted")?.toInt() ?: 0,
                 maxStreak = document?.getLong("maxStreak")?.toInt() ?: 0,
+                shoppingDone = document?.getLong("shoppingDone")?.toInt() ?: 0,
+                coisinhasDone = document?.getLong("coisinhasDone")?.toInt() ?: 0,
+                projectsDone = document?.getLong("projectsDone")?.toInt() ?: 0,
+                habitsDone = document?.getLong("habitsDone")?.toInt() ?: 0,
                 badges = (document?.get("badges") as? List<*>)?.filterIsInstance<String>().orEmpty(),
+                inventory = (document?.get("inventory") as? List<*>)?.mapNotNull { raw ->
+                    val item = raw as? Map<*, *> ?: return@mapNotNull null
+                    InventoryItem(
+                        itemId = item["itemId"] as? String ?: return@mapNotNull null,
+                        count = (item["count"] as? Number)?.toInt() ?: 1,
+                    )
+                }.orEmpty(),
+                equipped = equipped,
+                boxesOpened = document?.getLong("boxesOpened")?.toInt() ?: 0,
+                avatar = avatar,
             )))
         }
+
+    suspend fun equipItem(owner: String, itemId: String, slot: LootSlot) {
+        val ref = firestore.collection("gamification").document(owner)
+        firestore.runTransaction { transaction ->
+            val document = transaction.get(ref)
+            val owned = (document.get("inventory") as? List<*>)?.any { raw ->
+                (raw as? Map<*, *>)?.get("itemId") == itemId
+            } == true
+            require(owned) { "Esse item não está no teu inventário." }
+            val item = CasinhaLoot.firstOrNull { it.id == itemId && it.slot == slot }
+            requireNotNull(item) { "O item não pertence a esse slot." }
+            val equipped = (document.get("equipped") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    val cleanKey = key as? String ?: return@mapNotNull null
+                    val cleanValue = value as? String ?: return@mapNotNull null
+                    cleanKey to cleanValue
+                }
+                ?.toMap()
+                ?.toMutableMap()
+                ?: mutableMapOf()
+            equipped[slot.key] = itemId
+            transaction.update(ref, "equipped", equipped)
+        }.await()
+    }
+
+    suspend fun unequipItem(owner: String, slot: LootSlot) {
+        val ref = firestore.collection("gamification").document(owner)
+        firestore.runTransaction { transaction ->
+            val document = transaction.get(ref)
+            val equipped = (document.get("equipped") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    val cleanKey = key as? String ?: return@mapNotNull null
+                    val cleanValue = value as? String ?: return@mapNotNull null
+                    cleanKey to cleanValue
+                }
+                ?.toMap()
+                ?.toMutableMap()
+                ?: mutableMapOf()
+            equipped.remove(slot.key)
+            transaction.update(ref, "equipped", equipped)
+        }.await()
+    }
+
+    suspend fun saveAvatar(owner: String, avatar: AvatarConfig) {
+        firestore.collection("gamification").document(owner)
+            .set(mapOf("avatar" to avatar.asFirestoreMap()), SetOptions.merge())
+            .await()
+    }
+
+    suspend fun openLootBox(owner: String): LootItem {
+        val ref = firestore.collection("gamification").document(owner)
+        return firestore.runTransaction { transaction ->
+            val document = transaction.get(ref)
+            require(document.exists()) { "Ainda não tens um perfil de recompensas." }
+            val points = document.getLong("points")?.toInt() ?: 0
+            val boxesOpened = document.getLong("boxesOpened")?.toInt() ?: 0
+            require(points / 50 - boxesOpened > 0) { "Não tens caixas por abrir." }
+
+            val rarityRoll = Random.nextInt(100)
+            val rarity = when {
+                rarityRoll < 5 -> LootRarity.LEGENDARY
+                rarityRoll < 20 -> LootRarity.EPIC
+                rarityRoll < 50 -> LootRarity.RARE
+                else -> LootRarity.COMMON
+            }
+            val candidates = CasinhaLoot.filter { it.rarity == rarity }
+            val reward = candidates[Random.nextInt(candidates.size)]
+            val inventory = (document.get("inventory") as? List<*>)
+                ?.mapNotNull { raw ->
+                    val item = raw as? Map<*, *> ?: return@mapNotNull null
+                    val itemId = item["itemId"] as? String ?: return@mapNotNull null
+                    mutableMapOf<String, Any>(
+                        "itemId" to itemId,
+                        "count" to ((item["count"] as? Number)?.toInt() ?: 1),
+                    )
+                }
+                ?.toMutableList()
+                ?: mutableListOf()
+            val existing = inventory.firstOrNull { it["itemId"] == reward.id }
+            val updates = mutableMapOf<String, Any>("boxesOpened" to boxesOpened + 1)
+            if (existing == null) {
+                inventory += mutableMapOf("itemId" to reward.id, "count" to 1)
+                updates["inventory"] = inventory
+            } else {
+                val bonus = when (reward.rarity) {
+                    LootRarity.COMMON -> 5
+                    LootRarity.RARE -> 15
+                    LootRarity.EPIC -> 30
+                    LootRarity.LEGENDARY -> 50
+                }
+                updates["points"] = points + bonus
+            }
+            transaction.update(ref, updates)
+            reward
+        }.await()
+    }
 
     suspend fun addItem(houseId: String, section: HouseSection, draft: ItemDraft, addedBy: String) {
         val cleanName = draft.name.trim()
@@ -606,6 +731,17 @@ class FirebaseCasaRepository(
 
     private fun houseCollection(houseId: String, collection: String) =
         firestore.collection("houses").document(houseId).collection(collection)
+
+    private fun avatarConfigFromMap(value: Map<*, *>): AvatarConfig = AvatarConfig(
+        animal = (value["animal"] as? Number)?.toInt() ?: 0,
+        eyes = (value["eyes"] as? Number)?.toInt() ?: 0,
+        mouth = (value["mouth"] as? Number)?.toInt() ?: 0,
+        top = (value["top"] as? Number)?.toInt() ?: 0,
+        bottom = (value["bottom"] as? Number)?.toInt() ?: 0,
+        accessory = (value["accessory"] as? Number)?.toInt() ?: 0,
+        background = (value["background"] as? Number)?.toInt() ?: 0,
+        effect = (value["effect"] as? Number)?.toInt() ?: 0,
+    )
 
     private fun DocumentSnapshot.number(field: String): Double? = (get(field) as? Number)?.toDouble()
 

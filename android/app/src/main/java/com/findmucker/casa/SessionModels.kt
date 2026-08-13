@@ -126,8 +126,17 @@ data class FriendHouse(
 
 data class GamificationProfile(
     val points: Int = 0,
+    val totalCompleted: Int = 0,
     val maxStreak: Int = 0,
+    val shoppingDone: Int = 0,
+    val coisinhasDone: Int = 0,
+    val projectsDone: Int = 0,
+    val habitsDone: Int = 0,
     val badges: List<String> = emptyList(),
+    val inventory: List<InventoryItem> = emptyList(),
+    val equipped: Map<LootSlot, String> = emptyMap(),
+    val boxesOpened: Int = 0,
+    val avatar: AvatarConfig = AvatarConfig(),
 )
 
 data class WeatherDay(
@@ -158,6 +167,7 @@ data class DashboardState(
     val events: List<CasaEvent> = emptyList(),
     val friends: List<FriendHouse> = emptyList(),
     val gamification: GamificationProfile = GamificationProfile(),
+    val memberGamification: Map<String, GamificationProfile> = emptyMap(),
     val weather: WeatherState = WeatherState(),
 ) {
     fun forSection(section: HouseSection): List<HouseItem> = items[section].orEmpty()

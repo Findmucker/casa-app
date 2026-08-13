@@ -47,4 +47,27 @@ class SessionModelsTest {
         assertEquals(2, levelForPoints(50))
         assertEquals(11, levelForPoints(500))
     }
+
+    @Test
+    fun `native loot catalog matches all six web equipment slots`() {
+        assertEquals(30, CasinhaLoot.size)
+        assertEquals(LootSlot.entries.toSet(), CasinhaLoot.map { it.slot }.toSet())
+        assertEquals(5, CasinhaLoot.count { it.slot == LootSlot.HELMET })
+    }
+
+    @Test
+    fun `avatar editor preserves the eight shared firestore fields`() {
+        val avatar = AvatarSlot.entries.fold(AvatarConfig()) { current, slot ->
+            current.withValue(slot, slot.ordinal + 1)
+        }
+
+        assertEquals(AvatarSlot.entries.map { it.ordinal + 1 }, AvatarSlot.entries.map(avatar::value))
+        assertEquals(AvatarSlot.entries.map { it.key }.toSet(), avatar.asFirestoreMap().keys)
+    }
+
+    @Test
+    fun `pending loot boxes follow the web fifty point threshold`() {
+        assertEquals(0, pendingLootBoxes(GamificationProfile(points = 49)))
+        assertEquals(2, pendingLootBoxes(GamificationProfile(points = 150, boxesOpened = 1)))
+    }
 }

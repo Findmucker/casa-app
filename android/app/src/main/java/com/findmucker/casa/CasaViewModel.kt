@@ -166,6 +166,35 @@ class CasaViewModel(
         }
     }
 
+    fun equipItem(itemId: String, slot: LootSlot) {
+        val ready = readySession() ?: return
+        runAction("Item equipado.") { repository.equipItem(ready.profile.name, itemId, slot) }
+    }
+
+    fun unequipItem(slot: LootSlot) {
+        val ready = readySession() ?: return
+        runAction("Item removido.") { repository.unequipItem(ready.profile.name, slot) }
+    }
+
+    fun saveAvatar(avatar: AvatarConfig) {
+        val ready = readySession() ?: return
+        runAction("Avatar guardado.") { repository.saveAvatar(ready.profile.name, avatar) }
+    }
+
+    fun openLootBox() {
+        val ready = readySession() ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(working = true, error = null, notice = null) }
+            runCatching { repository.openLootBox(ready.profile.name) }
+                .onSuccess { reward ->
+                    _uiState.update { it.copy(working = false, notice = "${reward.emoji} Recebeste ${reward.name}!") }
+                }
+                .onFailure { error ->
+                    _uiState.update { it.copy(working = false, error = FirebaseCasaRepository.friendlyError(error)) }
+                }
+        }
+    }
+
     fun createInvite() {
         val ready = readySession() ?: return
         runAction("Convite válido por 7 dias.") {
@@ -281,6 +310,15 @@ class CasaViewModel(
         listeners += repository.observeGamification(session.profile.name) { result ->
             result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(gamification = value)) } }
                 .onFailure { /* gamification is optional */ }
+        }
+        session.house.members.filter { it.name != session.profile.name }.forEach { member ->
+            listeners += repository.observeGamification(member.name) { result ->
+                result.onSuccess { value ->
+                    _uiState.update {
+                        it.copy(dashboard = it.dashboard.copy(memberGamification = it.dashboard.memberGamification + (member.name to value)))
+                    }
+                }.onFailure { /* member gamification is optional */ }
+            }
         }
         refreshWeather()
     }
