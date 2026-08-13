@@ -106,6 +106,8 @@ A household management PWA and Android app for couples and families — organize
 - Native Firebase authentication and real-time Firestore household data
 - The same nine destinations, navigation order, compact header, visual identity, and
   supporting search/house/profile surfaces as the web client
+- Native Android FCM service, system notification channels, and direct tab routing
+- Local Android habit alarms with shared completion checks and two-hour retry windows
 - **Back button navigation** — device/browser back closes panels instead of leaving the app
 - Push notifications via Firebase Cloud Messaging (FCM) using **data-only messages** (no duplicates)
 - **Service worker with `skipWaiting` + cache purge** for reliable updates

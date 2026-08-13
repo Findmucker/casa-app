@@ -190,13 +190,16 @@ a predefinição para as sessões seguintes.
 A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 
 ### Ativar notificacoes
-1. Vai a tab **Rotinas**
-2. Toca no botao 🔔 no topo
-3. Aceita a permissao do browser
+1. Abre a app Android **Casinha** e inicia sessao
+2. Aceita a permissao de notificacoes pedida pelo Android
+3. Em **Rotinas**, configura a hora e os dias de cada lembrete
 4. Pronto! Recebes notificacoes mesmo com a app fechada
 
+Na PWA web opcional, a permissao continua a ser pedida pelo browser.
+
 ### Verificar estado das notificacoes
-- Menu central → **❓ Ajuda** — mostra se as notificacoes estao ativas, o estado da permissao e informacao de debug
+- Android: **Definicoes → Apps → Casinha → Notificacoes**
+- Web: menu central → **❓ Ajuda** mostra o estado da permissao do browser
 
 ### Routing inteligente
 - Ao tocar numa notificacao, a app abre diretamente na **tab correta** (ex: notificacao de compras abre a tab Compras, notificacao de evento abre Eventos)
@@ -410,6 +413,9 @@ A app funciona como **aplicacao Android nativa** e, separadamente, como
   com pesquisa, menu da casa, perfil, membros, amigos, mensagens, historico e ajuda.
   O cabeçalho, a paleta rosa/roxo, os cartoes e os emojis seguem a identidade visual
   da Casinha web.
+- **Notificacoes Android:** são apresentadas pelo próprio sistema e abrem diretamente
+  a tab nativa relevante. Os lembretes de rotina repetem durante duas horas e param
+  assim que a rotina fica concluida nesse dia.
 - **Android/Chrome (PWA web opcional):** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
 - **iOS/Safari:** Botao de partilha → "Adicionar ao ecra inicial"
 

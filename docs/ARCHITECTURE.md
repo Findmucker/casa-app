@@ -50,10 +50,17 @@ equivalent house scoping and real-time updates.
 
 ## Notifications
 
-Web FCM tokens continue to receive server-scheduled reminders. Native Android push
-delivery requires an Android Firebase app registration and a dedicated FCM service;
-until that release is configured, the native UI does not claim browser notification
-delegation. Server-side scheduling and Firestore delivery deduplication are unchanged.
+Web and Android FCM tokens receive the same data-only server messages. On Android,
+`CasinhaMessagingService` stores the device token with `platform: android`, creates a
+native system notification, and publishes a one-shot navigation target consumed by
+the Compose dashboard. Notification tags map to the relevant native destination, so
+opening a notification never delegates to a browser.
+
+Android also mirrors configured habit times through `AlarmManager`. The broadcast
+receiver checks `habit_checks` before each alert, repeats incomplete habits every 10
+minutes inside a two-hour window, and schedules the next eligible day afterwards.
+Server-side scheduling and Firestore delivery deduplication remain the cross-device
+fallback and source of remote reminders.
 
 Operational details are in [CRON_SETUP.md](CRON_SETUP.md). Android build and device
 operations are in [ANDROID.md](ANDROID.md).

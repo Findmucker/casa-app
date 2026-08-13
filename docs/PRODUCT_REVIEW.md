@@ -41,14 +41,16 @@ casa, pesquisa e perfil — usam o mesmo esquema Firestore da web.
   ajuda dentro do processo Android.
 - Identidade visual Casinha restaurada para a experiência nativa: layout compacto,
   paleta rosa/roxo clara, cartões translúcidos e navegação original.
+- FCM nativo, canais de notificação, routing para a tab correta e lembretes locais de
+  hábitos que consultam o estado partilhado antes de alertar.
 - APK debug testado por Gradle e disponibilizado no GitHub Actions.
 - Verificação automática que impede regressões para TWA/browser/WebView.
 
 ### Evolução posterior à paridade base
 
-1. FCM nativo, lembretes locais e links de aplicação.
+1. Links de aplicação verificados para convites e eventos partilhados.
 2. Distribuição pela faixa interna do Google Play e assinatura de produção.
-3. Testes instrumentados de screenshot para os viewports suportados.
+3. Testes instrumentados de screenshot e notificações nos dispositivos suportados.
 
 Cada domínio deve ter modelos, repositório, ViewModel, estados de erro/vazio e testes
 próprios. Paridade não significa copiar a estrutura de componentes React; significa
@@ -63,7 +65,7 @@ preservar a experiência reconhecível, o comportamento e os dados com padrões 
 | Build Android | GitHub Actions | usa minutos de CI e guarda APK debug por 14 dias |
 | Distribuição pública | Google Play | requer conta, assinatura, políticas e testes internos |
 | Google login | Firebase/Google Identity | sem browser; requer package ID e certificados Android registados |
-| Push nativo | Firebase Cloud Messaging | sem custo de envio, mas requer implementação e QA Android dedicados |
+| Push nativo | Firebase Cloud Messaging | sem custo de envio; exige monitorização e QA Android por fabricante |
 
 Referências oficiais:
 

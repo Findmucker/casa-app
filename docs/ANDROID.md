@@ -13,7 +13,7 @@ Firebase Authentication and Firestore are called directly from the Android proce
 | Minimum Android | API 23 (Android 6.0) |
 | Compile/target API | 36 |
 | Language and UI | Kotlin 2.1, Jetpack Compose and Material 3 |
-| Data | Firebase Auth and Firestore |
+| Data and messaging | Firebase Auth, Firestore and Cloud Messaging |
 | Firebase Android app ID | `1:776757654663:android:723d4443cad6dd283ff422` |
 
 The hand-maintained Android project is under `android/`. `MainActivity` owns the
@@ -35,7 +35,9 @@ foreground UI and `FirebaseCasaRepository` preserves the existing web data model
   events, including the richer fields already stored by the web client;
 - native search, history, invites, members, friends, messages, profile, help, house
   rename, and sign-out surfaces;
-- calendar aggregation and Open-Meteo forecast rendered inside the Android process.
+- calendar aggregation and Open-Meteo forecast rendered inside the Android process;
+- native FCM delivery, system notification channels, direct routing to the matching
+  tab, and local 10-minute habit reminders during each configured two-hour window.
 
 The Android shell deliberately follows the established Casinha visual system: compact
 rose header, pale pink/purple background, translucent cards, the original labels and
@@ -73,8 +75,22 @@ npm run android:build
 The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 `android:verify` is an architectural guard: it checks the package, native entry
-point, Compose/Firebase dependencies, all nine navigation destinations and supporting
-surfaces, and rejects Bubblewrap, TWA, Custom Tab, WebView, or browser-helper code.
+point, Compose/Firebase dependencies, messaging services, all nine navigation
+destinations and supporting surfaces, and rejects Bubblewrap, TWA, Custom Tab,
+WebView, or browser-helper code.
+
+## Native notifications and reminders
+
+Android requests the operating-system notification permission after the first
+successful login. `CasinhaMessagingService` registers the device FCM token under
+`fcm_tokens/{uid}`, renders data-only messages with native notification channels, and
+routes a tap to Início, Compras, Rotinas, Calendário, or Eventos according to its tag.
+
+`HabitReminderScheduler` mirrors each enabled habit reminder with `AlarmManager`.
+Before displaying a reminder, the receiver checks the shared `habit_checks`
+collection. An incomplete habit repeats every 10 minutes for up to two hours; a
+completed habit is skipped for the rest of that day. The server scheduler and its
+delivery leases remain the cross-device fallback.
 
 ## Firebase setup
 
@@ -128,6 +144,11 @@ Official references:
       help all open without leaving `com.findmucker.casa`.
 - [ ] Add, complete/status/check, and delete actions persist after relaunch.
 - [ ] Finance, calendar, events, and weather show the existing shared-house data.
+- [ ] The Android notification permission is granted and an FCM token exists for the
+      signed-in user with `platform: android`.
+- [ ] A notification appears with Casinha branding and tapping it opens the matching
+      native tab without launching a browser.
+- [ ] A configured habit reminder stops after the habit is checked for that day.
 - [ ] Compare login, dashboard, cards, spacing, colors, labels, and emojis with the web
       client at the same 720 px viewport.
 - [ ] Back and system navigation do not open a browser.
@@ -149,3 +170,10 @@ Install `platforms;android-36` and `build-tools;36.0.0` using Android Studio or
 
 One is the old browser-installed PWA. Long-press it, open app information, and
 uninstall it. The dedicated APK is package `com.findmucker.casa`.
+
+### Notifications do not appear
+
+Open Android Settings → Apps → Casinha → Notifications and allow notifications. Then
+open Casinha while signed in so the FCM token and local habit alarms are refreshed.
+Samsung battery restrictions can delay alarms; allow background activity for Casinha
+when reliable habit reminders are required.
