@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -755,9 +756,95 @@ class FirebaseCasaRepository(
         connection.disconnect()
     }
 
-    suspend fun loadWeather(): WeatherState = withContext(Dispatchers.IO) {
+    suspend fun loadWeatherPreferences(userId: String): WeatherPreferences {
+        val document = firestore.collection("users").document(userId).collection("preferences").document("weather").get().await()
+        if (!document.exists()) return WeatherPreferences()
+        val favorites = (document.get("favorites") as? List<*>)?.mapNotNull { raw ->
+            val value = raw as? Map<*, *> ?: return@mapNotNull null
+            weatherLocationFromMap(value)
+        }.orEmpty().distinctBy { it.id }.take(10)
+        val requestedDefault = document.getString("defaultFavoriteId")
+        val mode = when {
+            document.getString("defaultMode") == "current" -> "current"
+            document.getString("defaultMode") == "favorite" && favorites.any { it.id == requestedDefault } -> "favorite"
+            else -> "fallback"
+        }
+        return WeatherPreferences(mode, requestedDefault?.takeIf { mode == "favorite" }, favorites)
+    }
+
+    suspend fun saveWeatherPreferences(userId: String, preferences: WeatherPreferences) {
+        firestore.collection("users").document(userId).collection("preferences").document("weather").set(
+            mapOf(
+                "defaultMode" to preferences.defaultMode,
+                "defaultFavoriteId" to (preferences.defaultFavoriteId ?: FieldValue.delete()),
+                "favorites" to preferences.favorites.map { it.asFirestoreMap() },
+                "updatedAt" to FieldValue.serverTimestamp(),
+            ),
+            SetOptions.merge(),
+        ).await()
+    }
+
+    suspend fun searchWeatherLocations(query: String): List<WeatherLocation> = withContext(Dispatchers.IO) {
+        if (query.trim().length < 2) return@withContext emptyList()
+        val encoded = URLEncoder.encode(query.trim(), Charsets.UTF_8.name())
+        val json = JSONObject(URL("https://geocoding-api.open-meteo.com/v1/search?name=$encoded&count=8&language=pt&format=json").readText())
+        val results = json.optJSONArray("results") ?: return@withContext emptyList()
+        (0 until results.length()).mapNotNull { index ->
+            val item = results.optJSONObject(index) ?: return@mapNotNull null
+            val name = item.optString("name").trim()
+            val latitude = item.optDouble("latitude", Double.NaN)
+            val longitude = item.optDouble("longitude", Double.NaN)
+            if (name.isBlank() || !latitude.isFinite() || !longitude.isFinite()) return@mapNotNull null
+            val timezone = item.optString("timezone", "auto")
+            val admin = item.optString("admin1").takeIf(String::isNotBlank)
+            val country = item.optString("country").takeIf(String::isNotBlank)
+            WeatherLocation(
+                id = "%.4f,%.4f@%s".format(Locale.US, latitude, longitude, timezone),
+                latitude = latitude,
+                longitude = longitude,
+                name = name,
+                label = listOfNotNull(name, admin, country).joinToString(" · "),
+                timezone = timezone,
+                source = "geocoding",
+                admin1 = admin,
+                country = country,
+                countryCode = item.optString("country_code").takeIf(String::isNotBlank)?.uppercase(),
+            )
+        }.distinctBy { it.id }
+    }
+
+    suspend fun loadBirthdays(house: House, friends: List<FriendHouse>): List<BirthdayEntry> {
+        val results = mutableListOf<BirthdayEntry>()
+        house.members.forEach { member ->
+            val birthDate = runCatching {
+                firestore.collection("users").document(member.uid).get().await().getString("birthDate")
+            }.getOrNull()
+            if (!birthDate.isNullOrBlank()) results += BirthdayEntry(member.name, birthDate)
+        }
+        friends.forEach { friend ->
+            val friendHouse = runCatching { firestore.collection("houses").document(friend.houseId).get().await() }.getOrNull()
+                ?: return@forEach
+            val members = (friendHouse.get("members") as? List<*>)?.mapNotNull { raw -> raw as? Map<*, *> }.orEmpty()
+            members.forEach { member ->
+                val uid = member["uid"] as? String ?: return@forEach
+                val name = member["name"] as? String ?: "Pessoa"
+                val birthDate = runCatching {
+                    firestore.collection("users").document(uid).get().await().getString("birthDate")
+                }.getOrNull()
+                if (!birthDate.isNullOrBlank()) results += BirthdayEntry(name, birthDate, friend.houseName)
+            }
+        }
+        return results.distinctBy { "${it.houseName}:${it.name}:${it.birthDate}" }
+    }
+
+    suspend fun loadWeather(
+        location: WeatherLocation = DefaultWeatherLocation,
+        preferences: WeatherPreferences = WeatherPreferences(),
+    ): WeatherState = withContext(Dispatchers.IO) {
         runCatching {
-            val json = JSONObject(URL(WEATHER_URL).readText())
+            val timezone = URLEncoder.encode(location.timezone.ifBlank { "auto" }, Charsets.UTF_8.name())
+            val url = "https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&timezone=$timezone&current=temperature_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&forecast_days=7"
+            val json = JSONObject(URL(url).readText())
             val current = json.getJSONObject("current")
             val daily = json.getJSONObject("daily")
             val times = daily.getJSONArray("time")
@@ -767,6 +854,8 @@ class FirebaseCasaRepository(
             val rain = daily.getJSONArray("precipitation_probability_max")
             WeatherState(
                 loading = false,
+                activeLocation = location,
+                preferences = preferences,
                 temperature = current.getDouble("temperature_2m").roundToInt(),
                 windSpeed = current.getDouble("wind_speed_10m").roundToInt(),
                 weatherCode = current.getInt("weather_code"),
@@ -780,7 +869,7 @@ class FirebaseCasaRepository(
                     )
                 },
             )
-        }.getOrElse { WeatherState(loading = false, error = "Não foi possível atualizar o tempo.") }
+        }.getOrElse { WeatherState(loading = false, activeLocation = location, preferences = preferences, error = "Não foi possível atualizar o tempo.") }
     }
 
     private suspend fun loadSession(user: FirebaseUser): SessionState {
@@ -841,6 +930,40 @@ class FirebaseCasaRepository(
         effect = (value["effect"] as? Number)?.toInt() ?: 0,
     )
 
+    private fun weatherLocationFromMap(value: Map<*, *>): WeatherLocation? {
+        val id = value["id"] as? String ?: return null
+        val name = value["name"] as? String ?: return null
+        val latitude = (value["latitude"] as? Number)?.toDouble() ?: return null
+        val longitude = (value["longitude"] as? Number)?.toDouble() ?: return null
+        return WeatherLocation(
+            id = id,
+            latitude = latitude,
+            longitude = longitude,
+            name = name,
+            label = value["label"] as? String ?: name,
+            timezone = value["timezone"] as? String ?: "auto",
+            source = value["source"] as? String ?: "geocoding",
+            admin1 = value["admin1"] as? String,
+            country = value["country"] as? String,
+            countryCode = value["countryCode"] as? String,
+        )
+    }
+
+    private fun WeatherLocation.asFirestoreMap(): Map<String, Any> = mapOf(
+        "id" to id,
+        "latitude" to latitude,
+        "longitude" to longitude,
+        "name" to name,
+        "label" to label,
+        "timezone" to timezone,
+        "source" to source,
+        "isFallback" to (source == "fallback"),
+    ) + listOfNotNull(
+        admin1?.let { "admin1" to it },
+        country?.let { "country" to it },
+        countryCode?.let { "countryCode" to it },
+    ).toMap()
+
     private fun DocumentSnapshot.number(field: String): Double? = (get(field) as? Number)?.toDouble()
 
     private fun Subtask.asMap(): Map<String, Any> = mapOf("id" to id, "name" to name, "done" to done)
@@ -849,9 +972,6 @@ class FirebaseCasaRepository(
         private const val WEB_CLIENT_ID =
             "776757654663-4j0u4nelqulc5v28asuq972ots5cd8a8.apps.googleusercontent.com"
         private const val NOTIFICATION_ENDPOINT = "https://casa-app-zeta.vercel.app/api/send-notification"
-        private const val WEATHER_URL =
-            "https://api.open-meteo.com/v1/forecast?latitude=39.36&longitude=-9.16&timezone=Europe%2FLisbon&current=temperature_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&forecast_days=7"
-
         fun friendlyError(error: Throwable): String = when (error) {
             is GetCredentialException -> "Não foi possível escolher a conta Google. Confirma os Serviços Google Play e tenta novamente."
             is FirebaseAuthException -> when (error.errorCode) {

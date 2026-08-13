@@ -1,5 +1,17 @@
 package com.findmucker.casa
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Build
+import android.os.Bundle
+import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,11 +58,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -294,6 +308,7 @@ private fun SavingsCard(goal: SavingsGoal, working: Boolean, onDeposit: (Savings
 fun EventsScreen(
     events: List<CasaEvent>,
     eventItems: Map<String, List<EventItem>>,
+    weather: WeatherState,
     working: Boolean,
     error: String?,
     notice: String?,
@@ -347,6 +362,7 @@ fun EventsScreen(
                 DetailedEventCard(
                     event = event,
                     items = eventItems[event.id].orEmpty(),
+                    weather = weather.days.firstOrNull { it.date == event.date },
                     expanded = expandedId == event.id,
                     working = working,
                     onExpand = { expandedId = if (expandedId == event.id) null else event.id },
@@ -383,6 +399,7 @@ fun EventsScreen(
 private fun DetailedEventCard(
     event: CasaEvent,
     items: List<EventItem>,
+    weather: WeatherDay?,
     expanded: Boolean,
     working: Boolean,
     onExpand: () -> Unit,
@@ -410,6 +427,7 @@ private fun DetailedEventCard(
                     Text(event.title, color = CasinhaPalette.Rose700, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (event.date.isNotBlank()) Text("📅 ${event.date}", color = CasinhaPalette.Pink400, fontSize = 9.sp)
+                        if (weather != null) Text("${weatherVisual(weather.weatherCode).emoji} ${weather.minimum}°-${weather.maximum}°", color = CasinhaPalette.Blue400, fontSize = 9.sp)
                         Text("👥 ${event.participants.size}/${event.guests.coerceAtLeast(event.participants.size)}", color = CasinhaPalette.Purple400, fontSize = 9.sp)
                         if (items.isNotEmpty()) Text("$completed/${items.size}", color = CasinhaPalette.Purple500, fontSize = 9.sp)
                     }
@@ -512,17 +530,88 @@ private fun EventItemRow(
 }
 
 @Composable
-fun WeatherScreen(weather: WeatherState, onRefresh: () -> Unit) {
+fun WeatherScreen(
+    weather: WeatherState,
+    onRefresh: () -> Unit,
+    onSearch: (String) -> Unit,
+    onSelect: (WeatherLocation) -> Unit,
+    onSelectFavorite: (WeatherLocation) -> Unit,
+    onAddFavorite: (WeatherLocation) -> Unit,
+    onRemoveFavorite: (String) -> Unit,
+    onUseDefault: () -> Unit,
+    onUseCurrent: (Double, Double) -> Unit,
+) {
+    val context = LocalContext.current
+    var pickerOpen by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var locationError by remember { mutableStateOf<String?>(null) }
+    val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
+        if (grants.values.any { it }) {
+            requestCurrentCoordinates(context, onSuccess = { latitude, longitude ->
+                locationError = null
+                onUseCurrent(latitude, longitude)
+                pickerOpen = false
+            }, onError = { locationError = "Não foi possível obter a localização atual." })
+        } else locationError = "A localização está bloqueada nas permissões da app."
+    }
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.fillMaxWidth().background(Color.White.copy(alpha = 0.62f)).padding(16.dp),
+            modifier = Modifier.fillMaxWidth().background(Color.White.copy(alpha = 0.62f)).clickable { pickerOpen = !pickerOpen }.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text("📍 ${weather.location}", color = CasinhaPalette.Rose600, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Text("Leiria · Portugal", color = CasinhaPalette.Pink400, fontSize = 10.sp)
+                Text(listOfNotNull(weather.activeLocation.admin1, weather.activeLocation.country).joinToString(" · ").ifBlank { "Escolher localização" }, color = CasinhaPalette.Pink400, fontSize = 10.sp)
             }
             IconButton(onClick = onRefresh) { Icon(Icons.Rounded.Refresh, "Atualizar tempo", tint = CasinhaPalette.Pink400) }
+        }
+        if (pickerOpen) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().background(CasinhaPalette.Purple50).padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item { Text("ESCOLHER LOCALIZAÇÃO", color = CasinhaPalette.Purple600, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
+                item {
+                    GradientActionButton("📍 Usar localização atual", {
+                        locationPermission.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
+                    }, Modifier.fillMaxWidth(), start = CasinhaPalette.Blue400, end = CasinhaPalette.Purple400)
+                }
+                if (locationError != null) item { Text(requireNotNull(locationError), color = CasinhaPalette.Rose500, fontSize = 10.sp) }
+                if (weather.preferences.favorites.isNotEmpty()) {
+                    item { Text("FAVORITOS", color = CasinhaPalette.Purple500, fontSize = 9.sp, fontWeight = FontWeight.Bold) }
+                    items(weather.preferences.favorites, key = { "favorite-${it.id}" }) { location ->
+                        WeatherLocationRow(
+                            location = location,
+                            favorite = true,
+                            selected = location.id == weather.activeLocation.id,
+                            onSelect = { onSelectFavorite(location); pickerOpen = false },
+                            onFavorite = { onRemoveFavorite(location.id) },
+                        )
+                    }
+                }
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+                        CasinhaInput(query, { query = it }, "Ex.: Porto, Paris, Tóquio", Modifier.weight(1f))
+                        GradientActionButton(if (weather.searching) "..." else "Pesquisar", { onSearch(query) }, enabled = query.trim().length >= 2 && !weather.searching)
+                    }
+                }
+                items(weather.searchResults, key = { "search-${it.id}" }) { location ->
+                    val favorite = weather.preferences.favorites.any { it.id == location.id }
+                    WeatherLocationRow(
+                        location = location,
+                        favorite = favorite,
+                        selected = location.id == weather.activeLocation.id,
+                        onSelect = { onSelect(location); pickerOpen = false },
+                        onFavorite = { if (favorite) onRemoveFavorite(location.id) else onAddFavorite(location) },
+                    )
+                }
+                item {
+                    TextButton(onClick = { onUseDefault(); pickerOpen = false }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Usar Óbidos (predefinição)", color = CasinhaPalette.Pink400, fontSize = 10.sp)
+                    }
+                }
+            }
         }
         if (weather.loading && weather.temperature == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -566,6 +655,25 @@ fun WeatherScreen(weather: WeatherState, onRefresh: () -> Unit) {
 }
 
 @Composable
+private fun WeatherLocationRow(
+    location: WeatherLocation,
+    favorite: Boolean,
+    selected: Boolean,
+    onSelect: () -> Unit,
+    onFavorite: () -> Unit,
+) {
+    GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = if (selected) CasinhaPalette.Blue400 else CasinhaPalette.Purple100, contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f).clickable(onClick = onSelect)) {
+                Text(location.name, color = CasinhaPalette.Rose700, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                Text(location.label, color = CasinhaPalette.Purple400, fontSize = 8.sp, maxLines = 1)
+            }
+            TextButton(onClick = onFavorite) { Text(if (favorite) "★" else "☆", color = if (favorite) CasinhaPalette.Amber500 else CasinhaPalette.Purple300, fontSize = 18.sp) }
+        }
+    }
+}
+
+@Composable
 fun CalendarScreen(dashboard: DashboardState) {
     var month by remember { mutableStateOf(YearMonth.now()) }
     var selected by remember { mutableStateOf(LocalDate.now()) }
@@ -575,7 +683,7 @@ fun CalendarScreen(dashboard: DashboardState) {
     val padded = cells + List((7 - cells.size % 7) % 7) { null }
     val today = LocalDate.now()
     val months = month.month.getDisplayName(TextStyle.FULL, Locale("pt", "PT")).replaceFirstChar { it.titlecase(Locale("pt", "PT")) }
-    val dots = calendarEntries(dashboard)
+    val dots = calendarEntries(dashboard, month.year)
     val selectedEntries = dots[selected.toString()].orEmpty()
     val selectedWeather = dashboard.weather.days.firstOrNull { it.date == selected.toString() }
 
@@ -651,7 +759,7 @@ private fun FeatureGroupLabel(text: String, count: Int, color: Color) {
     }
 }
 
-private fun calendarEntries(dashboard: DashboardState): Map<String, List<String>> {
+private fun calendarEntries(dashboard: DashboardState, year: Int): Map<String, List<String>> {
     val result = mutableMapOf<String, MutableList<String>>()
     fun add(date: String?, value: String) {
         if (date.isNullOrBlank()) return
@@ -663,12 +771,58 @@ private fun calendarEntries(dashboard: DashboardState): Map<String, List<String>
         add(check.date, "${habit?.emoji ?: "✓"} ${habit?.name ?: "Rotina"}")
     }
     dashboard.forSection(HouseSection.PROJECTS).filter { it.status == "concluido" }.forEach { add(it.completedAt, "🏡 ${it.name}") }
-    val year = YearMonth.now().year
     mapOf(
-        "$year-01-01" to "🎆 Ano Novo", "$year-04-25" to "🔴 Dia da Liberdade",
-        "$year-06-10" to "🇵🇹 Dia de Portugal", "$year-12-25" to "🎁 Natal",
-    ).forEach { (date, value) -> add(date, value) }
+        "01-01" to "🎆 Ano Novo",
+        "02-14" to "💕 Dia dos Namorados",
+        "03-19" to "👨 Dia do Pai",
+        "04-25" to "🔴 Dia da Liberdade",
+        "05-01" to "✊ Dia do Trabalhador",
+        "05-04" to "👩 Dia da Mãe",
+        "06-01" to "👶 Dia da Criança",
+        "06-10" to "🇵🇹 Dia de Portugal",
+        "06-13" to "🙏 Santo António",
+        "08-15" to "🙏 Assunção de Maria",
+        "10-05" to "📜 Implantação da República",
+        "10-31" to "🎃 Halloween",
+        "11-01" to "🕯️ Dia de Todos os Santos",
+        "12-01" to "🛡️ Restauração da Independência",
+        "12-08" to "🙏 Imaculada Conceição",
+        "12-24" to "🎄 Véspera de Natal",
+        "12-25" to "🎁 Natal",
+        "12-31" to "🎇 Véspera de Ano Novo",
+    ).forEach { (monthDay, value) -> add("$year-$monthDay", value) }
+    val easter = easterDate(year)
+    mapOf(
+        easter.minusDays(47) to "🎭 Carnaval",
+        easter.minusDays(2) to "✝️ Sexta-feira Santa",
+        easter to "🐣 Páscoa",
+        easter.plusDays(60) to "🙏 Corpo de Deus",
+    ).forEach { (date, value) -> add(date.toString(), value) }
+    dashboard.birthdays.forEach { birthday ->
+        val parts = birthday.birthDate.split('-')
+        val monthDay = if (parts.size >= 3) "${parts[parts.size - 2]}-${parts.last()}" else birthday.birthDate
+        val house = birthday.houseName?.let { " ($it)" }.orEmpty()
+        add("$year-$monthDay", "🎂 ${birthday.name}$house")
+    }
     return result
+}
+
+private fun easterDate(year: Int): LocalDate {
+    val a = year % 19
+    val b = year / 100
+    val c = year % 100
+    val d = b / 4
+    val e = b % 4
+    val f = (b + 8) / 25
+    val g = (b - f + 1) / 3
+    val h = (19 * a + b - d - g + 15) % 30
+    val i = c / 4
+    val k = c % 4
+    val l = (32 + 2 * e + 2 * i - h - k) % 7
+    val m = (a + 11 * h + 22 * l) / 451
+    val month = (h + l - 7 * m + 114) / 31
+    val day = (h + l - 7 * m + 114) % 31 + 1
+    return LocalDate.of(year, month, day)
 }
 
 private fun expenseCategoryEmoji(category: String): String = when (category) {
@@ -683,3 +837,43 @@ private fun dayName(date: String): String = runCatching {
         else -> value.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale("pt", "PT")).replaceFirstChar { it.titlecase(Locale("pt", "PT")) }
     }
 }.getOrDefault(date)
+
+@SuppressLint("MissingPermission")
+private fun requestCurrentCoordinates(
+    context: Context,
+    onSuccess: (Double, Double) -> Unit,
+    onError: () -> Unit,
+) {
+    val coarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    if (!coarse && !fine) return onError()
+    val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return onError()
+    val providers = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)
+        .filter { runCatching { manager.isProviderEnabled(it) }.getOrDefault(false) }
+    val cached = providers.mapNotNull { provider -> runCatching { manager.getLastKnownLocation(provider) }.getOrNull() }
+        .maxByOrNull(Location::getTime)
+    if (cached != null && System.currentTimeMillis() - cached.time < 30 * 60 * 1000) {
+        onSuccess(cached.latitude, cached.longitude)
+        return
+    }
+    val provider = providers.firstOrNull() ?: return onError()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        manager.getCurrentLocation(provider, null, context.mainExecutor) { location ->
+            if (location == null) onError() else onSuccess(location.latitude, location.longitude)
+        }
+    } else {
+        val listener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                manager.removeUpdates(this)
+                onSuccess(location.latitude, location.longitude)
+            }
+
+            @Deprecated("Deprecated in Android")
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
+            override fun onProviderEnabled(provider: String) = Unit
+            override fun onProviderDisabled(provider: String) = Unit
+        }
+        runCatching { manager.requestSingleUpdate(provider, listener, Looper.getMainLooper()) }
+            .onFailure { onError() }
+    }
+}

@@ -279,9 +279,88 @@ class CasaViewModel(
     }
 
     fun refreshWeather() {
-        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(loading = true))) }
+        val current = _uiState.value.dashboard.weather
+        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = current.copy(loading = true, error = null))) }
         viewModelScope.launch {
-            val weather = repository.loadWeather()
+            val weather = repository.loadWeather(current.activeLocation, current.preferences)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+        }
+    }
+
+    fun searchWeatherLocations(query: String) {
+        if (query.trim().length < 2) {
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searchResults = emptyList(), searching = false))) }
+            return
+        }
+        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searching = true, error = null))) }
+        viewModelScope.launch {
+            runCatching { repository.searchWeatherLocations(query) }
+                .onSuccess { results ->
+                    _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searchResults = results, searching = false))) }
+                }
+                .onFailure {
+                    _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searching = false, error = "Não foi possível pesquisar localizações."))) }
+                }
+        }
+    }
+
+    fun selectWeatherLocation(location: WeatherLocation) = loadWeatherLocation(location)
+
+    fun selectFavoriteWeatherLocation(location: WeatherLocation) {
+        val ready = readySession() ?: return
+        val current = _uiState.value.dashboard.weather
+        val preferences = current.preferences.copy(defaultMode = "favorite", defaultFavoriteId = location.id)
+        viewModelScope.launch {
+            repository.saveWeatherPreferences(ready.profile.uid, preferences)
+            val weather = repository.loadWeather(location, preferences)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+        }
+    }
+
+    fun addWeatherFavorite(location: WeatherLocation) {
+        val ready = readySession() ?: return
+        val current = _uiState.value.dashboard.weather
+        val preferences = current.preferences.withFavorite(location)
+        if (preferences == current.preferences && preferences.favorites.none { it.id == location.id }) {
+            return showError("Podes guardar até 10 localizações favoritas.")
+        }
+        viewModelScope.launch {
+            repository.saveWeatherPreferences(ready.profile.uid, preferences)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(preferences = preferences))) }
+        }
+    }
+
+    fun removeWeatherFavorite(id: String) {
+        val ready = readySession() ?: return
+        val current = _uiState.value.dashboard.weather
+        val preferences = current.preferences.withoutFavorite(id)
+        val nextLocation = if (current.activeLocation.id == id) preferences.resolvedLocation() else current.activeLocation
+        viewModelScope.launch {
+            repository.saveWeatherPreferences(ready.profile.uid, preferences)
+            val weather = repository.loadWeather(nextLocation, preferences)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+        }
+    }
+
+    fun useDefaultWeatherLocation() {
+        val ready = readySession() ?: return
+        val current = _uiState.value.dashboard.weather
+        val preferences = current.preferences.copy(defaultMode = "fallback", defaultFavoriteId = null)
+        viewModelScope.launch {
+            repository.saveWeatherPreferences(ready.profile.uid, preferences)
+            val weather = repository.loadWeather(DefaultWeatherLocation, preferences)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+        }
+    }
+
+    fun useCurrentWeatherLocation(latitude: Double, longitude: Double) {
+        val ready = readySession() ?: return
+        val current = _uiState.value.dashboard.weather
+        val location = WeatherLocation("current", latitude, longitude, "Localização atual", "Localização atual", "auto", "current")
+        val preferences = current.preferences.copy(defaultMode = "current", defaultFavoriteId = null)
+        viewModelScope.launch {
+            repository.saveWeatherPreferences(ready.profile.uid, preferences)
+            val weather = repository.loadWeather(location, preferences)
             _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
         }
     }
@@ -358,7 +437,10 @@ class CasaViewModel(
                 .onFailure(::showRealtimeError)
         }
         listeners += repository.observeFriends(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(friends = value)) } }
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(friends = value)) }
+                refreshBirthdays(session, value)
+            }
                 .onFailure(::showRealtimeError)
         }
         listeners += repository.observeGamification(session.profile.name) { result ->
@@ -374,7 +456,33 @@ class CasaViewModel(
                 }.onFailure { /* member gamification is optional */ }
             }
         }
-        refreshWeather()
+        initializeWeather(session.profile.uid)
+        refreshBirthdays(session, emptyList())
+    }
+
+    private fun initializeWeather(userId: String) {
+        viewModelScope.launch {
+            val preferences = runCatching { repository.loadWeatherPreferences(userId) }.getOrDefault(WeatherPreferences())
+            val location = preferences.resolvedLocation()
+            val weather = repository.loadWeather(location, preferences)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+        }
+    }
+
+    private fun loadWeatherLocation(location: WeatherLocation) {
+        val current = _uiState.value.dashboard.weather
+        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = current.copy(activeLocation = location, loading = true, error = null))) }
+        viewModelScope.launch {
+            val weather = repository.loadWeather(location, current.preferences)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+        }
+    }
+
+    private fun refreshBirthdays(session: SessionState.Ready, friends: List<FriendHouse>) {
+        viewModelScope.launch {
+            val birthdays = repository.loadBirthdays(session.house, friends)
+            _uiState.update { it.copy(dashboard = it.dashboard.copy(birthdays = birthdays)) }
+        }
     }
 
     private fun stopListeners() {

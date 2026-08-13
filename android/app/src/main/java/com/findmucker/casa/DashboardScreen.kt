@@ -114,6 +114,13 @@ fun HouseWelcomeScreen(
     onRemoveFriend: (String) -> Unit,
     onSendMessage: (String, String) -> Unit,
     onRefreshWeather: () -> Unit,
+    onSearchWeather: (String) -> Unit,
+    onSelectWeather: (WeatherLocation) -> Unit,
+    onSelectFavoriteWeather: (WeatherLocation) -> Unit,
+    onAddWeatherFavorite: (WeatherLocation) -> Unit,
+    onRemoveWeatherFavorite: (String) -> Unit,
+    onUseDefaultWeather: () -> Unit,
+    onUseCurrentWeather: (Double, Double) -> Unit,
     onSignOut: () -> Unit,
     onClearError: () -> Unit,
     onClearNotice: () -> Unit,
@@ -219,6 +226,7 @@ fun HouseWelcomeScreen(
                 DashboardTab.EVENTS -> EventsScreen(
                     events = state.dashboard.events,
                     eventItems = state.dashboard.eventItems,
+                    weather = state.dashboard.weather,
                     working = state.working,
                     error = state.error,
                     notice = state.notice,
@@ -237,6 +245,13 @@ fun HouseWelcomeScreen(
                 DashboardTab.WEATHER -> WeatherScreen(
                     weather = state.dashboard.weather,
                     onRefresh = onRefreshWeather,
+                    onSearch = onSearchWeather,
+                    onSelect = onSelectWeather,
+                    onSelectFavorite = onSelectFavoriteWeather,
+                    onAddFavorite = onAddWeatherFavorite,
+                    onRemoveFavorite = onRemoveWeatherFavorite,
+                    onUseDefault = onUseDefaultWeather,
+                    onUseCurrent = onUseCurrentWeather,
                 )
             }
         }

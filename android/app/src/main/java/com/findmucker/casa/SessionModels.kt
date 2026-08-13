@@ -157,13 +157,19 @@ data class WeatherDay(
 
 data class WeatherState(
     val loading: Boolean = true,
-    val location: String = "Óbidos",
+    val activeLocation: WeatherLocation = DefaultWeatherLocation,
+    val preferences: WeatherPreferences = WeatherPreferences(),
+    val searchResults: List<WeatherLocation> = emptyList(),
+    val searching: Boolean = false,
+    val locating: Boolean = false,
     val temperature: Int? = null,
     val windSpeed: Int? = null,
     val weatherCode: Int? = null,
     val days: List<WeatherDay> = emptyList(),
     val error: String? = null,
-)
+) {
+    val location: String get() = activeLocation.name
+}
 
 data class DashboardState(
     val items: Map<HouseSection, List<HouseItem>> = HouseSection.entries.associateWith { emptyList() },
@@ -177,6 +183,7 @@ data class DashboardState(
     val friends: List<FriendHouse> = emptyList(),
     val gamification: GamificationProfile = GamificationProfile(),
     val memberGamification: Map<String, GamificationProfile> = emptyMap(),
+    val birthdays: List<BirthdayEntry> = emptyList(),
     val weather: WeatherState = WeatherState(),
 ) {
     fun forSection(section: HouseSection): List<HouseItem> = items[section].orEmpty()
