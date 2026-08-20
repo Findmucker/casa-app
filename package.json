@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "next build",
     "android:verify": "node scripts/verify-android.mjs",
     "android:check": "node scripts/build-android.mjs testDebugUnitTest lintDebug",
     "android:build": "node scripts/build-android.mjs"
