@@ -16,6 +16,7 @@ class CasaViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CasaUiState())
     val uiState: StateFlow<CasaUiState> = _uiState.asStateFlow()
+
     private val listeners = mutableListOf<ListenerRegistration>()
     private val eventItemListeners = mutableMapOf<String, ListenerRegistration>()
 
@@ -24,7 +25,9 @@ class CasaViewModel(
     }
 
     fun signIn(email: String, password: String) {
-        if (email.isBlank() || password.isBlank()) return showError("Preenche o email e a palavra-passe.")
+        if (email.isBlank() || password.isBlank()) {
+            return showError("Preenche o email e a palavra-passe.")
+        }
         runOperation { repository.signIn(email, password) }
     }
 
@@ -32,11 +35,15 @@ class CasaViewModel(
         if (name.isBlank() || email.isBlank() || password.isBlank() || birthDate.isBlank()) {
             return showError("Preenche o nome, data de nascimento, email e palavra-passe.")
         }
-        if (password.length < 6) return showError("Escolhe uma palavra-passe com pelo menos 6 caracteres.")
+        if (password.length < 6) {
+            return showError("Escolhe uma palavra-passe com pelo menos 6 caracteres.")
+        }
         runOperation { repository.register(name, email, password, birthDate) }
     }
 
-    fun signInWithGoogle(context: Context) = runOperation { repository.signInWithGoogle(context) }
+    fun signInWithGoogle(context: Context) {
+        runOperation { repository.signInWithGoogle(context) }
+    }
 
     fun createHouse(name: String) {
         val profile = (_uiState.value.session as? SessionState.NeedsHouse)?.profile ?: return
@@ -55,9 +62,9 @@ class CasaViewModel(
     }
 
     fun registerPushToken() {
-        val ready = readySession() ?: return
+        val session = readySession() ?: return
         viewModelScope.launch {
-            runCatching { repository.registerNotificationToken(ready.profile.uid) }
+            runCatching { repository.registerNotificationToken(session.profile.uid) }
         }
     }
 
@@ -66,165 +73,202 @@ class CasaViewModel(
     }
 
     fun addItem(section: HouseSection, draft: ItemDraft) {
-        val ready = readySession() ?: return
-        runAction { repository.addItem(ready.house.id, section, draft, ready.profile.name) }
+        val session = readySession() ?: return
+        runAction {
+            repository.addItem(session.house.id, section, draft, session.profile.name)
+        }
     }
 
     fun toggleItem(section: HouseSection, item: HouseItem) {
-        val ready = readySession() ?: return
-        runAction { repository.toggleItem(ready.house.id, ready.profile.name, section, item) }
+        val session = readySession() ?: return
+        runAction { repository.toggleItem(session.house.id, section, item) }
     }
 
     fun deleteItem(section: HouseSection, itemId: String) {
-        val ready = readySession() ?: return
-        runAction { repository.deleteItem(ready.house.id, section, itemId) }
+        val session = readySession() ?: return
+        runAction { repository.deleteItem(session.house.id, section, itemId) }
     }
 
     fun updateItem(section: HouseSection, itemId: String, values: Map<String, Any?>) {
-        val ready = readySession() ?: return
-        runAction("Alterações guardadas.") { repository.updateItem(ready.house.id, section, itemId, values) }
+        val session = readySession() ?: return
+        runAction("Alterações guardadas.") {
+            repository.updateItem(session.house.id, section, itemId, values)
+        }
     }
 
     fun moveItem(section: HouseSection, item: HouseItem, before: HouseItem) {
-        val ready = readySession() ?: return
-        runAction { repository.moveItem(ready.house.id, section, item, before) }
+        val session = readySession() ?: return
+        runAction { repository.moveItem(session.house.id, section, item, before) }
     }
 
     fun addSubtask(project: HouseItem, name: String) {
-        val ready = readySession() ?: return
-        runAction { repository.addSubtask(ready.house.id, project, name) }
+        val session = readySession() ?: return
+        runAction { repository.addSubtask(session.house.id, project, name) }
     }
 
     fun toggleSubtask(project: HouseItem, subtask: Subtask) {
-        val ready = readySession() ?: return
-        runAction { repository.toggleSubtask(ready.house.id, project, subtask) }
+        val session = readySession() ?: return
+        runAction { repository.toggleSubtask(session.house.id, project, subtask) }
     }
 
     fun deleteSubtask(project: HouseItem, subtaskId: String) {
-        val ready = readySession() ?: return
-        runAction { repository.deleteSubtask(ready.house.id, project, subtaskId) }
+        val session = readySession() ?: return
+        runAction { repository.deleteSubtask(session.house.id, project, subtaskId) }
     }
 
     fun addExpense(name: String, amount: String, category: String, paidBy: String) {
-        val ready = readySession() ?: return
-        val parsed = amount.parseAmount() ?: return showError("Indica um valor válido.")
-        runAction("Despesa adicionada.") { repository.addExpense(ready.house.id, name, parsed, category, paidBy) }
+        val session = readySession() ?: return
+        val parsedAmount = amount.parseAmount() ?: return showError("Indica um valor válido.")
+        runAction("Despesa adicionada.") {
+            repository.addExpense(session.house.id, name, parsedAmount, category, paidBy)
+        }
     }
 
     fun addIncome(name: String, amount: String, owner: String, recurring: Boolean) {
-        val ready = readySession() ?: return
-        val parsed = amount.parseAmount() ?: return showError("Indica um valor válido.")
-        runAction("Rendimento adicionado.") { repository.addIncome(ready.house.id, name, parsed, owner, recurring) }
+        val session = readySession() ?: return
+        val parsedAmount = amount.parseAmount() ?: return showError("Indica um valor válido.")
+        runAction("Rendimento adicionado.") {
+            repository.addIncome(session.house.id, name, parsedAmount, owner, recurring)
+        }
     }
 
     fun addSavingsGoal(name: String, emoji: String, target: String) {
-        val ready = readySession() ?: return
-        val parsed = target.parseAmount() ?: return showError("Indica um valor válido.")
-        runAction("Objetivo criado.") { repository.addSavingsGoal(ready.house.id, name, emoji, parsed) }
+        val session = readySession() ?: return
+        val parsedTarget = target.parseAmount() ?: return showError("Indica um valor válido.")
+        runAction("Objetivo criado.") {
+            repository.addSavingsGoal(session.house.id, name, emoji, parsedTarget)
+        }
     }
 
     fun depositSavings(goal: SavingsGoal, amount: String) {
-        val ready = readySession() ?: return
-        val parsed = amount.parseAmount() ?: return showError("Indica um valor válido.")
-        runAction("Poupança atualizada.") { repository.depositSavings(ready.house.id, goal, parsed) }
+        val session = readySession() ?: return
+        val parsedAmount = amount.parseAmount() ?: return showError("Indica um valor válido.")
+        runAction("Poupança atualizada.") {
+            repository.depositSavings(session.house.id, goal, parsedAmount)
+        }
     }
 
     fun deleteExtra(collection: String, id: String) {
-        val ready = readySession() ?: return
-        runAction { repository.deleteExtra(ready.house.id, collection, id) }
+        val session = readySession() ?: return
+        runAction { repository.deleteExtra(session.house.id, collection, id) }
     }
 
     fun addEvent(title: String, date: String, guests: String) {
-        val ready = readySession() ?: return
+        val session = readySession() ?: return
         runAction("Evento criado.") {
-            repository.addEvent(ready.house.id, title, date, guests.toIntOrNull() ?: 1, ready.profile.name)
+            repository.addEvent(
+                houseId = session.house.id,
+                title = title,
+                date = date,
+                guests = guests.toIntOrNull() ?: 1,
+                creator = session.profile.name,
+            )
         }
     }
 
     fun toggleEvent(event: CasaEvent) {
-        val ready = readySession() ?: return
-        runAction { repository.toggleEvent(ready.house.id, event) }
+        val session = readySession() ?: return
+        runAction { repository.toggleEvent(session.house.id, event) }
     }
 
     fun updateEvent(eventId: String, values: Map<String, Any?>) {
-        val ready = readySession() ?: return
-        runAction("Evento atualizado.") { repository.updateEvent(ready.house.id, eventId, values) }
+        val session = readySession() ?: return
+        runAction("Evento atualizado.") {
+            repository.updateEvent(session.house.id, eventId, values)
+        }
     }
 
     fun addEventItem(eventId: String, name: String, type: String, assignee: String?) {
-        val ready = readySession() ?: return
-        runAction { repository.addEventItem(ready.house.id, eventId, name, type, assignee) }
+        val session = readySession() ?: return
+        runAction {
+            repository.addEventItem(session.house.id, eventId, name, type, assignee)
+        }
     }
 
     fun toggleEventItem(eventId: String, item: EventItem) {
-        val ready = readySession() ?: return
-        runAction { repository.updateEventItem(ready.house.id, eventId, item.id, mapOf("done" to !item.done)) }
+        val session = readySession() ?: return
+        runAction {
+            repository.updateEventItem(
+                session.house.id,
+                eventId,
+                item.id,
+                mapOf("done" to !item.done),
+            )
+        }
     }
 
     fun assignEventItem(eventId: String, itemId: String, assignee: String) {
-        val ready = readySession() ?: return
-        runAction { repository.updateEventItem(ready.house.id, eventId, itemId, mapOf("assignee" to assignee)) }
+        val session = readySession() ?: return
+        runAction {
+            repository.updateEventItem(
+                session.house.id,
+                eventId,
+                itemId,
+                mapOf("assignee" to assignee),
+            )
+        }
     }
 
     fun renameEventItem(eventId: String, itemId: String, name: String) {
-        val ready = readySession() ?: return
-        if (name.isBlank()) return
-        runAction { repository.updateEventItem(ready.house.id, eventId, itemId, mapOf("name" to name.trim())) }
+        val session = readySession() ?: return
+        val cleanName = name.trim()
+        if (cleanName.isEmpty()) return
+        runAction {
+            repository.updateEventItem(
+                session.house.id,
+                eventId,
+                itemId,
+                mapOf("name" to cleanName),
+            )
+        }
     }
 
     fun deleteEventItem(eventId: String, itemId: String) {
-        val ready = readySession() ?: return
-        runAction { repository.deleteEventItem(ready.house.id, eventId, itemId) }
+        val session = readySession() ?: return
+        runAction { repository.deleteEventItem(session.house.id, eventId, itemId) }
     }
 
     fun cloneEvent(event: CasaEvent) {
-        val ready = readySession() ?: return
-        runAction("Evento clonado.") { repository.cloneEvent(ready.house.id, event) }
+        val session = readySession() ?: return
+        runAction("Evento clonado.") { repository.cloneEvent(session.house.id, event) }
     }
 
     fun shareEvent(event: CasaEvent) {
         val items = _uiState.value.dashboard.eventItems[event.id].orEmpty()
-        val text = buildString {
-            append("🎉 ${event.title}")
-            if (event.date.isNotBlank()) append("\n📅 ${event.date}")
-            if (event.participants.isNotEmpty()) append("\n👥 ${event.participants.joinToString(", ")}")
-            if (items.isNotEmpty()) {
-                append("\n")
-                items.forEach { item ->
-                    append("\n${if (item.done) "✅" else "⬜"} ${item.name}")
-                    if (!item.assignee.isNullOrBlank()) append(" — ${item.assignee}")
-                }
-            }
-            append("\n\nPartilhado pela app A Nossa Casinha")
-        }
-        _uiState.update { it.copy(shareUrl = text) }
+        _uiState.update { it.copy(shareUrl = buildEventShareText(event, items)) }
     }
 
-    fun consumeShareUrl() = _uiState.update { it.copy(shareUrl = null) }
+    fun consumeShareUrl() {
+        _uiState.update { it.copy(shareUrl = null) }
+    }
 
     fun renameHouse(name: String) {
-        val ready = readySession() ?: return
+        val session = readySession() ?: return
         runAction("Nome da casa atualizado.") {
-            repository.renameHouse(ready.house.id, name)
+            repository.renameHouse(session.house.id, name)
             _uiState.update { state ->
-                state.copy(session = ready.copy(house = ready.house.copy(name = name.trim())))
+                state.copy(
+                    session = session.copy(
+                        house = session.house.copy(name = name.trim()),
+                    ),
+                )
             }
         }
     }
 
     fun updateProfile(name: String, birthDate: String?) {
-        val ready = readySession() ?: return
+        val session = readySession() ?: return
         runAction("Perfil atualizado.") {
-            repository.updateProfile(ready.profile, name, birthDate)
+            repository.updateProfile(session.profile, name, birthDate)
             val cleanName = name.trim()
-            val members = ready.house.members.map { member ->
-                if (member.uid == ready.profile.uid) member.copy(name = cleanName) else member
+            val members = session.house.members.map { member ->
+                if (member.uid == session.profile.uid) member.copy(name = cleanName) else member
             }
             _uiState.update { state ->
                 state.copy(
-                    session = ready.copy(
-                        profile = ready.profile.copy(name = cleanName, birthDate = birthDate),
-                        house = ready.house.copy(members = members),
+                    session = session.copy(
+                        profile = session.profile.copy(name = cleanName, birthDate = birthDate),
+                        house = session.house.copy(members = members),
                     ),
                 )
             }
@@ -232,17 +276,17 @@ class CasaViewModel(
     }
 
     fun saveAvatar(avatar: String) {
-        val ready = readySession() ?: return
+        val session = readySession() ?: return
         runAction("Animal guardado.") {
-            avatarRepository.saveAvatar(ready.profile, ready.house, avatar)
-            val members = ready.house.members.map { member ->
-                if (member.uid == ready.profile.uid) member.copy(avatar = avatar) else member
+            avatarRepository.saveAvatar(session.profile, session.house, avatar)
+            val members = session.house.members.map { member ->
+                if (member.uid == session.profile.uid) member.copy(avatar = avatar) else member
             }
             _uiState.update { state ->
                 state.copy(
-                    session = ready.copy(
-                        profile = ready.profile.copy(avatar = avatar),
-                        house = ready.house.copy(members = members),
+                    session = session.copy(
+                        profile = session.profile.copy(avatar = avatar),
+                        house = session.house.copy(members = members),
                     ),
                 )
             }
@@ -250,126 +294,171 @@ class CasaViewModel(
     }
 
     fun createInvite() {
-        val ready = readySession() ?: return
+        val session = readySession() ?: return
         runAction("Convite válido por 7 dias.") {
-            val code = repository.createInvite(ready.house, ready.profile.uid)
+            val code = repository.createInvite(session.house, session.profile.uid)
             _uiState.update { it.copy(inviteCode = code) }
         }
     }
 
     fun loadFriendCode() {
-        val ready = readySession() ?: return
+        val session = readySession() ?: return
         if (_uiState.value.friendCode != null) return
         runAction {
-            val code = repository.getOrCreateFriendCode(ready.house.id)
+            val code = repository.getOrCreateFriendCode(session.house.id)
             _uiState.update { it.copy(friendCode = code) }
         }
     }
 
     fun connectFriend(code: String) {
-        val ready = readySession() ?: return
-        runAction("Casa amiga ligada.") { repository.connectFriend(ready.house, code) }
+        val session = readySession() ?: return
+        runAction("Casa amiga ligada.") { repository.connectFriend(session.house, code) }
     }
 
     fun removeFriend(id: String) {
-        val ready = readySession() ?: return
-        runAction("Casa amiga removida.") { repository.deleteExtra(ready.house.id, "friends", id) }
+        val session = readySession() ?: return
+        runAction("Casa amiga removida.") {
+            repository.deleteExtra(session.house.id, "friends", id)
+        }
     }
 
     fun sendMessage(to: String, message: String) {
-        val ready = readySession() ?: return
-        runAction("Mensagem enviada.") { repository.sendMessage(to, ready.profile.name, message) }
+        val session = readySession() ?: return
+        runAction("Mensagem enviada.") {
+            repository.sendMessage(to, session.profile.name, message)
+        }
     }
 
     fun refreshWeather() {
-        val current = _uiState.value.dashboard.weather
-        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = current.copy(loading = true, error = null))) }
+        val current = currentWeather()
+        updateWeather { it.copy(loading = true, error = null) }
         viewModelScope.launch {
-            val weather = repository.loadWeather(current.activeLocation, current.preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+            setWeather(repository.loadWeather(current.activeLocation, current.preferences))
         }
     }
 
     fun searchWeatherLocations(query: String) {
-        if (query.trim().length < 2) {
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searchResults = emptyList(), searching = false))) }
+        val cleanQuery = query.trim()
+        if (cleanQuery.length < 2) {
+            updateWeather { it.copy(searchResults = emptyList(), searching = false) }
             return
         }
-        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searching = true, error = null))) }
+
+        updateWeather { it.copy(searching = true, error = null) }
         viewModelScope.launch {
-            runCatching { repository.searchWeatherLocations(query) }
+            runCatching { repository.searchWeatherLocations(cleanQuery) }
                 .onSuccess { results ->
-                    _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searchResults = results, searching = false))) }
+                    updateWeather { it.copy(searchResults = results, searching = false) }
                 }
                 .onFailure {
-                    _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(searching = false, error = "Não foi possível pesquisar localizações."))) }
+                    updateWeather {
+                        it.copy(
+                            searching = false,
+                            error = "Não foi possível pesquisar localizações.",
+                        )
+                    }
                 }
         }
     }
 
-    fun selectWeatherLocation(location: WeatherLocation) = loadWeatherLocation(location)
+    fun selectWeatherLocation(location: WeatherLocation) {
+        loadWeatherLocation(location)
+    }
 
     fun selectFavoriteWeatherLocation(location: WeatherLocation) {
-        val ready = readySession() ?: return
-        val current = _uiState.value.dashboard.weather
-        val preferences = current.preferences.copy(defaultMode = "favorite", defaultFavoriteId = location.id)
+        val session = readySession() ?: return
+        val current = currentWeather()
+        val preferences = current.preferences.copy(
+            defaultMode = "favorite",
+            defaultFavoriteId = location.id,
+        )
+
         viewModelScope.launch {
-            repository.saveWeatherPreferences(ready.profile.uid, preferences)
-            val weather = repository.loadWeather(location, preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+            repository.saveWeatherPreferences(session.profile.uid, preferences)
+            setWeather(repository.loadWeather(location, preferences))
         }
     }
 
     fun addWeatherFavorite(location: WeatherLocation) {
-        val ready = readySession() ?: return
-        val current = _uiState.value.dashboard.weather
+        val session = readySession() ?: return
+        val current = currentWeather()
         val preferences = current.preferences.withFavorite(location)
+
         if (preferences == current.preferences && preferences.favorites.none { it.id == location.id }) {
             return showError("Podes guardar até 10 localizações favoritas.")
         }
+
         viewModelScope.launch {
-            repository.saveWeatherPreferences(ready.profile.uid, preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = it.dashboard.weather.copy(preferences = preferences))) }
+            repository.saveWeatherPreferences(session.profile.uid, preferences)
+            updateWeather { it.copy(preferences = preferences) }
         }
     }
 
     fun removeWeatherFavorite(id: String) {
-        val ready = readySession() ?: return
-        val current = _uiState.value.dashboard.weather
+        val session = readySession() ?: return
+        val current = currentWeather()
         val preferences = current.preferences.withoutFavorite(id)
-        val nextLocation = if (current.activeLocation.id == id) preferences.resolvedLocation() else current.activeLocation
+        val nextLocation = if (current.activeLocation.id == id) {
+            preferences.resolvedLocation()
+        } else {
+            current.activeLocation
+        }
+
         viewModelScope.launch {
-            repository.saveWeatherPreferences(ready.profile.uid, preferences)
-            val weather = repository.loadWeather(nextLocation, preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+            repository.saveWeatherPreferences(session.profile.uid, preferences)
+            setWeather(repository.loadWeather(nextLocation, preferences))
         }
     }
 
     fun useDefaultWeatherLocation() {
-        val ready = readySession() ?: return
-        val current = _uiState.value.dashboard.weather
-        val preferences = current.preferences.copy(defaultMode = "fallback", defaultFavoriteId = null)
+        val session = readySession() ?: return
+        val current = currentWeather()
+        val preferences = current.preferences.copy(
+            defaultMode = "fallback",
+            defaultFavoriteId = null,
+        )
+
         viewModelScope.launch {
-            repository.saveWeatherPreferences(ready.profile.uid, preferences)
-            val weather = repository.loadWeather(location = preferences.resolvedLocation(), preferences = preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+            repository.saveWeatherPreferences(session.profile.uid, preferences)
+            setWeather(
+                repository.loadWeather(
+                    location = preferences.resolvedLocation(),
+                    preferences = preferences,
+                ),
+            )
         }
     }
 
     fun useCurrentWeatherLocation(latitude: Double, longitude: Double) {
-        val ready = readySession() ?: return
-        val current = _uiState.value.dashboard.weather
-        val location = WeatherLocation("current", latitude, longitude, "Localização atual", "Localização atual", "auto", "current")
-        val preferences = current.preferences.copy(defaultMode = "current", defaultFavoriteId = null)
+        val session = readySession() ?: return
+        val current = currentWeather()
+        val location = WeatherLocation(
+            id = "current",
+            latitude = latitude,
+            longitude = longitude,
+            name = "Localização atual",
+            displayName = "Localização atual",
+            source = "auto",
+            provider = "current",
+        )
+        val preferences = current.preferences.copy(
+            defaultMode = "current",
+            defaultFavoriteId = null,
+        )
+
         viewModelScope.launch {
-            repository.saveWeatherPreferences(ready.profile.uid, preferences)
-            val weather = repository.loadWeather(location, preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+            repository.saveWeatherPreferences(session.profile.uid, preferences)
+            setWeather(repository.loadWeather(location, preferences))
         }
     }
 
-    fun clearError() = _uiState.update { it.copy(error = null) }
-    fun clearNotice() = _uiState.update { it.copy(notice = null) }
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun clearNotice() {
+        _uiState.update { it.copy(notice = null) }
+    }
 
     private fun runOperation(operation: suspend () -> SessionState) {
         viewModelScope.launch {
@@ -377,9 +466,9 @@ class CasaViewModel(
             runCatching { operation() }
                 .onSuccess(::applySession)
                 .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
-                            session = if (repository.hasAuthenticatedUser) it.session else SessionState.SignedOut,
+                    _uiState.update { state ->
+                        state.copy(
+                            session = if (repository.hasAuthenticatedUser) state.session else SessionState.SignedOut,
                             working = false,
                             error = FirebaseCasaRepository.friendlyError(error),
                         )
@@ -392,10 +481,15 @@ class CasaViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(working = true, error = null, notice = null) }
             runCatching { action() }
-                .onSuccess { _uiState.update { it.copy(working = false, notice = success) } }
+                .onSuccess {
+                    _uiState.update { state -> state.copy(working = false, notice = success) }
+                }
                 .onFailure { error ->
-                    _uiState.update {
-                        it.copy(working = false, error = FirebaseCasaRepository.friendlyError(error))
+                    _uiState.update { state ->
+                        state.copy(
+                            working = false,
+                            error = FirebaseCasaRepository.friendlyError(error),
+                        )
                     }
                 }
         }
@@ -403,12 +497,15 @@ class CasaViewModel(
 
     private fun applySession(session: SessionState) {
         _uiState.value = CasaUiState(session = session)
-        if (session is SessionState.Ready) observeDashboard(session)
+        if (session is SessionState.Ready) {
+            observeDashboard(session)
+        }
     }
 
     private fun observeDashboard(session: SessionState.Ready) {
         stopListeners()
         val houseId = session.house.id
+
         HouseSection.entries.forEach { section ->
             listeners += repository.observeItems(houseId, section) { result ->
                 result.onSuccess { items ->
@@ -416,6 +513,7 @@ class CasaViewModel(
                 }.onFailure(::showRealtimeError)
             }
         }
+
         listeners += repository.observeHabitChecks(houseId) { result ->
             result.onSuccess { value ->
                 _uiState.update { it.copy(dashboard = it.dashboard.copy(habitChecks = value)) }
@@ -448,6 +546,7 @@ class CasaViewModel(
                 refreshBirthdays(session, value)
             }.onFailure(::showRealtimeError)
         }
+
         initializeAvatar(session)
         initializeWeather(session.profile.uid)
         refreshBirthdays(session, emptyList())
@@ -455,9 +554,12 @@ class CasaViewModel(
 
     private fun initializeAvatar(session: SessionState.Ready) {
         viewModelScope.launch {
-            val avatar = runCatching { avatarRepository.migrateLegacyAvatarIfNeeded(session.profile, session.house) }
-                .getOrDefault(session.profile.avatar.ifBlank { "👤" })
+            val avatar = runCatching {
+                avatarRepository.migrateLegacyAvatarIfNeeded(session.profile, session.house)
+            }.getOrDefault(session.profile.avatar.takeIf(String::isNotBlank) ?: DefaultAvatarEmoji)
+
             if (avatar == session.profile.avatar) return@launch
+
             val members = session.house.members.map { member ->
                 if (member.uid == session.profile.uid) member.copy(avatar = avatar) else member
             }
@@ -474,19 +576,24 @@ class CasaViewModel(
 
     private fun initializeWeather(userId: String) {
         viewModelScope.launch {
-            val preferences = runCatching { repository.loadWeatherPreferences(userId) }.getOrDefault(WeatherPreferences())
-            val location = preferences.resolvedLocation()
-            val weather = repository.loadWeather(location, preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+            val preferences = runCatching {
+                repository.loadWeatherPreferences(userId)
+            }.getOrDefault(WeatherPreferences())
+            setWeather(repository.loadWeather(preferences.resolvedLocation(), preferences))
         }
     }
 
     private fun loadWeatherLocation(location: WeatherLocation) {
-        val current = _uiState.value.dashboard.weather
-        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = current.copy(activeLocation = location, loading = true, error = null))) }
+        val current = currentWeather()
+        updateWeather {
+            it.copy(
+                activeLocation = location,
+                loading = true,
+                error = null,
+            )
+        }
         viewModelScope.launch {
-            val weather = repository.loadWeather(location, current.preferences)
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+            setWeather(repository.loadWeather(location, current.preferences))
         }
     }
 
@@ -494,6 +601,22 @@ class CasaViewModel(
         viewModelScope.launch {
             val birthdays = repository.loadBirthdays(session.house, friends)
             _uiState.update { it.copy(dashboard = it.dashboard.copy(birthdays = birthdays)) }
+        }
+    }
+
+    private fun currentWeather(): WeatherState = _uiState.value.dashboard.weather
+
+    private fun setWeather(weather: WeatherState) {
+        _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
+    }
+
+    private fun updateWeather(transform: (WeatherState) -> WeatherState) {
+        _uiState.update { state ->
+            state.copy(
+                dashboard = state.dashboard.copy(
+                    weather = transform(state.dashboard.weather),
+                ),
+            )
         }
     }
 
@@ -508,13 +631,24 @@ class CasaViewModel(
         val activeIds = events.mapTo(mutableSetOf()) { it.id }
         (eventItemListeners.keys - activeIds).forEach { staleId ->
             eventItemListeners.remove(staleId)?.remove()
-            _uiState.update { it.copy(dashboard = it.dashboard.copy(eventItems = it.dashboard.eventItems - staleId)) }
+            _uiState.update { state ->
+                state.copy(
+                    dashboard = state.dashboard.copy(
+                        eventItems = state.dashboard.eventItems - staleId,
+                    ),
+                )
+            }
         }
+
         events.filterNot { eventItemListeners.containsKey(it.id) }.forEach { event ->
             eventItemListeners[event.id] = repository.observeEventItems(houseId, event.id) { result ->
                 result.onSuccess { items ->
-                    _uiState.update {
-                        it.copy(dashboard = it.dashboard.copy(eventItems = it.dashboard.eventItems + (event.id to items)))
+                    _uiState.update { state ->
+                        state.copy(
+                            dashboard = state.dashboard.copy(
+                                eventItems = state.dashboard.eventItems + (event.id to items),
+                            ),
+                        )
                     }
                 }.onFailure(::showRealtimeError)
             }
@@ -529,11 +663,16 @@ class CasaViewModel(
 
     private fun showRealtimeError(error: Throwable) {
         _uiState.update { state ->
-            if (state.error != null) state else state.copy(error = FirebaseCasaRepository.friendlyError(error))
+            if (state.error != null) {
+                state
+            } else {
+                state.copy(error = FirebaseCasaRepository.friendlyError(error))
+            }
         }
     }
 
-    private fun String.parseAmount(): Double? = replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }
+    private fun String.parseAmount(): Double? =
+        replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }
 
     override fun onCleared() {
         stopListeners()
