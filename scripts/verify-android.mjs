@@ -101,8 +101,6 @@ const composeSourceDirectory = fromRoot(
   "findmucker",
   "casa",
 );
-// Firestore models and mappings intentionally retain legacy read compatibility.
-// Product copy is guarded across every Kotlin file that actually exposes Compose UI.
 const nativeComposeUi = readdirSync(composeSourceDirectory, { withFileTypes: true })
   .filter((entry) => entry.isFile() && entry.name.endsWith(".kt"))
   .map((entry) => readFileSync(join(composeSourceDirectory, entry.name), "utf8"))
@@ -158,10 +156,19 @@ for (const collection of [
   "savings_goals",
   "events",
   "friends",
-  "gamification",
 ]) {
   assert.match(repository + sessionModels, new RegExp(`[\"']${collection}[\"']`));
 }
+assert.doesNotMatch(
+  repository,
+  /["']gamification["']|GamificationProfile|LootSlot|InventoryItem|equipItem|unequipItem|observeGamification/,
+  "The core Android repository must not read, write, or listen to legacy gamification data.",
+);
+assert.doesNotMatch(
+  sessionModels,
+  /GamificationProfile|LootSlot|InventoryItem|AvatarConfig|memberGamification|gamification\s*:/,
+  "Live Android session state must not carry legacy gamification models.",
+);
 
 const dashboardTabBlock = dashboardScreen.match(
   /enum class DashboardTab[\s\S]*?\{([\s\S]*?)\n\}/,
@@ -182,7 +189,7 @@ assert.deepEqual(
     "🎉 Eventos",
     "🌤️ Tempo",
   ],
-  "The native bottom navigation must match the web product exactly.",
+  "The native bottom navigation must keep the current Android product structure.",
 );
 for (const surface of [
   "SEARCH",
@@ -213,11 +220,9 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(
   nativeComposeUi,
-  /\b(?:levelForPoints|pendingLootBoxes|openLootBox|profileTitle)\b/,
-  "Legacy progression helpers must stay outside the native product UI.",
+  /\b(?:levelForPoints|pendingLootBoxes|openLootBox|profileTitle|InventoryItem|LootSlot|CasinhaLoot)\b/,
+  "Legacy progression, inventory, and equipment helpers must stay out of the native product UI.",
 );
-assert.match(repository, /getLong\(["']points["']\)/);
-assert.match(repository, /getLong\(["']boxesOpened["']\)/);
 
 assert.match(
   androidWorkflow,
@@ -317,7 +322,6 @@ function collectTextFiles(directory) {
   }
 }
 collectTextFiles(fromRoot("android"));
-
 const androidSource = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
 assert.doesNotMatch(androidSource, /firebase-appdistribution(?:-api)?:/i);
 assert.doesNotMatch(androidSource, /androidbrowserhelper/i);
