@@ -1,3 +1,4 @@
+import type { Firestore } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { getFirebaseAdmin, verifyFirebaseRequest } from "@/lib/firebase-admin";
 
@@ -86,7 +87,7 @@ function parseMembers(value: unknown): HouseMember[] {
 }
 
 async function findPushToken(
-  db: FirebaseFirestore.Firestore,
+  db: Firestore,
   uid: string,
   legacyName: string,
 ): Promise<string | null> {
