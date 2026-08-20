@@ -213,8 +213,6 @@ data class DashboardState(
     val events: List<CasaEvent> = emptyList(),
     val eventItems: Map<String, List<EventItem>> = emptyMap(),
     val friends: List<FriendHouse> = emptyList(),
-    val gamification: GamificationProfile = GamificationProfile(),
-    val memberGamification: Map<String, GamificationProfile> = emptyMap(),
     val birthdays: List<BirthdayEntry> = emptyList(),
     val weather: WeatherState = WeatherState(),
 ) {
