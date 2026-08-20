@@ -437,9 +437,9 @@ class CasaViewModel(
             latitude = latitude,
             longitude = longitude,
             name = "Localização atual",
-            displayName = "Localização atual",
-            source = "auto",
-            provider = "current",
+            label = "Localização atual",
+            timezone = "auto",
+            source = "current",
         )
         val preferences = current.preferences.copy(
             defaultMode = "current",
@@ -556,7 +556,7 @@ class CasaViewModel(
         viewModelScope.launch {
             val avatar = runCatching {
                 avatarRepository.migrateLegacyAvatarIfNeeded(session.profile, session.house)
-            }.getOrDefault(session.profile.avatar.takeIf(String::isNotBlank) ?: DefaultAvatarEmoji)
+            }.getOrDefault(session.profile.avatar.takeIf(::isSupportedAvatar) ?: DefaultAvatarEmoji)
 
             if (avatar == session.profile.avatar) return@launch
 
