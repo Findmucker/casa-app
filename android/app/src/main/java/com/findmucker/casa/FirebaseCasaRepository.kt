@@ -309,91 +309,6 @@ class FirebaseCasaRepository(
             }))
         }
 
-    fun observeGamification(name: String, onResult: (Result<GamificationProfile>) -> Unit): ListenerRegistration =
-        firestore.collection("gamification").document(name).addSnapshotListener { document, error ->
-            if (error != null) return@addSnapshotListener onResult(Result.failure(error))
-            val equipped = (document?.get("equipped") as? Map<*, *>)
-                ?.mapNotNull { (key, value) ->
-                    val slot = LootSlot.fromKey(key as? String ?: return@mapNotNull null)
-                        ?: return@mapNotNull null
-                    val itemId = value as? String ?: return@mapNotNull null
-                    slot to itemId
-                }
-                ?.toMap()
-                .orEmpty()
-            val avatar = (document?.get("avatar") as? Map<*, *>)
-                ?.let(::avatarConfigFromMap)
-                ?: AvatarConfig()
-            onResult(Result.success(GamificationProfile(
-                points = document?.getLong("points")?.toInt() ?: 0,
-                totalCompleted = document?.getLong("totalCompleted")?.toInt() ?: 0,
-                maxStreak = document?.getLong("maxStreak")?.toInt() ?: 0,
-                shoppingDone = document?.getLong("shoppingDone")?.toInt() ?: 0,
-                coisinhasDone = document?.getLong("coisinhasDone")?.toInt() ?: 0,
-                projectsDone = document?.getLong("projectsDone")?.toInt() ?: 0,
-                habitsDone = document?.getLong("habitsDone")?.toInt() ?: 0,
-                badges = (document?.get("badges") as? List<*>)?.filterIsInstance<String>().orEmpty(),
-                inventory = (document?.get("inventory") as? List<*>)?.mapNotNull { raw ->
-                    val item = raw as? Map<*, *> ?: return@mapNotNull null
-                    InventoryItem(
-                        itemId = item["itemId"] as? String ?: return@mapNotNull null,
-                        count = (item["count"] as? Number)?.toInt() ?: 1,
-                    )
-                }.orEmpty(),
-                equipped = equipped,
-                boxesOpened = document?.getLong("boxesOpened")?.toInt() ?: 0,
-                avatar = avatar,
-            )))
-        }
-
-    suspend fun equipItem(owner: String, itemId: String, slot: LootSlot) {
-        val ref = firestore.collection("gamification").document(owner)
-        firestore.runTransaction { transaction ->
-            val document = transaction.get(ref)
-            val owned = (document.get("inventory") as? List<*>)?.any { raw ->
-                (raw as? Map<*, *>)?.get("itemId") == itemId
-            } == true
-            require(owned) { "Esse item não está no teu inventário." }
-            val item = CasinhaLoot.firstOrNull { it.id == itemId && it.slot == slot }
-            requireNotNull(item) { "O item não pertence a esse slot." }
-            val equipped = (document.get("equipped") as? Map<*, *>)
-                ?.mapNotNull { (key, value) ->
-                    val cleanKey = key as? String ?: return@mapNotNull null
-                    val cleanValue = value as? String ?: return@mapNotNull null
-                    cleanKey to cleanValue
-                }
-                ?.toMap()
-                ?.toMutableMap()
-                ?: mutableMapOf()
-            equipped[slot.key] = itemId
-            transaction.update(ref, "equipped", equipped)
-        }.await()
-    }
-
-    suspend fun unequipItem(owner: String, slot: LootSlot) {
-        val ref = firestore.collection("gamification").document(owner)
-        firestore.runTransaction { transaction ->
-            val document = transaction.get(ref)
-            val equipped = (document.get("equipped") as? Map<*, *>)
-                ?.mapNotNull { (key, value) ->
-                    val cleanKey = key as? String ?: return@mapNotNull null
-                    val cleanValue = value as? String ?: return@mapNotNull null
-                    cleanKey to cleanValue
-                }
-                ?.toMap()
-                ?.toMutableMap()
-                ?: mutableMapOf()
-            equipped.remove(slot.key)
-            transaction.update(ref, "equipped", equipped)
-        }.await()
-    }
-
-    suspend fun saveAvatar(owner: String, avatar: AvatarConfig) {
-        firestore.collection("gamification").document(owner)
-            .set(mapOf("avatar" to avatar.asFirestoreMap()), SetOptions.merge())
-            .await()
-    }
-
     suspend fun addItem(houseId: String, section: HouseSection, draft: ItemDraft, addedBy: String) {
         val cleanName = draft.name.trim()
         require(cleanName.isNotEmpty()) { "Escreve o nome do item." }
@@ -467,10 +382,8 @@ class FirebaseCasaRepository(
         updateItem(houseId, HouseSection.PROJECTS, project.id, mapOf("subtasks" to subtasks.map { it.asMap() }))
     }
 
-    suspend fun toggleItem(houseId: String, owner: String, section: HouseSection, item: HouseItem) {
-        require(owner.isNotBlank()) { "Não foi possível identificar quem concluiu a atividade." }
+    suspend fun toggleItem(houseId: String, section: HouseSection, item: HouseItem) {
         val document = houseCollection(houseId, section.collection).document(item.id)
-        val activityDocument = firestore.collection("gamification").document(owner)
         val habitCheck = if (section == HouseSection.HABITS) {
             houseCollection(houseId, "habit_checks").document()
         } else {
@@ -501,16 +414,6 @@ class FirebaseCasaRepository(
                 (storedItem.getLong("streak")?.toInt() ?: 0) + 1
             } else {
                 0
-            }
-
-            if (isCompletionTransition(currentCompleted, nextCompleted)) {
-                val currentActivity = transaction.get(activityDocument).activityStatsProfile()
-                val updatedActivity = currentActivity.withCompletedActivity(section, newHabitStreak)
-                transaction.set(
-                    activityDocument,
-                    updatedActivity.activityStatsAsFirestoreMap(section.completedAction()),
-                    SetOptions.merge(),
-                )
             }
 
             when (section) {
@@ -655,34 +558,6 @@ class FirebaseCasaRepository(
             }
             batch.commit().await()
         }
-    }
-
-    suspend fun createEventShare(houseId: String, event: CasaEvent, items: List<EventItem>): String {
-        val alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
-        val shareId = (1..12).map { alphabet.random() }.joinToString("")
-        firestore.collection("event_shares").document(shareId).set(
-            mapOf(
-                "shareId" to shareId,
-                "houseId" to houseId,
-                "eventId" to event.id,
-                "event" to mapOf(
-                    "id" to event.id,
-                    "title" to event.title,
-                    "date" to event.date,
-                    "guests" to event.guests,
-                    "participants" to event.participants,
-                    "items" to items.map { item ->
-                        mapOf(
-                            "name" to item.name,
-                            "type" to item.type,
-                            "done" to item.done,
-                            "assignee" to item.assignee,
-                        ).filterValues { it != null }
-                    },
-                ),
-            ),
-        ).await()
-        return "https://casa-app-zeta.vercel.app/eventos/$shareId"
     }
 
     suspend fun deleteExtra(houseId: String, collection: String, id: String) {
@@ -941,17 +816,6 @@ class FirebaseCasaRepository(
     private fun houseCollection(houseId: String, collection: String) =
         firestore.collection("houses").document(houseId).collection(collection)
 
-    private fun avatarConfigFromMap(value: Map<*, *>): AvatarConfig = AvatarConfig(
-        animal = (value["animal"] as? Number)?.toInt() ?: 0,
-        eyes = (value["eyes"] as? Number)?.toInt() ?: 0,
-        mouth = (value["mouth"] as? Number)?.toInt() ?: 0,
-        top = (value["top"] as? Number)?.toInt() ?: 0,
-        bottom = (value["bottom"] as? Number)?.toInt() ?: 0,
-        accessory = (value["accessory"] as? Number)?.toInt() ?: 0,
-        background = (value["background"] as? Number)?.toInt() ?: 0,
-        effect = (value["effect"] as? Number)?.toInt() ?: 0,
-    )
-
     private fun weatherLocationFromMap(value: Map<*, *>): WeatherLocation? {
         val id = value["id"] as? String ?: return null
         val name = value["name"] as? String ?: return null
@@ -988,21 +852,13 @@ class FirebaseCasaRepository(
 
     private fun DocumentSnapshot.number(field: String): Double? = (get(field) as? Number)?.toDouble()
 
-    private fun DocumentSnapshot.activityStatsProfile(): GamificationProfile = GamificationProfile(
-        totalCompleted = getLong("totalCompleted")?.toInt() ?: 0,
-        maxStreak = getLong("maxStreak")?.toInt() ?: 0,
-        shoppingDone = getLong("shoppingDone")?.toInt() ?: 0,
-        coisinhasDone = getLong("coisinhasDone")?.toInt() ?: 0,
-        projectsDone = getLong("projectsDone")?.toInt() ?: 0,
-        habitsDone = getLong("habitsDone")?.toInt() ?: 0,
-    )
-
     private fun Subtask.asMap(): Map<String, Any> = mapOf("id" to id, "name" to name, "done" to done)
 
     companion object {
         private const val WEB_CLIENT_ID =
             "776757654663-4j0u4nelqulc5v28asuq972ots5cd8a8.apps.googleusercontent.com"
         private const val NOTIFICATION_ENDPOINT = "https://casa-app-zeta.vercel.app/api/send-notification"
+
         fun friendlyError(error: Throwable): String = when (error) {
             is GetCredentialException -> "Não foi possível escolher a conta Google. Confirma os Serviços Google Play e tenta novamente."
             is FirebaseAuthException -> when (error.errorCode) {
