@@ -30,6 +30,18 @@ android/app/build/outputs/apk/debug/app-debug.apk
 - Firebase Auth and Firestore are accessed directly from the native app
 - no WebView, TWA, Custom Tab or browser-origin runtime is permitted
 
+## Profile and avatar contract
+
+The Android profile is intentionally simple. Its live product state is limited to user identity fields plus one basic animal avatar.
+
+- name, email and birth date remain normal profile data;
+- the avatar is one of the small built-in animal choices;
+- the selected animal is stored in `users/{uid}.avatar` and mirrored in `houses/{houseId}.members[].avatar`;
+- XP, levels, RPG stats, achievements, inventory, loot and equipment are not part of the live Android product state;
+- the client must not open listeners on the legacy `gamification` collection or update it when household activities are completed.
+
+For compatibility, an existing user whose profile does not yet contain a basic animal may perform one one-time read of the historical `gamification/{name}.avatar.animal` value. The mapped animal is then copied into normal profile data. Historical gamification documents are intentionally left untouched and are not used as ongoing runtime state.
+
 ## Private beta distribution
 
 `.github/workflows/android.yml` builds and distributes the private Android beta.
@@ -88,4 +100,5 @@ Before changing release infrastructure:
 - preserve monotonic version codes;
 - keep WIF/OIDC scoped to this repository/environment;
 - do not expose private APK URLs or signing material in logs/artifacts;
-- keep Firebase data and security rules intact.
+- keep Firebase data and security rules intact;
+- do not reintroduce legacy gamification as live Android state without an explicit product decision.
