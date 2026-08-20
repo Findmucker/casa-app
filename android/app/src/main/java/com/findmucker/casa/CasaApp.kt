@@ -214,7 +214,12 @@ private fun AuthScreen(
             Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp), verticalArrangement = Arrangement.spacedBy(11.dp)) {
                 if (registering) {
                     WebLikeInput(name, { name = it; onClearError() }, if (locale == "pt") "O teu nome..." else "Your name...")
-                    WebLikeInput(birthDate, { birthDate = it; onClearError() }, if (locale == "pt") "🎂 Data de nascimento (AAAA-MM-DD)" else "🎂 Birth date (YYYY-MM-DD)")
+                    CasinhaInput(
+                        birthDate,
+                        { birthDate = it; onClearError() },
+                        if (locale == "pt") "🎂 Data de nascimento (AAAA-MM-DD)" else "🎂 Birth date (YYYY-MM-DD)",
+                        Modifier.fillMaxWidth(),
+                    )
                 }
                 WebLikeInput(email, { email = it; onClearError() }, "Email...", KeyboardType.Email)
                 WebLikeInput(password, { password = it; onClearError() }, if (locale == "pt") "Password..." else "Password...", KeyboardType.Password, password = true)
