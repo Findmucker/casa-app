@@ -3,14 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "typecheck": "tsc --noEmit",
     "android:verify": "node scripts/verify-android.mjs",
     "android:check": "node scripts/build-android.mjs testDebugUnitTest lintDebug",
     "android:build": "node scripts/build-android.mjs"
