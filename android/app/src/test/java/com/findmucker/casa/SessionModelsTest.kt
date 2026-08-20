@@ -2,8 +2,11 @@ package com.findmucker.casa
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class SessionModelsTest {
     @Test
@@ -82,5 +85,48 @@ class SessionModelsTest {
         assertEquals(DashboardTab.EVENTS, notificationTabForTag("event-reminder-party"))
         assertEquals(DashboardTab.CALENDAR, notificationTabForTag("birthday-alex"))
         assertEquals(DashboardTab.HOME, notificationTabForTag("message-house"))
+    }
+
+    @Test
+    fun `habit reminder uses the next configured day`() {
+        val zone = ZoneId.of("Europe/Lisbon")
+        val mondayMorning = ZonedDateTime.of(2026, 8, 17, 8, 0, 0, 0, zone)
+        val occurrence = nextHabitOccurrence(
+            reminderTime = "09:30",
+            days = listOf(1),
+            afterMillis = mondayMorning.toInstant().toEpochMilli(),
+            skipDate = null,
+            zoneId = zone,
+        )
+
+        assertNotNull(occurrence)
+        val trigger = ZonedDateTime.ofInstant(
+            java.time.Instant.ofEpochMilli(requireNotNull(occurrence).triggerMillis),
+            zone,
+        )
+        assertEquals(2026, trigger.year)
+        assertEquals(8, trigger.monthValue)
+        assertEquals(17, trigger.dayOfMonth)
+        assertEquals(9, trigger.hour)
+        assertEquals(30, trigger.minute)
+    }
+
+    @Test
+    fun `habit reminder skips a completed occurrence`() {
+        val zone = ZoneId.of("Europe/Lisbon")
+        val mondayMorning = ZonedDateTime.of(2026, 8, 17, 8, 0, 0, 0, zone)
+        val occurrence = nextHabitOccurrence(
+            reminderTime = "09:30",
+            days = listOf(1),
+            afterMillis = mondayMorning.toInstant().toEpochMilli(),
+            skipDate = "2026-08-17",
+            zoneId = zone,
+        )
+
+        val trigger = ZonedDateTime.ofInstant(
+            java.time.Instant.ofEpochMilli(requireNotNull(occurrence).triggerMillis),
+            zone,
+        )
+        assertEquals(24, trigger.dayOfMonth)
     }
 }
