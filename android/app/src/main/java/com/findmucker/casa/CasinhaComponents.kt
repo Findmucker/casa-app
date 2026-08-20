@@ -53,7 +53,7 @@ fun GlassCard(
         shape = RoundedCornerShape(16.dp),
         color = color,
         border = BorderStroke(1.dp, borderColor),
-        shadowElevation = 1.dp,
+        shadowElevation = 0.dp,
     ) {
         Box(modifier = Modifier.padding(contentPadding)) { content() }
     }
