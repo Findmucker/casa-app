@@ -33,7 +33,7 @@ permissions:
   contents: read
 
 jobs:
-  verify-build:
+  debug-apk:
     name: Verify Android build
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -83,7 +83,7 @@ jobs:
 
   tester-update:
     name: Send private tester update
-    needs: verify-build
+    needs: debug-apk
     if: >-
       github.run_attempt == 1 &&
       github.repository_id == '1226468580' &&
