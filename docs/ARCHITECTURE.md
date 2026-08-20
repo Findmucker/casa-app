@@ -1,137 +1,82 @@
 # Architecture
 
-## Runtime boundaries
+## Product boundary
 
-- The web client is a Next.js PWA hosted by Vercel.
-- The Android client is a separate Kotlin/Jetpack Compose application.
-- Both clients use Firebase Authentication and the same house-scoped Firestore data.
-- Firebase Admin and secrets stay in authenticated Next.js route handlers.
-- GitHub Actions schedules server-side reminders; Vercel provides a daily fallback.
+Casinha is a native Android application. There is no supported web/PWA runtime.
 
-## Native Android runtime
+`com.findmucker.casa.MainActivity` owns the foreground window and Jetpack Compose renders the complete product inside the Android process. The application must not introduce TWA, WebView, browser-helper, Custom Tab or browser-hosted product UI.
 
-Android launches `com.findmucker.casa.MainActivity`. Compose renders every screen in
-the application process. The APK has no TWA, browser helper, Custom Tab, WebView, or
-production-origin launcher.
+## Application layers
 
-`CasaApplication` initializes the public Firebase client configuration.
-`FirebaseCasaRepository` owns authentication, household onboarding, real-time
-listeners, and mutations. `CasaViewModel` exposes immutable screen state and removes
-Firestore listeners when the session or ViewModel ends. Compose screens contain no
-direct Firebase calls.
-
-The Android and web implementations can evolve independently, but the product shell
-and stored document fields remain compatible. The nine destinations, compact header,
-bottom-navigation order, labels, emojis, and Casinha visual tokens are cross-client
-product contracts. Every schema or navigation change must be implemented and tested
-in both.
+- `CasaApplication` initializes Firebase for the registered Android application.
+- `FirebaseCasaRepository` owns Firebase Authentication, Firestore listeners and mutations.
+- `CasaViewModel` owns session/domain state and exposes it to Compose.
+- Compose screens render state and invoke ViewModel actions; they do not own Firebase access.
+- Weather is loaded directly from Open-Meteo by the native client.
 
 ## Data ownership
 
-User profiles live at `users/{uid}`. Household data belongs under
-`houses/{houseId}` and its subcollections. A signed-in user can access a house only
-when their UID is present in `memberUids`. Joining via `invites/{code}` appends the
-member and then assigns `houseId` to the user profile, matching the web flow.
+Firebase remains production infrastructure after the web client retirement.
 
-Public event access uses a share document rather than exposing arbitrary house IDs.
-Weather preferences remain private under `users/{uid}/preferences/weather`.
-Firestore rules, not either client, are the security boundary.
+- `users/{uid}` stores user/profile state.
+- `houses/{houseId}` and its subcollections store household data.
+- `invites/{code}` supports household joining.
+- `fcm_tokens` supports native push delivery.
+- historical `gamification` fields may remain for compatible reads, but the active profile UI is intentionally simple.
 
-## Client data flow
+Firestore rules are the security boundary. Removing the retired web client does not authorize deleting or weakening persisted data/rules.
 
-On Android, `CasaViewModel` restores the Firebase session and emits one of four
-states: loading, signed out, needs a house, or ready. The ready state starts scoped
-real-time listeners for the four household collections, habit checks, finances,
-events, friends, and profile customization/activity. Snapshots are mapped to native
-domain models and flow into Compose through `StateFlow`; weather is loaded from
-Open-Meteo.
+## Main native flows
 
-On web, `HouseIdContext`, `useCollection`, and `CollectionDataContext` provide the
-equivalent house scoping and real-time updates.
+`CasaViewModel` restores the Firebase session and represents loading, signed-out, house-setup and ready states. Ready sessions subscribe to house-scoped lists, habits, finances, events, friends and member/profile data using real-time Firestore listeners.
 
-## Progression boundary
+The user-facing destinations are:
 
-XP, points, levels, progressive titles, and automatic loot boxes are not active
-product concepts. Both clients may read legacy gamification documents because those
-documents also contain activity counters, avatar configuration, inventory, and
-equipped cosmetics. They do not display or increment historical progression fields,
-and they do not derive rewards from them. This is intentionally non-destructive so a
-future progression design starts with product decisions instead of a data migration.
+1. Início
+2. Compras
+3. Coisinhas
+4. Projetos
+5. Rotinas
+6. Finanças
+7. Calendário
+8. Eventos
+9. Tempo
+
+Search, house management, invites, neighbours, direct messaging and profiles are native overlays/surfaces around those destinations.
+
+## Profiles
+
+Profiles are deliberately lightweight. The current product exposes essential account/member information and a small selection of basic animal avatars. XP, levels, RPG stats, achievements, loot, equipment and inventory are not active product surfaces.
+
+Historical data may remain stored to avoid destructive migrations.
 
 ## Notifications
 
-Web and Android FCM tokens receive the same data-only server messages. On Android,
-`CasinhaMessagingService` stores the device token with `platform: android`, creates a
-native system notification, and publishes a one-shot navigation target consumed by
-the Compose dashboard. Notification tags map to the relevant native destination, so
-opening a notification never delegates to a browser.
+`CasinhaMessagingService` registers Android FCM tokens, creates system notifications and routes notification taps to the relevant native destination.
 
-Android also mirrors configured habit times through `AlarmManager`. The broadcast
-receiver checks `habit_checks` before each alert, repeats incomplete habits every 10
-minutes inside a two-hour window, and schedules the next eligible day afterwards.
-Server-side scheduling and Firestore delivery deduplication remain the cross-device
-fallback and source of remote reminders.
+Habit reminders also use Android-native scheduling. Remote FCM and local scheduling should remain idempotent and respect completed habit checks.
 
-Operational details are in [CRON_SETUP.md](CRON_SETUP.md). Android build and device
-operations are in [ANDROID.md](ANDROID.md).
+## Build and distribution
 
-## Android build and distribution boundary
+`.github/workflows/android.yml` is the release pipeline.
 
-The Android runtime does not embed Firebase App Distribution. Distribution is an
-external GitHub Actions operation: the existing **Android APK** workflow verifies
-pull requests and builds a debug artifact, while its `tester-update` job can create a
-signed, non-debuggable beta for the private Firebase group `casinha-testers`.
-The signed beta itself is never uploaded as a public GitHub artifact, and Firebase
-download URLs are redacted from public workflow logs.
+It verifies Android configuration, runs unit tests and lint, builds a debug APK, and for eligible `master` pushes can build a stable signed beta and distribute it to the private Firebase App Distribution group.
 
-The beta keeps application ID `com.findmucker.casa`, uses one stable tester signing
-certificate, and receives a monotonic CI `versionCode` in the `100000+` range. The
-stable identity is what lets a later beta install over the previous beta. Moving from
-an older APK signed by another certificate requires one uninstall on each test
-device; subsequent beta updates do not. Firebase delivers the build over Wi-Fi and
-emails the invited testers, but Firebase App Tester and Android still require a
-human-confirmed install. Play Internal Testing remains the future boundary for
-Play-managed installation and real automatic updates.
+The beta contract is important:
 
-Private delivery is master-only: an Android-relevant push to `master` is automatic
-after enablement, and `workflow_dispatch` can deliberately distribute only when run
-from `master` with its `distribute` input. Pull-request code never reaches testers.
-An Actions re-run is also excluded so it cannot reuse a beta version code or send a
-duplicate release notification; deliberate redistribution starts a new manual run.
-The protected GitHub Environment `android-testers` owns the enable flag, encoded JKS,
-and its three access values. `ANDROID_DISTRIBUTION_ENABLED` currently remains
-`false` because the WIF repository authorization and first end-to-end device test are
-still pending.
-
-GitHub authenticates to Google through Workload Identity Federation and short-lived
-OIDC credentials; there is no service-account JSON key or long-lived Firebase token
-in the repository or GitHub secrets. The workflow verifies package, signer,
-version, and non-debuggable mode before upload. Its expected public certificate
-SHA-256 is deliberately versioned in `android/CASINHA_BETA_CERT_SHA256`; it is an
-auditable identity, not secret key material. Tester identities remain in Firebase,
-not source control. The signing key's recoverable maintainer copy lives only under
-the ignored `.local-signing/` directory on a trusted machine, with a secure backup;
-the workflow reconstructs its temporary copy from protected environment secrets and
-deletes it from the runner.
-The external WIF provider must require repository ID `1226468580`, master ref, and
-the `android-testers` environment. Only that principal set may impersonate the
-dedicated service account, whose project role is limited to
-`roles/firebaseappdistro.admin`.
+- package ID stays `com.findmucker.casa`;
+- the tester signing certificate stays stable;
+- version codes increase monotonically;
+- signing secrets stay in the protected `android-testers` GitHub environment;
+- GitHub authenticates to Google using short-lived OIDC/WIF credentials;
+- private signed APKs are distributed through Firebase, not published as public repository artifacts.
 
 ## Change guidelines
 
-- Keep Firebase Admin and secrets out of both clients.
-- Preserve house scoping for every collection and query.
-- Keep Android Firebase access in the repository layer and UI state in ViewModels.
-- Treat the Firestore document shape as a cross-client contract.
-- Treat the nine-tab order and visual identity as cross-client product contracts.
-- Do not reactivate legacy progression fields without an approved cross-client
-  product design and migration plan.
-- Cover pure state transitions with unit tests and run Android lint on each change.
-- Keep tester PII in Firebase, private signing material in the protected
-  `android-testers` environment, and local signing backups under ignored
-  `.local-signing/` only. Keep only the public certificate SHA-256 in Git.
-- Never replace the stable beta signing key or lower its version-code sequence; both
-  are part of the installed-app update contract.
-- Route-handler changes must follow the installed Next.js documentation under
-  `node_modules/next/dist/docs`.
+- Android is the only product client.
+- Do not reintroduce a web/PWA client without an explicit product decision.
+- Keep Firebase access in the repository layer and state in ViewModels.
+- Preserve Firestore compatibility and user data.
+- Do not remove historical fields merely because they are no longer visible.
+- Keep signing/version identity stable.
+- Run `npm run android:verify` and `npm run android:check` for Android changes.

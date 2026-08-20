@@ -1,396 +1,115 @@
 # A Nossa Casinha
 
-A household management PWA and Android app for couples and families — organize shopping, tasks, projects, habits, expenses, events, and more. Built with love.
+A Nossa Casinha is an **Android-only** household app for couples and families.
 
-**Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
+The previous Next.js/PWA client has been retired. The product is maintained as a native Kotlin + Jetpack Compose application in `android/`, backed by Firebase Authentication, Firestore and Firebase Cloud Messaging.
 
-**Release model:** the web client deploys continuously from `master`; Android is
-verified separately and uses a gated private beta channel. See
-[CHANGELOG.md](CHANGELOG.md) for notable changes and
-[docs/ANDROID.md](docs/ANDROID.md) for Android delivery.
+## Product direction
 
-## Features
+- Android is the only user-facing client.
+- There is no supported web/PWA version.
+- Firebase remains the source of persisted household data.
+- Historical Firestore fields are kept where needed for backwards-compatible reads; old web UI code is not kept in the active repository tree.
+- Vercel is retained only as a **headless authenticated FCM sender** used by the Android app. It serves no product pages; `/` intentionally returns 404.
 
-### Shopping List (Compras)
-- Add/remove items with estimated price
-- Assign to any house member
-- Auto-categorization (Fresh, Meats, Fruits, Bakery, Pantry, Drinks, Snacks, Hygiene, Pets)
-- Collapsible categories with progress bars
-- Mark as urgent (pinned to top)
-- Celebration animations on completion
+## Main features
 
-### Priority/Task List (Coisinhas)
-- Auto-categorization (House, Kitchen, Decor, Organization, DIY, Bathroom, Tech, Garden, Laundry, Tasks)
-- Accessible up/down controls for reliable priority ordering on touch and keyboard
-- Assign to person + notes per item
-- Collapsible categories with progress bars
-- Autocomplete suggestions
-- Real-time sync, reduced-motion support, and 44px minimum touch targets
+- Início dashboard
+- Compras
+- Coisinhas
+- Projetos
+- Rotinas
+- Finanças
+- Calendário
+- Eventos
+- Tempo
+- Search, house management, invites, neighbours and direct messages
+- Simple member profiles with basic animal avatars
+- Native notifications and local habit reminders
+- Native Android event sharing as text, without public web links
 
-### Projects (Projetos)
-- Status workflow: Pending → In Progress → Done
-- **Subtasks**, budget, detailed notes
-- Auto-categorization (Painting, Construction, Doors/Windows, Electrical, Repairs, Plumbing, Kitchen, Exterior, Heating)
-- Collapsible categories with state counters
+## Android stack
 
-### Habit Tracking (Rotinas)
-- Daily check that resets at midnight
-- **Streak tracking** with fire animations
-- **Weekday selector** — define which days a habit is active
-- **Person filter** — filter habits by house member (no redundant "Ambos" button)
-- Assign to person (dynamic by house members)
-- **Reliable notifications** — server-side reminders with delayed-run recovery and duplicate suppression
-- Push notifications via FCM
+- Kotlin
+- Jetpack Compose + Material 3
+- Firebase Auth
+- Cloud Firestore
+- Firebase Cloud Messaging
+- Credential Manager for Google sign-in
+- Open-Meteo for weather
+- Minimum Android API 23
 
-### Finances (Finanças)
-- **3 sub-tabs:** Despesas (expenses), Rendimentos (income), Poupancas (savings goals)
-- Track: name, amount, category, who paid
-- Monthly summary by category and member, with localized month navigation
-- Positive-value validation for expenses, income, savings targets, and deposits
-- Split tracking between members
-- **Accessible visual charts** (pure SVG, no external deps):
-  - Donut chart for category breakdown, including single-category months
-  - Bar chart for 6-month expense and income history
-  - Member split rings
-- Invalid, negative, and non-finite amounts are excluded consistently from charts
-- **Income tracking** — log income entries per member
-- **Savings goals** — set targets with progress bars
+## Repository layout
 
-### Calendar (Calendário)
-- Monthly grid with **emoji indicators** by type (replaced colored dots)
-- Portuguese holidays (fixed + Easter-based)
-- **Member birthdays** with MiniAvatar pixel art on the grid
-- Weather emoji integration (next 7 days)
-- Event integration
-- Tap day for details panel (MiniAvatar shown for birthdays)
-
-### Events (Eventos)
-- Create events with date and participants
-- Shopping list and tasks per event
-- Assign responsible members
-- Auto weather forecast for upcoming events
-- Share with friends via public link
-- Public links expose only the selected event snapshot
-- Clone past events
-
-### Weather Widget
-- 7-day forecast and global place search via Open-Meteo
-- Explicit, one-shot device geolocation with low accuracy and an Óbidos fallback
-- Up to 10 private favorite locations per user, synchronized between sessions
-- Temporary location selection without adding it to favorites
-- Location-aware timezone, shared forecast cache, and stale-data fallback
-- The active location is shared consistently by Weather, Calendar, and Events
-- Temperature, wind, precipitation, and expandable hourly view
-
-### Dashboard Summary
-- Cards with status from all areas
-- Weekly progress bar
-
-### Profile, Activity & Avatar
-- Activity summary based on completed household work and habit streaks
-- 7 achievements based on concrete actions, not XP or levels
-- Existing cosmetic inventory with 6 equipment slots and drag-and-drop
-- 8-bit pixel art avatar with full customization (11 animals, 6 customization tabs)
-- XP, levels, progressive titles, and point-based loot boxes are intentionally disabled
-  until the progression model has been properly designed and tested
-
-### i18n (Internationalization)
-- Portuguese and English support
-- `LocaleProvider` + `useT()` hook architecture
-- Locale dictionaries in `lib/locales/pt.ts` and `lib/locales/en.ts`
-- Language toggle on login screen and dashboard menu
-- **Tutorial fully localized** with i18n support
-- Persists in localStorage
-
-### PWA & Push Notifications
-- Full PWA with installable manifest
-- Dedicated native Android app built with Kotlin and Jetpack Compose
-- Native Firebase authentication and real-time Firestore household data
-- The same nine destinations, navigation order, compact header, visual identity, and
-  supporting search/house/profile surfaces as the web client
-- Native Android FCM service, system notification channels, and direct tab routing
-- Local Android habit alarms with shared completion checks and two-hour retry windows
-- **Back button navigation** — device/browser back closes panels instead of leaving the app
-- Push notifications via Firebase Cloud Messaging (FCM) using **data-only messages** (no duplicates)
-- **Service worker with `skipWaiting` + cache purge** for reliable updates
-- **Smart notification routing** — tapping a notification opens the correct tab automatically
-- Foreground client reminders as a best-effort fallback to the server scheduler
-- **In-app Help panel** with notification permission status debug
-- **Smart notifications** for key actions:
-  - 🔥 Urgent shopping items
-  - 🎉 New events created
-  - 📅 Event tomorrow reminder (8am cron)
-  - 🎂 Birthday notifications (8am cron)
-  - 🏠 Friend request sent/accepted
-  - 👋 New member joined house
-  - 💌 Direct messages between members
-
-### Member Management
-- Invite system with 6-char codes and shareable links
-- **Flat hierarchy** — all members are equal (no admin roles)
-- **Members widget in menu** — shows member avatars and provides quick actions
-- Action buttons: 💌 Message (opens direct message panel) and 👤 Profile (view profile)
-- Viewing another member's profile shows read-only view (no settings tab)
-- Viewing your own profile shows full editable profile
-- Members can only leave themselves (no removing others)
-- **Animations** — staggered entrance, bounce on selected, hover scale
-- Dynamic member names throughout the app
-- **Customizable house name** — rename from menu, syncs in real-time
-
-### Friends (Vizinhos)
-- Connect houses via **6-char invite code** or **search by name**
-- Send/accept/reject friend requests
-- View friend houses list with **member avatar cards** (pixel art, like the menu members widget)
-- Remove friend houses
-- Search results show member names
-- Bidirectional friendship (both houses see each other)
-
-### Navigation
-- **Back button support** — device/browser back closes the topmost panel instead of leaving the app
-- **Profile button** — user's MiniAvatar pixel art in the header (top right)
-
-### Send Message Panel
-- Send push notification with message to other house members
-- Message accessible via Members widget (click member → 💌 Message)
-- 8 predefined quick messages
-- Custom message input
-
-### Search Overlay
-- Global search across all tabs (2+ characters)
-- Results grouped by type
-
-### Tutorial System
-- **Per-tab contextual tips** — dismissible tips shown on first visit to each tab
-- Tips stored in localStorage per tab ID
-
-### Profile with Avatar Customization
-- 11 pixel art animals with unique idle animations
-- 6 customization tabs (Animal, Eyes, Mouth, Top, Bottom, Accessories)
-- Avatar displayed in profile header
-- **MiniAvatar** with deterministic pixel art default (based on name) — used in person filters and assignee selectors
-- **Equipment sync** — helmet badge shown on MiniAvatar and members widget when equipped
-- **CharacterModel** shows cute placeholder when no equipment (instead of generic silhouette)
-- Profile shows initial letter circle when no avatar and no equipment configured
-
-## Tech Stack
-
-- **Framework:** Next.js 16 (App Router, `force-dynamic` for Firebase pages)
-- **Language:** TypeScript
-- **UI:** Tailwind CSS
-- **Database:** Firebase Firestore (real-time sync)
-- **Auth:** Firebase Auth (email/password + Google)
-- **Notifications:** Firebase Cloud Messaging (FCM)
-- **Android:** Kotlin, Jetpack Compose, Material 3, Firebase Android SDK, API 23+
-- **Weather:** Open-Meteo API (free, no API key)
-- **Deploy:** Vercel (auto-deploy from GitHub) + Firebase
-- **CI/CD:** GitHub Actions with quality gates (typecheck, lint, build, tests, PR validation)
-- **Multi-tenant:** Each house has isolated data, invites by link
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for runtime boundaries, data
-ownership, and notification flow. The current product roadmap, Android decision,
-service limits, and cost review are in
-[docs/PRODUCT_REVIEW.md](docs/PRODUCT_REVIEW.md).
-
-## Branching Strategy
-
-Create a short-lived working branch from `master`, open a pull request back to
-`master`, and merge only after the quality gates pass.
-
-See [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) for full details.
-
-## Local Setup
-
-### 1. Clone and install
-
-```bash
-git clone https://github.com/Findmucker/casa-app.git
-cd casa-app
-npm install
-```
-
-### 2. Environment variables
-
-Create `.env.local`:
-
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-```
-
-Copy the complete template from [`.env.local.example`](.env.local.example). Server-side
-notifications also require Firebase Admin credentials, `CRON_SECRET`, and the FCM
-VAPID key. Never commit real credentials.
-
-### 3. Firebase setup
-
-1. Create project in [Firebase Console](https://console.firebase.google.com)
-2. Enable Firestore Database
-3. Enable Authentication → Email/Password + Google
-4. In Authentication → Settings → Authorized domains, add every domain that will serve the app (for example `localhost`, your Vercel preview/production domains, and any custom domain)
-5. (Optional) Enable Cloud Messaging for push notifications
-
-### 4. Run locally
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
-### 5. Quality checks
-
-```bash
-npm run typecheck     # TypeScript type check
-npm run lint          # ESLint
-npm run build         # Build verification
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:coverage # With coverage
-npm run android:verify # Check the native boundary and Android configuration
-npm run android:check  # Run native unit tests and Android lint
-```
-
-Android contributors can build locally with JDK 17+ and Android SDK 36, or download
-the debug APK produced by GitHub Actions. See [docs/ANDROID.md](docs/ANDROID.md) for
-phone installation, private Firebase beta delivery, signing, and Play release
-instructions.
-
-## Project Structure
-
-```
+```text
 casa-app/
-├── android/                 # Native Kotlin/Jetpack Compose Android project
-├── app/
-│   ├── .well-known/assetlinks.json/ # Optional website/app-link association
-│   ├── page.tsx              # Entry: Auth → House Setup → Dashboard
-│   ├── dashboard/page.tsx    # Main dashboard with all tabs
-│   ├── convite/[code]/       # Public invite acceptance page
-│   ├── api/send-notification/ # POST endpoint for FCM push
-│   ├── api/cron/habits/      # Authenticated, idempotent reminder endpoint
-│   └── globals.css           # Animations and global styles
-├── components/
-│   ├── AuthScreen.tsx        # Login/register (email + Google)
-│   ├── HouseSetup.tsx        # Create house or accept invite
-│   ├── ShoppingList.tsx      # Shopping list with categories
-│   ├── PriorityList.tsx      # Tasks with drag reorder
-│   ├── ProjectList.tsx       # Projects with subtasks
-│   ├── HabitList.tsx         # Habits with streaks and filters
-│   ├── ExpenseList.tsx       # Expense tracking (3 sub-tabs)
-│   ├── ExpenseCharts.tsx     # SVG donut, bar chart, split rings
-│   ├── Calendar.tsx          # Monthly calendar with emojis
-│   ├── EventList.tsx         # Events with weather
-│   ├── Weather.tsx           # Weather forecast
-│   ├── DashboardSummary.tsx  # Dashboard overview
-│   ├── ProfilePage.tsx       # Activity profile + inventory + avatar
-│   ├── AvatarBuilder.tsx     # 8-bit pixel art avatar
-│   ├── Inventory.tsx         # WoW-style inventory grid
-│   ├── Tutorial.tsx          # Interactive tutorial (i18n)
-│   ├── SearchOverlay.tsx     # Global search
-│   ├── SendMessagePanel.tsx  # Send push message to members
-│   └── ...
-├── lib/
-│   ├── firebase.ts           # Firebase config + Auth
-│   ├── i18n.tsx              # LocaleProvider + useT hook
-│   ├── locales/
-│   │   ├── pt.ts             # Portuguese dictionary
-│   │   └── en.ts             # English dictionary
-│   ├── gamification.ts       # Activity stats, achievements, inventory
-│   ├── notifications.ts      # FCM registration and client notification helpers
-│   ├── habit-reminder-time.ts # Lisbon-time reminder occurrence calculation
-│   ├── categories.ts         # Categories + auto-classification
-│   └── weather.ts            # WMO codes + weather helpers
-├── public/
-│   ├── manifest.json         # Web PWA install manifest
-│   └── firebase-messaging-sw.js # Firebase messaging service worker
-└── scripts/
-    ├── build-android.mjs     # Cross-platform Gradle debug build launcher
-    └── verify-android.mjs    # Android configuration integrity checks
+├── android/                       # Native Android application
+├── app/api/send-notification/    # Headless authenticated FCM endpoint only
+├── lib/firebase-admin.ts         # Server-only Firebase Admin helper
+├── scripts/
+│   ├── build-android.mjs          # Cross-platform Gradle launcher
+│   └── verify-android.mjs         # Android architecture/config guards
+├── docs/                          # Product and Android documentation
+├── firestore.rules               # Firebase security rules
+├── firebase.json                  # Firebase configuration
+├── .github/workflows/android.yml  # Build + private beta delivery
+└── package.json                   # Android CI + headless endpoint build tooling
 ```
 
-## Firestore Collections
+There are deliberately no dashboard pages, PWA manifest/service worker, browser components or public event pages.
 
-| Collection | Description |
-|---|---|
-| `users/{uid}` | User profile (name, email, houseId) |
-| `houses/{houseId}` | House (name, members — all equal, no admin hierarchy) |
-| `invites/{code}` | Pending invites |
-| `houses/{houseId}/shopping` | Shopping list items |
-| `houses/{houseId}/priorities_small` | Tasks (coisinhas) |
-| `houses/{houseId}/priorities_big` | Projects |
-| `houses/{houseId}/events` | Events |
-| `houses/{houseId}/habits` | Habit configurations |
-| `houses/{houseId}/habit_checks` | Daily habit checks |
-| `houses/{houseId}/expenses` | Expenses |
-| `houses/{houseId}/income` | Income entries |
-| `houses/{houseId}/savings_goals` | Savings goals with targets |
-| `houses/{houseId}/friends/{id}` | Friend house connections |
-| `gamification/{owner}` | Activity, avatar, inventory, and equipped cosmetics; historical progression fields may remain stored |
-| `fcm_tokens/{owner}` | FCM tokens for push notifications |
-| `notification_deliveries/{id}` | Reminder leases and delivery deduplication |
+## Local Android development
 
-## Deploy
-
-Connected to Vercel via GitHub with Firebase as the backend. Updates to `master`
-deploy automatically. GitHub Actions runs the reminder scheduler; Vercel's daily
-cron remains a fallback. See [docs/CRON_SETUP.md](docs/CRON_SETUP.md).
-
-The Android client is released independently from the Vercel web client. Both use
-the same Firebase project and house-scoped Firestore documents; schema changes must
-remain compatible across clients. See [docs/ANDROID.md](docs/ANDROID.md).
-
-### Private Android beta
-
-Firebase App Distribution is the private Android testing channel. A signed,
-non-debuggable beta is delivered over Wi-Fi to the Firebase group
-`casinha-testers`; tester addresses stay in Firebase and are never stored in this
-repository. Firebase sends the first invitation and a notification email for each
-subsequent build. Testers install or update from Firebase App Tester and Android
-asks them to confirm each installation. This is a stable beta channel, not a public
-release and not a silent or automatic updater.
-
-The **Android APK** workflow can deliver a beta after Android-relevant changes are
-pushed to `master`, or from a manual run on `master` with `distribute` enabled. It
-never distributes pull-request builds. Beta builds use the same package and stable
-tester certificate, with CI `versionCode` values in the `100000+` range, so future
-beta APKs update the existing installation. A tester moving from an older APK signed
-with another certificate must uninstall Casinha once before the first beta; shared
-Firebase data remains available after signing in again.
-
-Delivery is currently gated off: Workload Identity Federation still needs its
-repository authorization and the `android-testers` variable
-`ANDROID_DISTRIBUTION_ENABLED` remains `false` until setup and the first device test
-are complete. Authentication uses short-lived GitHub OIDC credentials through WIF,
-not a committed or stored service-account JSON key. Google Play Internal Testing is
-the planned next channel for Play-managed installation and real automatic updates.
-
-### CI/CD Pipeline (GitHub Actions)
-
-GitHub Actions provides these checks and release jobs according to their event and
-path gates:
-- TypeScript typecheck
-- ESLint
-- Build verification
-- Test suite
-- PR title validation (conventional commits)
-- Branch naming check
-- Auto-labeling
-- PR stats comment
-- Android configuration validation and a downloadable debug APK when Android files change
-- gated, master-only Firebase App Distribution delivery to the private Android beta group
+Prerequisites: JDK 17 and Android SDK 36.
 
 ```bash
-# Manual deploy (if needed)
-npx vercel --prod
+npm ci
+npm run android:verify
+npm run android:check
+npm run android:build
 ```
 
-## GitHub Issues
+The debug APK is generated at:
 
-Active bugs and planned improvements are tracked in [GitHub Issues](https://github.com/Findmucker/casa-app/issues).
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
 
-## License
+See `docs/ANDROID.md` for signing, Firebase App Distribution and release details.
 
-Personal project — made with love.
+## Firebase
+
+The Android client connects directly to the existing Firebase project. Keep these backend resources intact when changing or cleaning the repository:
+
+- Authentication users/providers
+- Firestore collections and documents
+- Firestore security rules
+- FCM registration and delivery infrastructure
+- Firebase Android application registration
+- Firebase App Distribution tester group and signing configuration
+
+Removing the retired web client must never imply deleting Firebase data.
+
+## Headless notification endpoint
+
+Direct member messages need trusted server credentials to send FCM. The Android app therefore calls the authenticated `/api/send-notification` endpoint. The endpoint verifies the caller's Firebase ID token and household membership before sending to another member's registered Android token.
+
+This server endpoint is infrastructure, not a web client. The Vercel root intentionally has no page and returns 404.
+
+## Releases
+
+`master` is the release branch. Android-relevant pushes trigger `.github/workflows/android.yml`.
+
+The workflow:
+
+1. verifies the Android architecture and Firebase identity;
+2. runs Android unit tests and lint;
+3. builds a debug APK artifact;
+4. for eligible pushes to `master`, builds the stable signed beta;
+5. distributes that beta to the private Firebase App Distribution group when the `android-testers` environment is enabled.
+
+The signed beta uses stable signing and monotonically increasing version codes so it can update the existing tester installation.
+
+## Historical code
+
+The Git history and `CHANGELOG.md` retain the previous web/PWA implementation for reference. The active repository tree intentionally does not contain or deploy that client.

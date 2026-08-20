@@ -1,51 +1,49 @@
 # Branching Strategy
 
-> Last updated: 2026-07-13
-
-`master` is the single long-lived branch and the source of production deploys.
-Work happens on short-lived branches and returns to `master` through pull requests.
+`master` is the single long-lived release branch. Work happens on short-lived branches and returns to `master` after verification.
 
 ## Workflow
 
-1. Update `master`: `git checkout master && git pull`.
-2. Create a branch such as `fix/issue-117-habit-feedback` or
-   `feature/issue-68-home-widgets`.
+1. Update `master`.
+2. Create a focused branch such as `fix/...`, `feature/...`, `refactor/...` or `codex/...`.
 3. Make focused commits using Conventional Commits.
-4. Run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`.
-5. Open a pull request targeting `master`.
-6. Merge only after the quality gates pass, then delete the working branch.
+4. For Android/product changes run:
+   - `npm run android:verify`
+   - `npm run android:check`
+   - `npm run android:build` when a local APK is useful
+5. Review the diff and merge only intended changes.
+6. Delete the short-lived branch after merge.
 
-Vercel creates previews for pull requests and deploys `master` to production.
+Android-related pushes to `master` trigger `.github/workflows/android.yml`, which verifies the app and can distribute the signed private beta through Firebase App Distribution.
+
+The retained Vercel deployment is **not a web product**. It serves only the authenticated headless notification endpoint used by the Android app.
 
 ## Branch names
 
 | Prefix | Use |
 |---|---|
-| `feature/` | New user-facing capability |
+| `feature/` | New Android capability |
 | `fix/` | Bug fix |
 | `hotfix/` | Urgent production fix |
-| `refactor/` | Behavior-preserving code change |
+| `refactor/` | Structural/product refactor |
 | `test/` | Test-only change |
 | `docs/` | Documentation-only change |
 | `chore/` | Maintenance or dependencies |
 | `ci/` | Workflow and automation change |
 | `codex/` | Codex-assisted work |
 
-## Commit and pull-request titles
+## Commit titles
 
 Use `type(scope): short description`, for example:
 
 - `fix(habits): surface failed writes`
-- `refactor(ui): isolate row swipe gestures`
-- `docs: document reminder operations`
-
-Allowed types are `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`,
-`test`, `i18n`, and `ci`.
+- `refactor(android): simplify profile`
+- `docs: document tester updates`
 
 ## Protection expectations
 
-- Pull requests to `master` run type checking, ESLint, tests with coverage, and a
-  production build.
-- Force pushes to `master` should remain disabled.
-- Secrets must stay in Vercel, Firebase, or GitHub Actions secret storage.
-- Hotfixes still use a branch and pull request; urgency does not bypass validation.
+- Do not force-push `master`.
+- Never commit signing keys, Firebase private credentials or tester identities.
+- Keep the Android package/signing/version contract stable.
+- Preserve Firebase/Firestore compatibility and production data.
+- Do not reintroduce a user-facing web/PWA client without an explicit product decision.

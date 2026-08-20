@@ -182,15 +182,21 @@ class CasaViewModel(
     }
 
     fun shareEvent(event: CasaEvent) {
-        val ready = readySession() ?: return
-        runAction {
-            val url = repository.createEventShare(
-                ready.house.id,
-                event,
-                _uiState.value.dashboard.eventItems[event.id].orEmpty(),
-            )
-            _uiState.update { it.copy(shareUrl = url) }
+        val items = _uiState.value.dashboard.eventItems[event.id].orEmpty()
+        val text = buildString {
+            append("🎉 ${event.title}")
+            if (event.date.isNotBlank()) append("\n📅 ${event.date}")
+            if (event.participants.isNotEmpty()) append("\n👥 ${event.participants.joinToString(", ")}")
+            if (items.isNotEmpty()) {
+                append("\n")
+                items.forEach { item ->
+                    append("\n${if (item.done) "✅" else "⬜"} ${item.name}")
+                    if (!item.assignee.isNullOrBlank()) append(" — ${item.assignee}")
+                }
+            }
+            append("\n\nPartilhado pela app A Nossa Casinha")
         }
+        _uiState.update { it.copy(shareUrl = text) }
     }
 
     fun consumeShareUrl() = _uiState.update { it.copy(shareUrl = null) }
@@ -407,38 +413,41 @@ class CasaViewModel(
             }
         }
         listeners += repository.observeHabitChecks(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(habitChecks = value)) } }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(habitChecks = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeExpenses(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(expenses = value)) } }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(expenses = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeIncomes(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(incomes = value)) } }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(incomes = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeSavings(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(savingsGoals = value)) } }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(savingsGoals = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeEvents(houseId) { result ->
             result.onSuccess { value ->
                 _uiState.update { it.copy(dashboard = it.dashboard.copy(events = value)) }
                 syncEventItemListeners(houseId, value)
-            }
-                .onFailure(::showRealtimeError)
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeFriends(houseId) { result ->
             result.onSuccess { value ->
                 _uiState.update { it.copy(dashboard = it.dashboard.copy(friends = value)) }
                 refreshBirthdays(session, value)
-            }
-                .onFailure(::showRealtimeError)
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeGamification(session.profile.name) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(gamification = value)) } }
-                .onFailure { /* gamification is optional */ }
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(gamification = value)) }
+            }.onFailure { /* gamification is optional */ }
         }
         session.house.members.filter { it.name != session.profile.name }.forEach { member ->
             listeners += repository.observeGamification(member.name) { result ->
