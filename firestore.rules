@@ -6,13 +6,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isHouseMember(houseId) {
-      return signedIn()
-        && request.auth.uid in get(/databases/$(database)/documents/houses/$(houseId)).data.memberUids;
+    function currentUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
     function currentHouseId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.houseId;
+      return currentUser().data.houseId;
+    }
+
+    function isHouseMember(houseId) {
+      return signedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/houses/$(houseId)).data.memberUids;
     }
 
     function isJoiningHouse() {
@@ -30,17 +34,14 @@ service cloud.firestore {
         && (request.auth.uid == uid || resource.data.houseId == currentHouseId());
       allow create, update, delete: if signedIn() && request.auth.uid == uid;
 
-      // Weather preferences are private to the authenticated user. They may
-      // contain favorite places and must never inherit the household read rule.
       match /preferences/{document} {
         allow read, write: if signedIn() && request.auth.uid == uid;
       }
     }
 
     match /gamification/{owner} {
-      allow read: if signedIn();
-      allow create, update, delete: if signedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name == owner;
+      allow read: if signedIn() && currentUser().data.name == owner;
+      allow write: if false;
     }
 
     match /houses/{houseId} {
@@ -65,7 +66,7 @@ service cloud.firestore {
     }
 
     match /invites/{code} {
-      allow read: if true;
+      allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.houseId is string
         && isHouseMember(request.resource.data.houseId)
@@ -75,28 +76,8 @@ service cloud.firestore {
         && isHouseMember(resource.data.houseId);
     }
 
-    match /friend_requests/{requestId} {
-      allow create: if signedIn()
-        && request.resource.data.fromHouseId is string
-        && isHouseMember(request.resource.data.fromHouseId);
-      allow read: if signedIn()
-        && (isHouseMember(resource.data.fromHouseId) || isHouseMember(resource.data.toHouseId));
-      allow update, delete: if signedIn() && isHouseMember(resource.data.toHouseId);
-    }
-
     match /fcm_tokens/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
-    }
-
-    match /event_share_houses/{houseId} {
-      allow read, write: if isHouseMember(houseId);
-    }
-
-    match /event_shares/{shareId} {
-      allow read: if true;
-      allow create, update, delete: if signedIn()
-        && request.resource.data.houseId is string
-        && isHouseMember(request.resource.data.houseId);
     }
 
     match /config/{document} {

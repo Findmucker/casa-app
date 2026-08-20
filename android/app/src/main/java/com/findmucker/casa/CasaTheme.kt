@@ -13,7 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Exact Tailwind colour family used by the existing web client. */
 object CasinhaPalette {
     val Rose700 = Color(0xFFBE123C)
     val Rose600 = Color(0xFFE11D48)

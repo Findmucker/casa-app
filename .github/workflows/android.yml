@@ -34,12 +34,10 @@ permissions:
 
 jobs:
   debug-apk:
-    name: Build debug APK
+    name: Verify Android build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
-      # CI artifacts stay above the checked-in base version. Tester releases use
-      # their own higher range in the gated job below.
       ORG_GRADLE_PROJECT_CASINHA_BUILD_LABEL: test.${{ github.run_number }}
 
     steps:
@@ -72,8 +70,8 @@ jobs:
       - name: Test and lint native app
         run: npm run android:check
 
-      - name: Build debug APK
-        run: npm run android:build
+      - name: Build debug and release variants
+        run: node scripts/build-android.mjs assembleDebug assembleRelease
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v7

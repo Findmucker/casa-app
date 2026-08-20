@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,7 +31,8 @@ fun AvatarCharacter(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val animal = avatar.takeIf { value -> BasicAnimalAvatars.any { it.first == value } } ?: "🐼"
+    val emoji = avatar.takeIf(::isSupportedAvatar) ?: DefaultAvatarEmoji
+
     Surface(
         modifier = modifier,
         shape = CircleShape,
@@ -43,7 +45,7 @@ fun AvatarCharacter(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(animal, fontSize = if (compact) 36.sp else 80.sp, textAlign = TextAlign.Center)
+            Text(emoji, fontSize = if (compact) 36.sp else 80.sp, textAlign = TextAlign.Center)
         }
     }
 }
@@ -54,29 +56,36 @@ fun AvatarEditor(
     working: Boolean,
     onSave: (String) -> Unit,
 ) {
-    var avatar by remember(savedAvatar) {
-        mutableStateOf(savedAvatar.takeIf { value -> BasicAnimalAvatars.any { it.first == value } } ?: "🐼")
+    var selectedAvatar by remember(savedAvatar) {
+        mutableStateOf(savedAvatar.takeIf(::isSupportedAvatar) ?: DefaultAvatarEmoji)
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(
-            "Escolhe o teu animal",
+            text = "Escolhe o teu animal",
             color = CasinhaPalette.Rose600,
             fontWeight = FontWeight.Bold,
             fontSize = 13.sp,
         )
-        AvatarCharacter(avatar, modifier = Modifier.size(132.dp).align(Alignment.CenterHorizontally))
-        BasicAnimalAvatars.chunked(4).forEach { group ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                group.forEach { (emoji, name) ->
-                    val selected = avatar == emoji
+        AvatarCharacter(
+            avatar = selectedAvatar,
+            modifier = Modifier.size(132.dp).align(Alignment.CenterHorizontally),
+        )
+
+        BasicAnimalAvatars.chunked(4).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                row.forEach { option ->
+                    val selected = selectedAvatar == option.emoji
                     Surface(
-                        modifier = Modifier.weight(1f).clickable { avatar = emoji },
+                        modifier = Modifier.weight(1f).clickable { selectedAvatar = option.emoji },
                         shape = CircleShape,
                         color = if (selected) CasinhaPalette.Pink100 else Color.White.copy(alpha = 0.72f),
                         border = BorderStroke(
-                            if (selected) 2.dp else 1.dp,
-                            if (selected) CasinhaPalette.Rose400 else CasinhaPalette.Pink200,
+                            width = if (selected) 2.dp else 1.dp,
+                            color = if (selected) CasinhaPalette.Rose400 else CasinhaPalette.Pink200,
                         ),
                         shadowElevation = 0.dp,
                     ) {
@@ -84,20 +93,26 @@ fun AvatarEditor(
                             modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Text(emoji, fontSize = 27.sp)
-                            Text(name, color = CasinhaPalette.Rose600, fontSize = 8.sp, maxLines = 1)
+                            Text(option.emoji, fontSize = 27.sp)
+                            Text(
+                                text = option.label,
+                                color = CasinhaPalette.Rose600,
+                                fontSize = 8.sp,
+                                maxLines = 1,
+                            )
                         }
                     }
                 }
-                repeat(4 - group.size) {
-                    androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                repeat(4 - row.size) {
+                    Spacer(Modifier.weight(1f))
                 }
             }
         }
+
         GradientActionButton(
-            "Guardar animal",
-            { onSave(avatar) },
-            Modifier.fillMaxWidth(),
+            text = "Guardar animal",
+            onClick = { onSave(selectedAvatar) },
+            modifier = Modifier.fillMaxWidth(),
             enabled = !working,
         )
     }
