@@ -1,15 +1,16 @@
 # A Nossa Casinha
 
-A Nossa Casinha is now an **Android-only** household app for couples and families.
+A Nossa Casinha is an **Android-only** household app for couples and families.
 
-The previous Next.js/PWA client has been retired. The product is maintained as a native Kotlin + Jetpack Compose application in `android/`, backed directly by Firebase Authentication, Firestore and Firebase Cloud Messaging.
+The previous Next.js/PWA client has been retired. The product is maintained as a native Kotlin + Jetpack Compose application in `android/`, backed by Firebase Authentication, Firestore and Firebase Cloud Messaging.
 
 ## Product direction
 
 - Android is the only user-facing client.
 - There is no supported web/PWA version.
-- Firebase remains the shared backend and source of persisted household data.
-- Historical Firestore fields are kept where needed for backwards-compatible reads; old web UI code is not kept in the repository.
+- Firebase remains the source of persisted household data.
+- Historical Firestore fields are kept where needed for backwards-compatible reads; old web UI code is not kept in the active repository tree.
+- Vercel is retained only as a **headless authenticated FCM sender** used by the Android app. It serves no product pages; `/` intentionally returns 404.
 
 ## Main features
 
@@ -25,6 +26,7 @@ The previous Next.js/PWA client has been retired. The product is maintained as a
 - Search, house management, invites, neighbours and direct messages
 - Simple member profiles with basic animal avatars
 - Native notifications and local habit reminders
+- Native Android event sharing as text, without public web links
 
 ## Android stack
 
@@ -42,6 +44,8 @@ The previous Next.js/PWA client has been retired. The product is maintained as a
 ```text
 casa-app/
 ├── android/                       # Native Android application
+├── app/api/send-notification/    # Headless authenticated FCM endpoint only
+├── lib/firebase-admin.ts         # Server-only Firebase Admin helper
 ├── scripts/
 │   ├── build-android.mjs          # Cross-platform Gradle launcher
 │   └── verify-android.mjs         # Android architecture/config guards
@@ -49,8 +53,10 @@ casa-app/
 ├── firestore.rules               # Firebase security rules
 ├── firebase.json                  # Firebase configuration
 ├── .github/workflows/android.yml  # Build + private beta delivery
-└── package.json                   # Node tooling used by Android CI
+└── package.json                   # Android CI + headless endpoint build tooling
 ```
+
+There are deliberately no dashboard pages, PWA manifest/service worker, browser components or public event pages.
 
 ## Local Android development
 
@@ -83,6 +89,12 @@ The Android client connects directly to the existing Firebase project. Keep thes
 - Firebase App Distribution tester group and signing configuration
 
 Removing the retired web client must never imply deleting Firebase data.
+
+## Headless notification endpoint
+
+Direct member messages need trusted server credentials to send FCM. The Android app therefore calls the authenticated `/api/send-notification` endpoint. The endpoint verifies the caller's Firebase ID token and household membership before sending to another member's registered Android token.
+
+This server endpoint is infrastructure, not a web client. The Vercel root intentionally has no page and returns 404.
 
 ## Releases
 
