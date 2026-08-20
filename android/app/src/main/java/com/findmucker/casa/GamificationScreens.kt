@@ -24,16 +24,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val basicAnimals = AvatarOptions.getValue(AvatarSlot.ANIMAL).filter { it.id in 0..10 }
-
 @Composable
 fun AvatarCharacter(
-    avatar: AvatarConfig,
-    equipped: Map<LootSlot, String> = emptyMap(),
+    avatar: String,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val animal = basicAnimals.firstOrNull { it.id == avatar.animal }?.preview ?: "🐼"
+    val animal = avatar.takeIf { value -> BasicAnimalAvatars.any { it.first == value } } ?: "🐼"
     Surface(
         modifier = modifier,
         shape = CircleShape,
@@ -53,19 +50,13 @@ fun AvatarCharacter(
 
 @Composable
 fun AvatarEditor(
-    savedAvatar: AvatarConfig,
+    savedAvatar: String,
     working: Boolean,
-    onSave: (AvatarConfig) -> Unit,
+    onSave: (String) -> Unit,
 ) {
-    var avatar by remember(savedAvatar) { mutableStateOf(savedAvatar.copy(
-        eyes = 0,
-        mouth = 0,
-        top = 0,
-        bottom = 0,
-        accessory = 0,
-        background = 0,
-        effect = 0,
-    )) }
+    var avatar by remember(savedAvatar) {
+        mutableStateOf(savedAvatar.takeIf { value -> BasicAnimalAvatars.any { it.first == value } } ?: "🐼")
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(
@@ -75,12 +66,12 @@ fun AvatarEditor(
             fontSize = 13.sp,
         )
         AvatarCharacter(avatar, modifier = Modifier.size(132.dp).align(Alignment.CenterHorizontally))
-        basicAnimals.chunked(4).forEach { group ->
+        BasicAnimalAvatars.chunked(4).forEach { group ->
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                group.forEach { option ->
-                    val selected = avatar.animal == option.id
+                group.forEach { (emoji, name) ->
+                    val selected = avatar == emoji
                     Surface(
-                        modifier = Modifier.weight(1f).clickable { avatar = avatar.copy(animal = option.id) },
+                        modifier = Modifier.weight(1f).clickable { avatar = emoji },
                         shape = CircleShape,
                         color = if (selected) CasinhaPalette.Pink100 else Color.White.copy(alpha = 0.72f),
                         border = BorderStroke(
@@ -93,8 +84,8 @@ fun AvatarEditor(
                             modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Text(option.preview, fontSize = 27.sp)
-                            Text(option.name, color = CasinhaPalette.Rose600, fontSize = 8.sp, maxLines = 1)
+                            Text(emoji, fontSize = 27.sp)
+                            Text(name, color = CasinhaPalette.Rose600, fontSize = 8.sp, maxLines = 1)
                         }
                     }
                 }
