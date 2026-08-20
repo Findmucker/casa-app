@@ -413,38 +413,41 @@ class CasaViewModel(
             }
         }
         listeners += repository.observeHabitChecks(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(habitChecks = value)) }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(habitChecks = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeExpenses(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(expenses = value)) }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(expenses = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeIncomes(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(incomes = value)) }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(incomes = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeSavings(houseId) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(savingsGoals = value)) }
-                .onFailure(::showRealtimeError)
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(savingsGoals = value)) }
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeEvents(houseId) { result ->
             result.onSuccess { value ->
                 _uiState.update { it.copy(dashboard = it.dashboard.copy(events = value)) }
                 syncEventItemListeners(houseId, value)
-            }
-                .onFailure(::showRealtimeError)
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeFriends(houseId) { result ->
             result.onSuccess { value ->
                 _uiState.update { it.copy(dashboard = it.dashboard.copy(friends = value)) }
                 refreshBirthdays(session, value)
-            }
-                .onFailure(::showRealtimeError)
+            }.onFailure(::showRealtimeError)
         }
         listeners += repository.observeGamification(session.profile.name) { result ->
-            result.onSuccess { value -> _uiState.update { it.copy(dashboard = it.dashboard.copy(gamification = value)) }
-                .onFailure { /* gamification is optional */ }
+            result.onSuccess { value ->
+                _uiState.update { it.copy(dashboard = it.dashboard.copy(gamification = value)) }
+            }.onFailure { /* gamification is optional */ }
         }
         session.house.members.filter { it.name != session.profile.name }.forEach { member ->
             listeners += repository.observeGamification(member.name) { result ->
