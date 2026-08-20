@@ -62,9 +62,9 @@ class SessionModelsTest {
                 latitude = index.toDouble(),
                 longitude = index.toDouble(),
                 name = "Local $index",
-                displayName = "Local $index",
-                source = "auto",
-                provider = "geocoding",
+                label = "Local $index",
+                timezone = "auto",
+                source = "geocoding",
             )
         }
         val preferences = locations.fold(WeatherPreferences()) { current, location ->
