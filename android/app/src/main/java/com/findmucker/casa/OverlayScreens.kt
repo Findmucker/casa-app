@@ -58,9 +58,7 @@ fun DashboardOverlayScreen(
     onNavigate: (DashboardTab) -> Unit,
     onRenameHouse: (String) -> Unit,
     onUpdateProfile: (String, String?) -> Unit,
-    onEquipItem: (String, LootSlot) -> Unit,
-    onUnequipItem: (LootSlot) -> Unit,
-    onSaveAvatar: (AvatarConfig) -> Unit,
+    onSaveAvatar: (String) -> Unit,
     onCreateInvite: () -> Unit,
     onLoadFriendCode: () -> Unit,
     onConnectFriend: (String) -> Unit,
@@ -77,12 +75,12 @@ fun DashboardOverlayScreen(
                 )
                 DashboardOverlay.SEARCH -> SearchOverlay(state.dashboard, onClose, onNavigate)
                 DashboardOverlay.PROFILE -> ProfileOverlay(
-                    profile, state.dashboard, state.working, state.error, state.notice,
+                    profile, state.working, state.error, state.notice,
                     onClose, onUpdateProfile, onSaveAvatar,
                 )
                 DashboardOverlay.HISTORY -> HistoryOverlay(state.dashboard, onClose)
                 DashboardOverlay.INVITE -> InviteOverlay(state.inviteCode, state.working, state.error, state.notice, onClose, onCreateInvite)
-                DashboardOverlay.MEMBERS -> MembersOverlay(profile, house, state.dashboard, onClose, onOpen)
+                DashboardOverlay.MEMBERS -> MembersOverlay(profile, house, onClose, onOpen)
                 DashboardOverlay.FRIENDS -> FriendsOverlay(state.friendCode, state.dashboard.friends, state.working, state.error, state.notice, onClose, onLoadFriendCode, onConnectFriend, onRemoveFriend)
                 DashboardOverlay.MESSAGE -> MessageOverlay(profile, house, state.working, state.error, state.notice, onClose, onSendMessage)
                 DashboardOverlay.HELP -> HelpOverlay(onClose)
@@ -277,13 +275,12 @@ private data class SearchResult(val emoji: String, val title: String, val detail
 @Composable
 private fun ProfileOverlay(
     profile: UserProfile,
-    dashboard: DashboardState,
     working: Boolean,
     error: String?,
     notice: String?,
     onClose: () -> Unit,
     onUpdateProfile: (String, String?) -> Unit,
-    onSaveAvatar: (AvatarConfig) -> Unit,
+    onSaveAvatar: (String) -> Unit,
 ) {
     var name by remember(profile.name) { mutableStateOf(profile.name) }
     var birthDate by remember(profile.birthDate) { mutableStateOf(profile.birthDate.orEmpty()) }
@@ -299,7 +296,7 @@ private fun ProfileOverlay(
                     modifier = Modifier.fillMaxWidth().background(Color.White.copy(alpha = 0.42f)).padding(18.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    AvatarCharacter(dashboard.gamification.avatar, modifier = Modifier.size(96.dp), compact = true)
+                    AvatarCharacter(profile.avatar, modifier = Modifier.size(96.dp), compact = true)
                     Text(profile.name, color = CasinhaPalette.Rose700, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(top = 9.dp))
                     if (!profile.email.isNullOrBlank()) Text(profile.email.orEmpty(), color = CasinhaPalette.Pink400, fontSize = 10.sp, modifier = Modifier.padding(top = 2.dp))
                 }
@@ -321,7 +318,7 @@ private fun ProfileOverlay(
             }
             item {
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    AvatarEditor(dashboard.gamification.avatar, working, onSaveAvatar)
+                    AvatarEditor(profile.avatar, working, onSaveAvatar)
                 }
             }
             item { FeedbackBanner(error, notice) }
@@ -373,11 +370,10 @@ private fun InviteOverlay(code: String?, working: Boolean, error: String?, notic
 }
 
 @Composable
-private fun MembersOverlay(profile: UserProfile, house: House, dashboard: DashboardState, onClose: () -> Unit, onOpen: (DashboardOverlay) -> Unit) {
+private fun MembersOverlay(profile: UserProfile, house: House, onClose: () -> Unit, onOpen: (DashboardOverlay) -> Unit) {
     var selectedMember by remember { mutableStateOf<HouseMember?>(null) }
     selectedMember?.let { member ->
-        val game = if (member.uid == profile.uid) dashboard.gamification else dashboard.memberGamification[member.name] ?: GamificationProfile()
-        ReadOnlyMemberProfile(member, game) { selectedMember = null }
+        ReadOnlyMemberProfile(member) { selectedMember = null }
         return
     }
     Column(modifier = Modifier.fillMaxSize()) {
@@ -386,8 +382,7 @@ private fun MembersOverlay(profile: UserProfile, house: House, dashboard: Dashbo
             items(house.members, key = { it.uid }) { member ->
                 GlassCard(modifier = Modifier.fillMaxWidth().clickable { selectedMember = member }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val game = if (member.uid == profile.uid) dashboard.gamification else dashboard.memberGamification[member.name] ?: GamificationProfile()
-                        AvatarCharacter(game.avatar, modifier = Modifier.size(52.dp), compact = true)
+                        AvatarCharacter(member.avatar, modifier = Modifier.size(52.dp), compact = true)
                         Column(modifier = Modifier.weight(1f).padding(horizontal = 11.dp)) {
                             Text(member.name, color = CasinhaPalette.Rose700, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             Text(if (member.role == "admin") "Administrador" else "Membro", color = CasinhaPalette.Pink400, fontSize = 9.sp)
@@ -401,7 +396,7 @@ private fun MembersOverlay(profile: UserProfile, house: House, dashboard: Dashbo
 }
 
 @Composable
-private fun ReadOnlyMemberProfile(member: HouseMember, game: GamificationProfile, onBack: () -> Unit) {
+private fun ReadOnlyMemberProfile(member: HouseMember, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         OverlayTopBar("Perfil de ${member.name}", onBack)
         Column(
@@ -409,7 +404,7 @@ private fun ReadOnlyMemberProfile(member: HouseMember, game: GamificationProfile
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            AvatarCharacter(game.avatar, modifier = Modifier.size(108.dp), compact = true)
+            AvatarCharacter(member.avatar, modifier = Modifier.size(108.dp), compact = true)
             Text(member.name, color = CasinhaPalette.Rose700, fontWeight = FontWeight.Bold, fontSize = 20.sp)
             Text(if (member.role == "admin") "Administrador" else "Membro", color = CasinhaPalette.Pink400, fontSize = 11.sp)
         }
