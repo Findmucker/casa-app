@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 
 class CasaViewModel(
     private val repository: FirebaseCasaRepository = FirebaseCasaRepository(),
+    private val avatarRepository: ProfileAvatarRepository = ProfileAvatarRepository(),
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CasaUiState())
     val uiState: StateFlow<CasaUiState> = _uiState.asStateFlow()
@@ -230,19 +231,22 @@ class CasaViewModel(
         }
     }
 
-    fun equipItem(itemId: String, slot: LootSlot) {
+    fun saveAvatar(avatar: String) {
         val ready = readySession() ?: return
-        runAction("Item equipado.") { repository.equipItem(ready.profile.name, itemId, slot) }
-    }
-
-    fun unequipItem(slot: LootSlot) {
-        val ready = readySession() ?: return
-        runAction("Item removido.") { repository.unequipItem(ready.profile.name, slot) }
-    }
-
-    fun saveAvatar(avatar: AvatarConfig) {
-        val ready = readySession() ?: return
-        runAction("Avatar guardado.") { repository.saveAvatar(ready.profile.name, avatar) }
+        runAction("Animal guardado.") {
+            avatarRepository.saveAvatar(ready.profile, ready.house, avatar)
+            val members = ready.house.members.map { member ->
+                if (member.uid == ready.profile.uid) member.copy(avatar = avatar) else member
+            }
+            _uiState.update { state ->
+                state.copy(
+                    session = ready.copy(
+                        profile = ready.profile.copy(avatar = avatar),
+                        house = ready.house.copy(members = members),
+                    ),
+                )
+            }
+        }
     }
 
     fun createInvite() {
@@ -347,7 +351,7 @@ class CasaViewModel(
         val preferences = current.preferences.copy(defaultMode = "fallback", defaultFavoriteId = null)
         viewModelScope.launch {
             repository.saveWeatherPreferences(ready.profile.uid, preferences)
-            val weather = repository.loadWeather(DefaultWeatherLocation, preferences)
+            val weather = repository.loadWeather(location = preferences.resolvedLocation(), preferences = preferences)
             _uiState.update { it.copy(dashboard = it.dashboard.copy(weather = weather)) }
         }
     }
@@ -444,22 +448,28 @@ class CasaViewModel(
                 refreshBirthdays(session, value)
             }.onFailure(::showRealtimeError)
         }
-        listeners += repository.observeGamification(session.profile.name) { result ->
-            result.onSuccess { value ->
-                _uiState.update { it.copy(dashboard = it.dashboard.copy(gamification = value)) }
-            }.onFailure { /* gamification is optional */ }
-        }
-        session.house.members.filter { it.name != session.profile.name }.forEach { member ->
-            listeners += repository.observeGamification(member.name) { result ->
-                result.onSuccess { value ->
-                    _uiState.update {
-                        it.copy(dashboard = it.dashboard.copy(memberGamification = it.dashboard.memberGamification + (member.name to value)))
-                    }
-                }.onFailure { /* member gamification is optional */ }
-            }
-        }
+        initializeAvatar(session)
         initializeWeather(session.profile.uid)
         refreshBirthdays(session, emptyList())
+    }
+
+    private fun initializeAvatar(session: SessionState.Ready) {
+        viewModelScope.launch {
+            val avatar = runCatching { avatarRepository.migrateLegacyAvatarIfNeeded(session.profile, session.house) }
+                .getOrDefault(session.profile.avatar.ifBlank { "👤" })
+            if (avatar == session.profile.avatar) return@launch
+            val members = session.house.members.map { member ->
+                if (member.uid == session.profile.uid) member.copy(avatar = avatar) else member
+            }
+            _uiState.update { state ->
+                state.copy(
+                    session = session.copy(
+                        profile = session.profile.copy(avatar = avatar),
+                        house = session.house.copy(members = members),
+                    ),
+                )
+            }
+        }
     }
 
     private fun initializeWeather(userId: String) {
