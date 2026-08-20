@@ -28,7 +28,6 @@ import { MAIN_THEME } from "@/lib/themes";
 import { registerPushToken } from "@/lib/notifications";
 import { LocaleProvider, useT } from "@/lib/i18n";
 import { useHouseContext } from "@/lib/context";
-import { getLevel, getTitle } from "@/lib/gamification";
 import { type AvatarConfig } from "@/components/AvatarBuilder";
 import { type EquippedItems } from "@/lib/gamification";
 import { doc, getDoc } from "firebase/firestore";
@@ -37,7 +36,7 @@ import { WeatherLocationProvider } from "@/components/WeatherLocationProvider";
 
 const TAB_IDS = ["home", "shopping", "small", "big", "habits", "expenses", "calendar", "events", "weather"] as const;
 
-interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; level: number; title: string; points: number; equipped?: EquippedItems; }
+interface MemberWidget { uid: string; name: string; avatar?: AvatarConfig; equipped?: EquippedItems; }
 const TAB_EMOJIS = ["✨", "🛒", "🪄", "🏡", "🧘", "💰", "🗓️", "🎉", "🌤️"];
 const TAB_LABEL_KEYS = [
   "tabs.home", "tabs.shopping", "tabs.small", "tabs.big", "tabs.habits",
@@ -82,7 +81,7 @@ function DashboardInner() {
   }, []);
   const [showPanel, setShowPanel] = useState(false);
   const [menuSubPanel, setMenuSubPanel] = useState<"house" | "settings" | null>(null);
-  const [showGamification, setShowGamification] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [profileViewMember, setProfileViewMember] = useState<string | undefined>(undefined);
   const [showSearch, setShowSearch] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -108,7 +107,7 @@ function DashboardInner() {
 
   useEffect(() => {
     const handlePopState = () => {
-      if (showGamification) { setShowGamification(false); setProfileViewMember(undefined); }
+      if (showProfile) { setShowProfile(false); setProfileViewMember(undefined); }
       else if (showSearch) { setShowSearch(false); }
       else if (showHistory) { setShowHistory(false); }
       else if (showInvite) { setShowInvite(false); }
@@ -120,7 +119,7 @@ function DashboardInner() {
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [showGamification, showSearch, showHistory, showInvite, showHouseMembers, showFriends, showSendMessage, showHelp, showPanel]);
+  }, [showProfile, showSearch, showHistory, showInvite, showHouseMembers, showFriends, showSendMessage, showHelp, showPanel]);
 
   // Members widget data
   const [memberWidgets, setMemberWidgets] = useState<MemberWidget[]>([]);
@@ -132,12 +131,10 @@ function DashboardInner() {
             const snap = await getDoc(doc(db, "gamification", m.name));
             if (snap.exists()) {
               const d = snap.data();
-              const pts = d.points || 0;
-              const { level } = getLevel(pts);
-              return { uid: m.uid, name: m.name, avatar: d.avatar || undefined, level, title: getTitle(level), points: pts, equipped: d.equipped || undefined };
+              return { uid: m.uid, name: m.name, avatar: d.avatar || undefined, equipped: d.equipped || undefined };
             }
           } catch { /* ignore */ }
-          return { uid: m.uid, name: m.name, level: 1, title: getTitle(1), points: 0 };
+          return { uid: m.uid, name: m.name };
         })
       );
       setMemberWidgets(data);
@@ -243,8 +240,8 @@ function DashboardInner() {
           🏡 {houseName}
         </button>
         <button
-          onClick={() => openOverlay(() => setShowGamification(true))}
-          aria-label="Perfil e gamificação"
+          onClick={() => openOverlay(() => setShowProfile(true))}
+          aria-label="Perfil"
           className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all"
         >
           <MiniAvatar name={userName} size={32} />
@@ -401,13 +398,6 @@ function DashboardInner() {
                               <MiniAvatar name={m.name} size={48} avatarConfig={m.avatar || null} equippedItems={m.equipped} />
                             </div>
                             <span className="text-[10px] font-semibold leading-tight text-rose-700">{m.name}</span>
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-300 ${
-                              memberActionTarget?.uid === m.uid
-                                ? "bg-pink-200/80 scale-110"
-                                : "bg-pink-100/60"
-                            }`}>
-                              <span className="text-[8px] font-bold text-pink-500">Nv.{m.level}</span>
-                            </div>
                           </button>
                         ))}
                       </div>
@@ -424,7 +414,7 @@ function DashboardInner() {
                             </button>
                           )}
                           <button
-                            onClick={() => { const name = memberActionTarget.uid !== user?.uid ? memberActionTarget.name : undefined; setProfileViewMember(name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); history.replaceState({ overlay: true }, ""); setShowGamification(true); }}
+                            onClick={() => { const name = memberActionTarget.uid !== user?.uid ? memberActionTarget.name : undefined; setProfileViewMember(name); setShowPanel(false); setMenuSubPanel(null); setMemberActionTarget(null); history.replaceState({ overlay: true }, ""); setShowProfile(true); }}
                             className="flex items-center gap-1.5 rounded-2xl border border-pink-100/50 bg-white px-4 py-2.5 text-[11px] font-semibold text-rose-600 shadow-sm shadow-pink-100/20 transition-all hover:shadow-md active:scale-90"
                           >
                             <span>👤</span> {t("menu.profile")}
@@ -479,7 +469,7 @@ function DashboardInner() {
         )}
 
         {/* Overlays */}
-        {showGamification && <ProfilePage onClose={() => history.back()} viewMember={profileViewMember} />}
+        {showProfile && <ProfilePage onClose={() => history.back()} viewMember={profileViewMember} />}
         {showSearch && <SearchOverlay onClose={() => history.back()} onNavigate={(tab) => switchTab(tab as TabId)} />}
         {showHistory && <HistoryPanel onClose={() => history.back()} />}
         {showInvite && houseId && user && <InvitePanel houseId={houseId} userId={user.uid} onClose={() => history.back()} />}

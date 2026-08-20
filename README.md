@@ -1,10 +1,13 @@
 # A Nossa Casinha
 
-A household management PWA for couples and families — organize shopping, tasks, projects, habits, expenses, events, and more. Built with love.
+A household management PWA and Android app for couples and families — organize shopping, tasks, projects, habits, expenses, events, and more. Built with love.
 
 **Live:** [casa-app-zeta.vercel.app](https://casa-app-zeta.vercel.app)
 
-**Release model:** rolling deployment from `master` to production. See [CHANGELOG.md](CHANGELOG.md) for notable changes.
+**Release model:** the web client deploys continuously from `master`; Android is
+verified separately and uses a gated private beta channel. See
+[CHANGELOG.md](CHANGELOG.md) for notable changes and
+[docs/ANDROID.md](docs/ANDROID.md) for Android delivery.
 
 ## Features
 
@@ -83,14 +86,13 @@ A household management PWA for couples and families — organize shopping, tasks
 - Cards with status from all areas
 - Weekly progress bar
 
-### Gamification & RPG Profile
-- Points system (+1 shopping, +2 task, +5 project, +2 habit)
-- Levels (every 50 points) with progressive titles
-- 9 unlockable badges
-- RPG profile with 6 stats based on real activity
-- Loot boxes with cosmetic items (4 rarities)
-- WoW TBC-style inventory with drag-and-drop
+### Profile, Activity & Avatar
+- Activity summary based on completed household work and habit streaks
+- 7 achievements based on concrete actions, not XP or levels
+- Existing cosmetic inventory with 6 equipment slots and drag-and-drop
 - 8-bit pixel art avatar with full customization (11 animals, 6 customization tabs)
+- XP, levels, progressive titles, and point-based loot boxes are intentionally disabled
+  until the progression model has been properly designed and tested
 
 ### i18n (Internationalization)
 - Portuguese and English support
@@ -102,6 +104,12 @@ A household management PWA for couples and families — organize shopping, tasks
 
 ### PWA & Push Notifications
 - Full PWA with installable manifest
+- Dedicated native Android app built with Kotlin and Jetpack Compose
+- Native Firebase authentication and real-time Firestore household data
+- The same nine destinations, navigation order, compact header, visual identity, and
+  supporting search/house/profile surfaces as the web client
+- Native Android FCM service, system notification channels, and direct tab routing
+- Local Android habit alarms with shared completion checks and two-hour retry windows
 - **Back button navigation** — device/browser back closes panels instead of leaving the app
 - Push notifications via Firebase Cloud Messaging (FCM) using **data-only messages** (no duplicates)
 - **Service worker with `skipWaiting` + cache purge** for reliable updates
@@ -120,7 +128,7 @@ A household management PWA for couples and families — organize shopping, tasks
 ### Member Management
 - Invite system with 6-char codes and shareable links
 - **Flat hierarchy** — all members are equal (no admin roles)
-- **Members widget in menu** — shows member avatars with level, clickable for actions
+- **Members widget in menu** — shows member avatars and provides quick actions
 - Action buttons: 💌 Message (opens direct message panel) and 👤 Profile (view profile)
 - Viewing another member's profile shows read-only view (no settings tab)
 - Viewing your own profile shows full editable profile
@@ -172,6 +180,7 @@ A household management PWA for couples and families — organize shopping, tasks
 - **Database:** Firebase Firestore (real-time sync)
 - **Auth:** Firebase Auth (email/password + Google)
 - **Notifications:** Firebase Cloud Messaging (FCM)
+- **Android:** Kotlin, Jetpack Compose, Material 3, Firebase Android SDK, API 23+
 - **Weather:** Open-Meteo API (free, no API key)
 - **Deploy:** Vercel (auto-deploy from GitHub) + Firebase
 - **CI/CD:** GitHub Actions with quality gates (typecheck, lint, build, tests, PR validation)
@@ -241,13 +250,22 @@ npm run build         # Build verification
 npm test              # Run all tests
 npm run test:watch    # Watch mode
 npm run test:coverage # With coverage
+npm run android:verify # Check the native boundary and Android configuration
+npm run android:check  # Run native unit tests and Android lint
 ```
+
+Android contributors can build locally with JDK 17+ and Android SDK 36, or download
+the debug APK produced by GitHub Actions. See [docs/ANDROID.md](docs/ANDROID.md) for
+phone installation, private Firebase beta delivery, signing, and Play release
+instructions.
 
 ## Project Structure
 
 ```
 casa-app/
+├── android/                 # Native Kotlin/Jetpack Compose Android project
 ├── app/
+│   ├── .well-known/assetlinks.json/ # Optional website/app-link association
 │   ├── page.tsx              # Entry: Auth → House Setup → Dashboard
 │   ├── dashboard/page.tsx    # Main dashboard with all tabs
 │   ├── convite/[code]/       # Public invite acceptance page
@@ -267,10 +285,9 @@ casa-app/
 │   ├── EventList.tsx         # Events with weather
 │   ├── Weather.tsx           # Weather forecast
 │   ├── DashboardSummary.tsx  # Dashboard overview
-│   ├── ProfilePage.tsx       # RPG profile + inventory + avatar
+│   ├── ProfilePage.tsx       # Activity profile + inventory + avatar
 │   ├── AvatarBuilder.tsx     # 8-bit pixel art avatar
 │   ├── Inventory.tsx         # WoW-style inventory grid
-│   ├── LootBoxOpener.tsx     # Loot box opening animation
 │   ├── Tutorial.tsx          # Interactive tutorial (i18n)
 │   ├── SearchOverlay.tsx     # Global search
 │   ├── SendMessagePanel.tsx  # Send push message to members
@@ -281,14 +298,17 @@ casa-app/
 │   ├── locales/
 │   │   ├── pt.ts             # Portuguese dictionary
 │   │   └── en.ts             # English dictionary
-│   ├── gamification.ts       # Points, badges, loot, inventory
+│   ├── gamification.ts       # Activity stats, achievements, inventory
 │   ├── notifications.ts      # FCM registration and client notification helpers
 │   ├── habit-reminder-time.ts # Lisbon-time reminder occurrence calculation
 │   ├── categories.ts         # Categories + auto-classification
 │   └── weather.ts            # WMO codes + weather helpers
-└── public/
-    ├── manifest.json         # PWA manifest
-    └── firebase-messaging-sw.js # Firebase messaging service worker
+├── public/
+│   ├── manifest.json         # Web PWA install manifest
+│   └── firebase-messaging-sw.js # Firebase messaging service worker
+└── scripts/
+    ├── build-android.mjs     # Cross-platform Gradle debug build launcher
+    └── verify-android.mjs    # Android configuration integrity checks
 ```
 
 ## Firestore Collections
@@ -308,8 +328,7 @@ casa-app/
 | `houses/{houseId}/income` | Income entries |
 | `houses/{houseId}/savings_goals` | Savings goals with targets |
 | `houses/{houseId}/friends/{id}` | Friend house connections |
-| `houses/{houseId}/gamification` | Points, badges, stats |
-| `gamification/{owner}` | RPG profile: inventory, equipped, avatar, lootBoxes |
+| `gamification/{owner}` | Activity, avatar, inventory, and equipped cosmetics; historical progression fields may remain stored |
 | `fcm_tokens/{owner}` | FCM tokens for push notifications |
 | `notification_deliveries/{id}` | Reminder leases and delivery deduplication |
 
@@ -319,9 +338,39 @@ Connected to Vercel via GitHub with Firebase as the backend. Updates to `master`
 deploy automatically. GitHub Actions runs the reminder scheduler; Vercel's daily
 cron remains a fallback. See [docs/CRON_SETUP.md](docs/CRON_SETUP.md).
 
+The Android client is released independently from the Vercel web client. Both use
+the same Firebase project and house-scoped Firestore documents; schema changes must
+remain compatible across clients. See [docs/ANDROID.md](docs/ANDROID.md).
+
+### Private Android beta
+
+Firebase App Distribution is the private Android testing channel. A signed,
+non-debuggable beta is delivered over Wi-Fi to the Firebase group
+`casinha-testers`; tester addresses stay in Firebase and are never stored in this
+repository. Firebase sends the first invitation and a notification email for each
+subsequent build. Testers install or update from Firebase App Tester and Android
+asks them to confirm each installation. This is a stable beta channel, not a public
+release and not a silent or automatic updater.
+
+The **Android APK** workflow can deliver a beta after Android-relevant changes are
+pushed to `master`, or from a manual run on `master` with `distribute` enabled. It
+never distributes pull-request builds. Beta builds use the same package and stable
+tester certificate, with CI `versionCode` values in the `100000+` range, so future
+beta APKs update the existing installation. A tester moving from an older APK signed
+with another certificate must uninstall Casinha once before the first beta; shared
+Firebase data remains available after signing in again.
+
+Delivery is currently gated off: Workload Identity Federation still needs its
+repository authorization and the `android-testers` variable
+`ANDROID_DISTRIBUTION_ENABLED` remains `false` until setup and the first device test
+are complete. Authentication uses short-lived GitHub OIDC credentials through WIF,
+not a committed or stored service-account JSON key. Google Play Internal Testing is
+the planned next channel for Play-managed installation and real automatic updates.
+
 ### CI/CD Pipeline (GitHub Actions)
 
-On every pull request to `master` and every push to `master`:
+GitHub Actions provides these checks and release jobs according to their event and
+path gates:
 - TypeScript typecheck
 - ESLint
 - Build verification
@@ -330,6 +379,8 @@ On every pull request to `master` and every push to `master`:
 - Branch naming check
 - Auto-labeling
 - PR stats comment
+- Android configuration validation and a downloadable debug APK when Android files change
+- gated, master-only Firebase App Distribution delivery to the private Android beta group
 
 ```bash
 # Manual deploy (if needed)

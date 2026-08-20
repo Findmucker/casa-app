@@ -7,18 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- XP, points, levels, progressive titles, point-based achievements, and automatic
+  loot boxes from the active web and Android experience. Historical fields remain
+  untouched for compatibility with avatar, activity, and inventory documents.
+
 ### Added
+- A gated private Android beta channel through Firebase App Distribution, with a
+  stable tester signature, monotonic `100000+` CI version codes, master-only
+  delivery to `casinha-testers`, WIF authentication without stored JSON credentials,
+  and package/signer verification. Delivery remains disabled until WIF authorization
+  and the first two-device test are complete.
 - Global weather location search, temporary selection, and up to 10 private favorites per user.
 - Product, architecture, Android, service-cost, and backlog review documentation.
-
-### Fixed
-- Coisinhas now avoid duplicate completion gestures, preserve failed creation drafts,
-  and expose accessible 44px touch targets across item actions.
-- Finance donuts now render a complete ring for single-category months.
-- Finance charts consistently ignore invalid, non-finite, and non-positive amounts.
-- Coisinhas can now include notes during creation, with a compact mobile-friendly price field.
-- Finance charts no longer render phantom bars for months without expenses or income.
-- Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
+- Android application package based on a Bubblewrap Trusted Web Activity, with
+  adaptive launcher assets, splash screen, deep links, and notification delegation.
+- Dynamic Digital Asset Links endpoint for upload and Google Play signing
+  certificate fingerprints.
+- Android configuration verification, cross-platform Gradle build command, and a
+  GitHub Actions debug APK artifact for direct device testing.
+- Android testing, signing, Digital Asset Links, and Play release documentation.
 
 ### Changed
 - Coisinhas now group large lists in one pass, provide a clearer empty state,
@@ -26,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The original rose/pink visual theme is now used consistently at every hour;
   automatic morning, dusk, and night theme switching was removed.
 - The open backlog was consolidated from 36 issues to 12 active roadmap items.
-- The platform direction remains PWA-first; Android work is limited to a future Capacitor widget pilot.
+- The platform remains PWA-first and now ships that production origin through an Android TWA shell.
 - Paid/external AI generation proposals were replaced by local deterministic templates.
 - Finance charts now share pure calculations, localized labels, stable keys, and accessible descriptions.
 - Manual finance entries, savings targets, and deposits now require positive amounts.
@@ -48,6 +56,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of attempting to expose the house event collection.
 
 ### Fixed
+- Coisinhas now avoid duplicate completion gestures, preserve failed creation drafts,
+  and expose accessible 44px touch targets across item actions.
+- Finance donuts now render a complete ring for single-category months.
+- Finance charts consistently ignore invalid, non-finite, and non-positive amounts.
+- Coisinhas can now include notes during creation, with a compact mobile-friendly price field.
+- Finance charts no longer render phantom bars for months without expenses or income.
+- Portuguese bank statements now parse European amounts, dates, and duplicates more reliably.
 - Google sign-in reconciles an existing same-email profile and preserves house data.
 - Swipe actions on list rows no longer propagate to dashboard tab navigation.
 - Failed habit creation remains visible and surfaces the Firestore error instead of

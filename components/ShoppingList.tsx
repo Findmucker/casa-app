@@ -15,6 +15,7 @@ import { useUndo } from "@/lib/useUndoStack";
 import { useT } from "@/lib/i18n";
 import { useHouseContext } from "@/lib/context";
 import { notifyOtherMembers } from "@/lib/notifications";
+import { recordCompletedAction } from "@/lib/gamification";
 
 const COMMON_SHOPPING = [
   "Leite", "Ovos", "Pão", "Manteiga", "Queijo", "Fiambre", "Iogurtes",
@@ -220,7 +221,10 @@ export default function ShoppingList() {
       }
     }
     await update(item.id, { done: !item.done });
-  }, [update, normalItems]);
+    if (!item.done) {
+      await recordCompletedAction(userName, "shopping_done");
+    }
+  }, [update, normalItems, userName]);
 
   const handleAdd = async () => {
     const name = newItem.trim();

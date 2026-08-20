@@ -5,13 +5,12 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 /**
- * Seeds a fully maxed-out gamification profile for testing.
- * Call with the user's displayName or identifier used as gamification owner.
+ * Seeds a fully populated activity profile for testing.
+ * Call with the user's displayName or identifier used by the profile store.
  */
 export async function seedTestAccount(owner: string, houseId: string) {
-  // 1. Gamification stats - maxed out
+  // 1. Activity stats and profile inventory
   await setDoc(doc(db, "gamification", owner), {
-    points: 750,
     totalCompleted: 200,
     maxStreak: 35,
     shoppingDone: 80,
@@ -19,10 +18,9 @@ export async function seedTestAccount(owner: string, houseId: string) {
     projectsDone: 15,
     badges: [
       "first_step", "on_fire", "unstoppable", "legend",
-      "shopaholic", "doer", "architect", "century", "five_hundred"
+      "shopaholic", "doer", "architect"
     ],
     lastAction: "seed_test",
-    boxesOpened: 12,
     inventory: [
       { itemId: "helm_crown", count: 1 },
       { itemId: "helm_flower", count: 2 },
@@ -127,5 +125,5 @@ export async function seedTestAccount(owner: string, houseId: string) {
   }
 
 
-  return { success: true, message: "Test account seeded with maxed stats!" };
+  return { success: true, message: "Test account seeded with activity stats and profile inventory!" };
 }

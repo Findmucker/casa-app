@@ -1,10 +1,10 @@
 # A Nossa Casinha - Manual do Utilizador
 
-> Última atualização: 14 de julho de 2026 | Deploy contínuo
+> Última atualização: 13 de agosto de 2026 | Web contínua + beta Android privada
 
 ## O que e a app?
 
-A Nossa Casinha e uma app de gestao domestica para casais e familias. Permite organizar compras, tarefas, habitos, financas, eventos e muito mais — tudo partilhado entre os membros da casa, com notificacoes push reais e um sistema de gamificacao RPG completo.
+A Nossa Casinha e uma app de gestao domestica para casais e familias. Permite organizar compras, tarefas, habitos, financas, eventos e muito mais — tudo partilhado entre os membros da casa, com notificacoes push reais e um perfil personalizavel.
 
 Todos os membros da casa sao **iguais** — nao ha hierarquia de administrador.
 
@@ -91,7 +91,7 @@ O ecra inicial mostra:
 - **Atribui a pessoa** responsavel (dinamico por membros da casa)
 - **Notificações fiáveis** — o servidor recupera execuções atrasadas e impede envios duplicados para a mesma rotina e pessoa
 - **Push notifications reais** — recebe lembretes mesmo com a app fechada (via FCM)
-- Pontos de gamificacao por cada check (+2 pontos)
+- O check atualiza o streak e as estatisticas de atividade do perfil
 
 ---
 
@@ -190,13 +190,16 @@ a predefinição para as sessões seguintes.
 A app suporta **notificacoes push reais** via Firebase Cloud Messaging (FCM):
 
 ### Ativar notificacoes
-1. Vai a tab **Rotinas**
-2. Toca no botao 🔔 no topo
-3. Aceita a permissao do browser
+1. Abre a app Android **Casinha** e inicia sessao
+2. Aceita a permissao de notificacoes pedida pelo Android
+3. Em **Rotinas**, configura a hora e os dias de cada lembrete
 4. Pronto! Recebes notificacoes mesmo com a app fechada
 
+Na PWA web opcional, a permissao continua a ser pedida pelo browser.
+
 ### Verificar estado das notificacoes
-- Menu central → **❓ Ajuda** — mostra se as notificacoes estao ativas, o estado da permissao e informacao de debug
+- Android: **Definicoes → Apps → Casinha → Notificacoes**
+- Web: menu central → **❓ Ajuda** mostra o estado da permissao do browser
 
 ### Routing inteligente
 - Ao tocar numa notificacao, a app abre diretamente na **tab correta** (ex: notificacao de compras abre a tab Compras, notificacao de evento abre Eventos)
@@ -267,7 +270,7 @@ Grid com todas as 9 tabs — tap para ir directamente.
 
 ### Casa
 - **🔗 Convidar** — gerar codigo de convite para novos membros
-- **👥 Membros** — widget com avatares de todos os membros, nivel e acoes rapidas:
+- **👥 Membros** — widget com avatares de todos os membros e acoes rapidas:
   - Tap num membro para ver botoes de acao: 💌 Mensagem e 👤 Perfil
   - **💌 Mensagem** — abre diretamente o painel de mensagem para esse membro (nao aparece para ti proprio)
   - **👤 Perfil** — mostra o perfil do membro em modo leitura (sem tab de definicoes); no teu proprio perfil, abre o perfil editavel completo
@@ -284,7 +287,7 @@ Botao isolado para logout seguro.
 
 ---
 
-## Perfil e Gamificacao
+## Perfil, Atividade e Personalizacao
 
 Acede ao perfil tocando no **teu avatar** (pixel art) no canto superior direito do header.
 
@@ -299,11 +302,8 @@ Acede ao perfil tocando no **teu avatar** (pixel art) no canto superior direito 
 - Se nao tiveres avatar NEM equipamento, o perfil mostra um **circulo com a letra inicial** do teu nome
 - **Badge de capacete** — quando tens equipamento equipado, o MiniAvatar e o widget de membros mostram um pequeno badge de capacete
 
-### Sistema RPG
-- **Pontos** ganhos ao completar tarefas (+1 compra, +2 coisinha, +5 projeto, +2 habito)
-- **Nivel** sobe a cada 50 pontos
-- **Titulo** baseado no nivel — desde "Aprendiz da Casa" (Nv.1) ate "Divindade do Lar" (Nv.30)
-- **Atributos** calculados automaticamente:
+### Atividade
+- **Atributos de atividade** calculados automaticamente:
   - STR (Forca): projetos concluidos
   - INT (Inteligencia): coisinhas feitas
   - DEX (Destreza): comprinhas feitas
@@ -311,30 +311,22 @@ Acede ao perfil tocando no **teu avatar** (pixel art) no canto superior direito 
   - VIT (Vitalidade): habitos feitos
   - LCK (Sorte): melhor streak
 
-### Badges (9 conquistaveis)
-Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Centenario, Top Scorer.
+### Conquistas (7 disponiveis)
+Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo e Arquiteto. Todas dependem de acoes reais ou streaks, nao de pontos.
 
 ### Equipamento (6 slots)
-- 🗡️ Espada do Construtor — 3 projetinhos
-- 🛡️ Escudo da Consistencia — 10 dias streak
-- 👑 Coroa Real — nivel 10
-- 🧤 Luvas do Faz-Tudo — 50 coisinhas
-- 👟 Botas do Maratonista — 30 comprinhas
-- 💍 Anel da Comunidade — 100 pontos
+- Cabeca, arma, escudo, corpo, pes e acessorio
+- Os items cosmeticos ja existentes continuam disponiveis para equipar e desequipar
 - O modelo do personagem mostra um **placeholder fofo** quando nao tens equipamento (em vez de uma silhueta generica)
 - O equipamento e sincronizado em toda a app — ao ver o perfil de outro membro, o equipamento dele e carregado corretamente
 
-### Loot Boxes
-- Ganha 1 caixa por cada 50 pontos
-- 30 items cosmeticos em 6 slots (cabeca, arma, escudo, corpo, pes, acessorio)
-- 4 raridades: Comum (50%), Raro (30%), Epico (15%), Lendario (5%)
-- Animacao de abertura: shake → explosao → reveal
-- Duplicados convertidos em XP (Lendario: 50, Epico: 30, Raro: 15, Comum: 5)
+### Progressao em pausa
+XP, niveis, titulos progressivos e caixas automaticas por pontos nao fazem parte da experiencia atual. Os dados historicos nao sao apagados, mas tambem nao sao apresentados nem incrementados. Uma eventual progressao futura exige primeiro um desenho de produto proprio.
 
 ### Inventario WoW TBC-style
 - Grid com filtro por slot
 - Drag-and-drop para equipar items no avatar
-- **Modo leitura** — ao ver o perfil de outro membro, o inventario e visivel mas nao podes abrir loot boxes
+- **Modo leitura** — ao ver o perfil de outro membro, o inventario e visivel mas nao pode ser alterado
 
 ---
 
@@ -361,7 +353,7 @@ Primeiro Passo, Em Chamas, Imparavel, Lenda, Compradora, Faz-Tudo, Arquiteto, Ce
 Todos os membros sao **iguais** — nao existe hierarquia de administrador.
 
 O widget de Membros no menu central mostra:
-- Avatar pixel art de cada membro com nivel
+- Avatar pixel art de cada membro
 - Tap num membro revela botoes de acao:
   - **💌 Mensagem** — abre o painel de mensagem diretamente para esse membro (nao aparece no teu proprio)
   - **👤 Perfil** — mostra o perfil em modo leitura (sem definicoes); no teu perfil, abre o perfil editavel completo
@@ -395,18 +387,65 @@ A app suporta **Portugues** 🇵🇹 e **Ingles** 🇬🇧.
 
 ---
 
-## PWA e Atualizacoes
+## Android, PWA e Atualizacoes
 
-A app funciona como **Progressive Web App (PWA)** — podes instala-la no telemovel ou computador.
+A app funciona como **aplicacao Android nativa** e, separadamente, como
+**Progressive Web App (PWA)**. As duas versoes usam a mesma conta e a mesma casa.
 
-### Instalar a app
-- **Android/Chrome:** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
+### Instalar a beta Android privada
+
+A beta nativa é distribuída de forma privada através do **Firebase App
+Distribution**, pelo grupo `casinha-testers`. Não é necessário ligar o telemóvel ao
+PC: o convite e as builds chegam pela internet/Wi-Fi. Os endereços dos testers são
+geridos no Firebase e não aparecem no repositório.
+
+Na primeira instalação:
+
+1. Abre no telemóvel o convite enviado pelo Firebase e aceita-o com a conta Google
+   que vais continuar a usar para testar.
+2. Instala a aplicação **Firebase App Tester** quando for sugerida e inicia sessão
+   com a mesma conta.
+3. Se o Android pedir, permite temporariamente que o App Tester instale aplicações
+   desta origem.
+4. Se já tinhas uma APK nativa Casinha assinada de outra forma, desinstala essa app
+   nativa uma única vez antes de instalar a beta. A sessão, permissões e preferências
+   locais são repostas, mas os dados da casa guardados no Firebase não são apagados.
+5. No App Tester, descarrega Casinha e confirma a instalação apresentada pelo
+   Android. Abre a app, inicia sessão e confirma que estás na casa certa.
+
+O canal ainda está a concluir a autorização técnica de Workload Identity Federation.
+Enquanto essa validação não terminar, a distribuição mantém-se desativada e não são
+enviados convites ou updates beta. O artefacto APK do GitHub Actions continua a
+existir apenas como alternativa técnica para desenvolvimento.
+
+- **Android nativo:** abre **Casinha** no ecra de aplicacoes; o login e as listas nao
+  abrem Chrome nem Brave.
+- **Paridade Android:** a app nativa apresenta as mesmas 9 tabs, pela mesma ordem,
+  com pesquisa, menu da casa, perfil, membros, amigos, mensagens, historico e ajuda.
+  O cabeçalho, a paleta rosa/roxo, os cartoes e os emojis seguem a identidade visual
+  da Casinha web.
+- **Notificacoes Android:** são apresentadas pelo próprio sistema e abrem diretamente
+  a tab nativa relevante. Os lembretes de rotina repetem durante duas horas e param
+  assim que a rotina fica concluida nesse dia.
+- **Android/Chrome (PWA web opcional):** Menu do browser → "Instalar app" ou "Adicionar ao ecra inicial"
 - **iOS/Safari:** Botao de partilha → "Adicionar ao ecra inicial"
 
-### Atualizacoes automaticas
+Se aparecerem dois icones, um deles e a PWA antiga instalada pelo browser. Remove a
+PWA nas informacoes dessa aplicacao e conserva a app nativa `com.findmucker.casa`.
+
+### Atualizações
+
 - O **service worker** usa `skipWaiting` + **cache purge** para garantir que recebes sempre a versao mais recente
-- Quando ha uma atualizacao, a app carrega automaticamente a nova versao na proxima visita
-- Nao precisas de fazer nada — as atualizacoes sao transparentes e fiaveis
+- As funcionalidades web atualizam automaticamente na proxima abertura da PWA
+- Cada beta Android nova gera um email do Firebase. Abre o App Tester, escolhe a
+  build nova e confirma o pedido de atualização do Android.
+- Depois da primeira migração, as betas usam sempre o mesmo package e assinatura:
+  instalam por cima da versão anterior, sem USB, sem nova desinstalação e sem perder
+  o estado local.
+- App Distribution não instala updates automaticamente. A confirmação no Android é
+  obrigatória em cada build.
+- **Google Play Internal Testing** é o passo futuro para instalação e atualizações
+  automáticas geridas pela Play Store.
 
 ---
 
@@ -414,7 +453,7 @@ A app funciona como **Progressive Web App (PWA)** — podes instala-la no telemo
 
 - **Swipe** entre tabs para navegar rapidamente
 - **Marca items como urgentes** nas compras para destacar no topo
-- **Mantem streaks** nos habitos para ganhar mais pontos e badges
+- **Mantem streaks** nos habitos e acompanha as conquistas baseadas em atividade
 - O **dashboard** mostra o que e mais importante para hoje
 - **Ativa notificacoes** para nao perderes lembretes de habitos
 - **Envia mensagens** a outros membros diretamente pela app

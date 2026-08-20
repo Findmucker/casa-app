@@ -1,15 +1,5 @@
-import { doc, getDoc, runTransaction } from "firebase/firestore";
+import { doc, runTransaction } from "firebase/firestore";
 import { db } from "./firebase";
-
-export const POINTS = {
-  shopping_done: 1,
-  coisinha_done: 2,
-  project_done: 5,
-  habit_check: 2,
-  streak_5: 10,
-  streak_10: 25,
-  streak_30: 100,
-} as const;
 
 export interface Badge {
   id: string;
@@ -20,13 +10,30 @@ export interface Badge {
 }
 
 export interface GameStats {
-  points: number;
   totalCompleted: number;
   maxStreak: number;
   shoppingDone: number;
   coisinhasDone: number;
   projectsDone: number;
   habitsDone: number;
+}
+
+export type CompletedAction =
+  | "shopping_done"
+  | "coisinha_done"
+  | "project_done"
+  | "habit_check";
+
+export function activityStatsFromData(data?: Record<string, unknown>): GameStats {
+  const count = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? value : 0;
+  return {
+    totalCompleted: count(data?.totalCompleted),
+    maxStreak: count(data?.maxStreak),
+    shoppingDone: count(data?.shoppingDone),
+    coisinhasDone: count(data?.coisinhasDone),
+    projectsDone: count(data?.projectsDone),
+    habitsDone: count(data?.habitsDone),
+  };
 }
 
 export const BADGES: Badge[] = [
@@ -37,17 +44,14 @@ export const BADGES: Badge[] = [
   { id: "shopaholic", name: "Compradora", emoji: "🛍️", description: "50 comprinhas feitas", condition: (s) => s.shoppingDone >= 50 },
   { id: "doer", name: "Faz-tudo", emoji: "🦸", description: "25 coisinhas feitas", condition: (s) => s.coisinhasDone >= 25 },
   { id: "architect", name: "Arquiteto", emoji: "🏗️", description: "5 projetinhos concluídos", condition: (s) => s.projectsDone >= 5 },
-  { id: "century", name: "Centenário", emoji: "🏆", description: "100 pontos totais", condition: (s) => s.points >= 100 },
-  { id: "five_hundred", name: "Top scorer", emoji: "💎", description: "500 pontos totais", condition: (s) => s.points >= 500 },
 ];
 
-export async function awardPoints(owner: string, amount: number, reason: string) {
+export async function recordCompletedAction(owner: string, reason: CompletedAction) {
   const ref = doc(db, "gamification", owner);
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(ref);
     if (!snap.exists()) {
       transaction.set(ref, {
-        points: amount,
         totalCompleted: 1,
         maxStreak: 0,
         shoppingDone: reason === "shopping_done" ? 1 : 0,
@@ -60,7 +64,6 @@ export async function awardPoints(owner: string, amount: number, reason: string)
     } else {
       const data = snap.data();
       const updates: Record<string, unknown> = {
-        points: (data.points || 0) + amount,
         totalCompleted: (data.totalCompleted || 0) + 1,
         lastAction: reason,
       };
@@ -86,44 +89,11 @@ export async function updateStreak(owner: string, streak: number) {
   });
 }
 
-export async function getStats(owner: string): Promise<GameStats> {
-  const ref = doc(db, "gamification", owner);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return { points: 0, totalCompleted: 0, maxStreak: 0, shoppingDone: 0, coisinhasDone: 0, projectsDone: 0, habitsDone: 0 };
-  const data = snap.data();
-  return { points: data.points || 0, totalCompleted: data.totalCompleted || 0, maxStreak: data.maxStreak || 0, shoppingDone: data.shoppingDone || 0, coisinhasDone: data.coisinhasDone || 0, projectsDone: data.projectsDone || 0, habitsDone: data.habitsDone || 0 };
-}
-
 export function checkNewBadges(stats: GameStats, currentBadges: string[]): Badge[] {
   return BADGES.filter((b) => b.condition(stats) && !currentBadges.includes(b.id));
 }
 
-// ─── RPG Profile ────────────────────────────────────────────────
-
-export const TITLES = [
-  { level: 1, title: "Aprendiz da Casa" },
-  { level: 3, title: "Ajudante Doméstico" },
-  { level: 5, title: "Organizador" },
-  { level: 7, title: "Mestre das Tarefas" },
-  { level: 10, title: "Guardião da Casa" },
-  { level: 15, title: "Lenda Doméstica" },
-  { level: 20, title: "Rei/Rainha da Casa" },
-  { level: 30, title: "Divindade do Lar" },
-];
-
-export function getTitle(level: number): string {
-  let title = TITLES[0].title;
-  for (const t of TITLES) {
-    if (level >= t.level) title = t.title;
-  }
-  return title;
-}
-
-export function getLevel(points: number): { level: number; xpInLevel: number; xpForNext: number } {
-  const level = Math.floor(points / 50) + 1;
-  const xpInLevel = points % 50;
-  return { level, xpInLevel, xpForNext: 50 };
-}
+// ─── Activity profile ───────────────────────────────────────────
 
 export interface RPGStat {
   key: string;
@@ -145,58 +115,7 @@ export function calculateStats(stats: GameStats): RPGStat[] {
   ];
 }
 
-export interface Equipment {
-  slot: string;
-  name: string;
-  emoji: string;
-  lockedEmoji: string;
-  description: string;
-  condition: (stats: GameStats, level: number) => boolean;
-}
-
-export const EQUIPMENT: Equipment[] = [
-  { slot: "weapon", name: "Espada do Construtor", emoji: "🗡️", lockedEmoji: "❓", description: "Completar 3 projetinhos", condition: (s) => s.projectsDone >= 3 },
-  { slot: "shield", name: "Escudo da Consistência", emoji: "🛡️", lockedEmoji: "❓", description: "10 dias de streak", condition: (s) => s.maxStreak >= 10 },
-  { slot: "crown", name: "Coroa Real", emoji: "👑", lockedEmoji: "❓", description: "Atingir nível 10", condition: (_, l) => l >= 10 },
-  { slot: "gloves", name: "Luvas do Faz-Tudo", emoji: "🧤", lockedEmoji: "❓", description: "50 coisinhas feitas", condition: (s) => s.coisinhasDone >= 50 },
-  { slot: "boots", name: "Botas do Maratonista", emoji: "👟", lockedEmoji: "❓", description: "30 comprinhas feitas", condition: (s) => s.shoppingDone >= 30 },
-  { slot: "ring", name: "Anel da Comunidade", emoji: "💍", lockedEmoji: "❓", description: "100 pontos totais", condition: (s) => s.points >= 100 },
-];
-
-// ─── Rewards & Loot ────────────────────────────────────────────
-
-export interface Reward {
-  id: string;
-  name: string;
-  emoji: string;
-  description: string;
-  xp: number;
-  rarity: "common" | "rare" | "epic" | "legendary";
-  trigger: string; // which action triggers this
-}
-
-export const LOOT_TABLE: Reward[] = [
-  { id: "potion_xp", name: "Poção de XP", emoji: "🧪", description: "+10 XP bónus", xp: 10, rarity: "common", trigger: "shopping_done" },
-  { id: "scroll_wisdom", name: "Pergaminho de Sabedoria", emoji: "📜", description: "+15 XP bónus", xp: 15, rarity: "common", trigger: "coisinha_done" },
-  { id: "gem_power", name: "Gema de Poder", emoji: "💎", description: "+25 XP bónus", xp: 25, rarity: "rare", trigger: "project_done" },
-  { id: "elixir_streak", name: "Elixir de Fogo", emoji: "🔮", description: "+30 XP por streak", xp: 30, rarity: "rare", trigger: "streak_5" },
-  { id: "crown_shard", name: "Fragmento de Coroa", emoji: "✨", description: "+50 XP épico", xp: 50, rarity: "epic", trigger: "streak_10" },
-  { id: "star_legendary", name: "Estrela Lendária", emoji: "🌟", description: "+100 XP lendário", xp: 100, rarity: "legendary", trigger: "streak_30" },
-];
-
-export function rollLoot(trigger: string): Reward | null {
-  const possible = LOOT_TABLE.filter((r) => r.trigger === trigger);
-  if (possible.length === 0) return null;
-  // Drop chance: common 40%, rare 20%, epic 10%, legendary 5%
-  const chances: Record<string, number> = { common: 0.4, rare: 0.2, epic: 0.1, legendary: 0.05 };
-  const roll = Math.random();
-  for (const reward of possible) {
-    if (roll < (chances[reward.rarity] || 0)) return reward;
-  }
-  return null;
-}
-
-// ─── Loot Box System ──────────────────────────────────────────
+// ─── Inventory ─────────────────────────────────────────────────
 
 export type LootSlot = "helmet" | "weapon" | "shield" | "armor" | "boots" | "accessory";
 
@@ -262,67 +181,6 @@ export const LOOT_POOL: LootItem[] = [
   { id: "acc_phoenix", name: "Fénix Miniatura", emoji: "🔥", slot: "accessory", rarity: "legendary", description: "Renasce das cinzas da preguiça" },
 ];
 
-const RARITY_WEIGHTS: Record<string, number> = { common: 50, rare: 30, epic: 15, legendary: 5 };
-
-export function rollLootBox(): LootItem {
-  // Weighted random: pick rarity first, then random item of that rarity
-  const totalWeight = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0);
-  let roll = Math.random() * totalWeight;
-  let selectedRarity: string = "common";
-  for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
-    roll -= weight;
-    if (roll <= 0) { selectedRarity = rarity; break; }
-  }
-  const pool = LOOT_POOL.filter((i) => i.rarity === selectedRarity);
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-export function getPendingBoxes(points: number, boxesOpened: number): number {
-  return Math.max(0, Math.floor(points / 50) - boxesOpened);
-}
-
-const DUPLICATE_XP: Record<string, number> = { legendary: 50, epic: 30, rare: 15, common: 5 };
-
-export interface LootBoxResult {
-  item: LootItem;
-  isDuplicate: boolean;
-  xpGained: number;
-}
-
-export async function openLootBox(owner: string): Promise<LootBoxResult | null> {
-  const ref = doc(db, "gamification", owner);
-  const item = rollLootBox();
-
-  return await runTransaction(db, async (transaction) => {
-    const snap = await transaction.get(ref);
-    if (!snap.exists()) return null;
-
-    const data = snap.data();
-    const points = data.points || 0;
-    const boxesOpened = data.boxesOpened || 0;
-    const pending = getPendingBoxes(points, boxesOpened);
-    if (pending <= 0) return null;
-
-    const inventory: InventoryItem[] = data.inventory || [];
-    const existing = inventory.find((i) => i.itemId === item.id);
-
-    if (existing) {
-      // Duplicate — convert to XP
-      const xpGained = DUPLICATE_XP[item.rarity] || 5;
-      transaction.update(ref, {
-        boxesOpened: boxesOpened + 1,
-        points: points + xpGained,
-      });
-      return { item, isDuplicate: true, xpGained };
-    } else {
-      // New item — add to inventory
-      inventory.push({ itemId: item.id, count: 1 });
-      transaction.update(ref, { boxesOpened: boxesOpened + 1, inventory });
-      return { item, isDuplicate: false, xpGained: 0 };
-    }
-  });
-}
-
 export async function equipItem(owner: string, itemId: string, slot: LootSlot): Promise<void> {
   const ref = doc(db, "gamification", owner);
   await runTransaction(db, async (transaction) => {
@@ -343,58 +201,5 @@ export async function unequipItem(owner: string, slot: LootSlot): Promise<void> 
     delete equipped[slot];
     transaction.update(ref, { equipped });
   });
-}
-
-// ─── Level Up System ───────────────────────────────────────────
-
-export interface LevelUpResult {
-  leveledUp: boolean;
-  oldLevel: number;
-  newLevel: number;
-  newTitle: string;
-  unlockedEquipment: Equipment[];
-  lootDrop: Reward | null;
-}
-
-export function checkLevelUp(oldPoints: number, newPoints: number, stats: GameStats, trigger: string): LevelUpResult {
-  const oldLevel = getLevel(oldPoints).level;
-  const newLevel = getLevel(newPoints).level;
-  const leveledUp = newLevel > oldLevel;
-
-  const unlockedEquipment = leveledUp
-    ? EQUIPMENT.filter((eq) => eq.condition(stats, newLevel) && !eq.condition(stats, oldLevel))
-    : [];
-
-  const lootDrop = rollLoot(trigger);
-
-  return {
-    leveledUp,
-    oldLevel,
-    newLevel,
-    newTitle: getTitle(newLevel),
-    unlockedEquipment,
-    lootDrop,
-  };
-}
-
-export async function awardXPWithRewards(owner: string, baseAmount: number, reason: string): Promise<LevelUpResult> {
-  const ref = doc(db, "gamification", owner);
-  // Get old points before awarding
-  const snap = await getDoc(ref);
-  const oldPoints = snap.exists() ? (snap.data().points || 0) : 0;
-
-  // Award base points (atomic)
-  await awardPoints(owner, baseAmount, reason);
-
-  // Check for loot/level up
-  const newStats = await getStats(owner);
-  const result = checkLevelUp(oldPoints, newStats.points, newStats, reason);
-
-  // If loot dropped, award bonus XP (atomic)
-  if (result.lootDrop) {
-    await awardPoints(owner, result.lootDrop.xp, `loot_${result.lootDrop.id}`);
-  }
-
-  return result;
 }
 

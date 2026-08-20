@@ -42,3 +42,20 @@ next-env.d.ts
 
 .env*.local
 *.pdf
+
+# Android build outputs and signing material
+/.local-signing/
+/android/.gradle/
+/android/.kotlin/
+/.gradle-user-home/
+/android/app/build/
+/android/build/
+/android/local.properties
+*.jks
+*.keystore
+*.p12
+/android/app-release-*.apk
+/android/app-release-*.aab
+
+# Ephemeral credentials created by google-github-actions/auth
+gha-creds-*.json

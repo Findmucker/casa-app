@@ -73,10 +73,10 @@ const HELP_SECTIONS: HelpSection[] = [
     tips: ["help.friends.tip1", "help.friends.tip2", "help.friends.tip3"],
   },
   {
-    id: "gamification",
-    emoji: "⚔️",
-    titleKey: "help.gamification.title",
-    tips: ["help.gamification.tip1", "help.gamification.tip2", "help.gamification.tip3", "help.gamification.tip4"],
+    id: "profile",
+    emoji: "👤",
+    titleKey: "help.profile.title",
+    tips: ["help.profile.tip1", "help.profile.tip2", "help.profile.tip3", "help.profile.tip4"],
   },
 ];
 

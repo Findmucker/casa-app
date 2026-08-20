@@ -15,6 +15,8 @@ import {
 import SwipeableRow from "./SwipeableRow";
 import { useUndo } from "@/lib/useUndoStack";
 import { useT } from "@/lib/i18n";
+import { useHouseContext } from "@/lib/context";
+import { recordCompletedAction } from "@/lib/gamification";
 
 const STATUS_LABELS = {
   pendente: { label: "Pendente", color: "bg-purple-100/80 text-purple-500", emoji: "💜" },
@@ -24,6 +26,7 @@ const STATUS_LABELS = {
 
 export default function ProjectList() {
   const { t } = useT();
+  const { userName } = useHouseContext();
   const { items, loading, add, update, remove } = useCollection<BigPriorityItem>(
     "priorities_big",
     "order"
@@ -92,6 +95,9 @@ export default function ProjectList() {
     ];
     const next = cycle[(cycle.indexOf(item.status) + 1) % 3];
     await update(item.id, { status: next });
+    if (item.status !== "concluido" && next === "concluido") {
+      await recordCompletedAction(userName, "project_done");
+    }
   };
 
   const addSubtask = async (item: BigPriorityItem) => {

@@ -7,13 +7,14 @@ import {
   COISINHAS_CATEGORIES,
   guessCategory,
 } from "@/lib/categories";
-import { useMemberNames } from "@/lib/context";
+import { useHouseContext, useMemberNames } from "@/lib/context";
 import AutocompleteInput from "./AutocompleteInput";
 import MiniAvatar from "./MiniAvatar";
 import SwipeableRow from "./SwipeableRow";
 import { useUndo } from "@/lib/useUndoStack";
 import { useT } from "@/lib/i18n";
 import { getNextCoisinhaOrder, groupCoisinhas } from "@/lib/coisinhas";
+import { recordCompletedAction } from "@/lib/gamification";
 
 const COMMON_COISINHAS = [
   "Aspirador", "Toalhas", "Cortinas", "Almofadas", "Velas", "Plantas",
@@ -24,6 +25,7 @@ const COMMON_COISINHAS = [
 
 export default function PriorityList() {
   const { t } = useT();
+  const { userName } = useHouseContext();
   const memberNames = useMemberNames();
   const { items, loading, error, add, update, remove } = useCollection<SmallPriorityItem>(
     "priorities_small",
@@ -100,6 +102,9 @@ export default function PriorityList() {
         done: !item.done,
         completedAt: !item.done ? new Date().toISOString().split("T")[0] : undefined,
       });
+      if (!item.done) {
+        await recordCompletedAction(userName, "coisinha_done");
+      }
     } finally {
       pendingIdsRef.current.delete(item.id);
       setPendingIds((current) => {
@@ -108,7 +113,7 @@ export default function PriorityList() {
         return next;
       });
     }
-  }, [update]);
+  }, [update, userName]);
 
   const handleAdd = async () => {
     const name = newName.trim();

@@ -5,8 +5,17 @@ import FloatingCuties from "@/components/FloatingCuties";
 
 export const metadata: Metadata = {
   title: "A Nossa Casinha",
-  description: "A nossa app de casa",
+  applicationName: "A Nossa Casinha",
+  description: "Organiza a casa, despesas, compras, tarefas, hábitos e eventos em conjunto.",
   manifest: "/manifest.json",
+  formatDetection: {
+    telephone: false,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Casinha",
+  },
 };
 
 export const viewport: Viewport = {

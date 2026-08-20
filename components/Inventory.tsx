@@ -8,6 +8,7 @@ interface InventoryProps {
   equipped: EquippedItems;
   onEquip: (itemId: string, slot: LootSlot) => void;
   onUnequip: (slot: LootSlot) => void;
+  readOnly?: boolean;
 }
 
 const SLOT_LABELS: { key: LootSlot | "all"; label: string; emoji: string }[] = [
@@ -34,7 +35,7 @@ const RARITY_BG: Record<string, string> = {
   legendary: "from-amber-50/60 to-amber-100/40",
 };
 
-export default function Inventory({ inventory, equipped, onEquip, onUnequip }: InventoryProps) {
+export default function Inventory({ inventory, equipped, onEquip, onUnequip, readOnly = false }: InventoryProps) {
   const [filter, setFilter] = useState<LootSlot | "all">("all");
 
   const ownedItems: (LootItem & { count: number; isEquipped: boolean })[] = inventory
@@ -75,19 +76,22 @@ export default function Inventory({ inventory, equipped, onEquip, onUnequip }: I
           {filtered.map((item) => (
             <button
               key={item.id}
-              draggable
+              draggable={!readOnly}
+              disabled={readOnly}
               onDragStart={(e) => {
+                if (readOnly) return;
                 e.dataTransfer.setData("text/plain", item.id);
                 e.dataTransfer.effectAllowed = "move";
               }}
               onClick={() => {
+                if (readOnly) return;
                 if (item.isEquipped) {
                   onUnequip(item.slot);
                 } else {
                   onEquip(item.id, item.slot);
                 }
               }}
-              className={`relative flex flex-col items-center p-2 rounded-xl border-2 bg-gradient-to-b transition-all active:scale-90 shadow-md cursor-grab active:cursor-grabbing ${RARITY_BORDER[item.rarity]} ${RARITY_BG[item.rarity]} ${
+              className={`relative flex flex-col items-center p-2 rounded-xl border-2 bg-gradient-to-b transition-all shadow-md ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing active:scale-90"} ${RARITY_BORDER[item.rarity]} ${RARITY_BG[item.rarity]} ${
                 item.isEquipped ? "ring-2 ring-amber-400/60 scale-105" : ""
               }`}
             >

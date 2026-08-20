@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useHouseContext } from "@/lib/context";
-import { getLevel, getTitle } from "@/lib/gamification";
 import { type AvatarConfig } from "./AvatarBuilder";
 import MiniAvatar from "./MiniAvatar";
 import { useT } from "@/lib/i18n";
@@ -20,9 +19,6 @@ interface MemberData {
   name: string;
   role: string;
   avatar?: AvatarConfig;
-  points: number;
-  level: number;
-  title: string;
   maxStreak: number;
 }
 
@@ -57,16 +53,11 @@ export default function HouseMembers({ onClose, initialMessageTo }: HouseMembers
             const snap = await getDoc(ref);
             if (snap.exists()) {
               const d = snap.data();
-              const points = d.points || 0;
-              const { level } = getLevel(points);
               return {
                 uid: m.uid,
                 name: m.name,
                 role: m.role,
                 avatar: d.avatar || undefined,
-                points,
-                level,
-                title: getTitle(level),
                 maxStreak: d.maxStreak || 0,
               };
             }
@@ -75,9 +66,6 @@ export default function HouseMembers({ onClose, initialMessageTo }: HouseMembers
             uid: m.uid,
             name: m.name,
             role: m.role,
-            points: 0,
-            level: 1,
-            title: getTitle(1),
             maxStreak: 0,
           };
         })
@@ -250,17 +238,14 @@ export default function HouseMembers({ onClose, initialMessageTo }: HouseMembers
                       <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-medium">{t("members.management.you")}</span>
                     )}
                   </div>
-                  <p className="text-[11px] text-purple-500">{m.title}</p>
                 </div>
 
                 {/* Stats */}
-                <div className="flex-shrink-0 text-right">
-                  <p className="text-xs font-bold text-purple-600">Nv. {m.level}</p>
-                  <p className="text-[10px] text-gray-500">{m.points} pts</p>
-                  {m.maxStreak > 0 && (
+                {m.maxStreak > 0 && (
+                  <div className="flex-shrink-0 text-right">
                     <p className="text-[10px] text-orange-500 font-medium">🔥 {m.maxStreak}</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* Actions (not yourself) */}

@@ -25,6 +25,8 @@ npm run dev
    npm run lint       # Zero warnings
    npm run build      # Build OK
    npm test           # Tests pass
+   npm run android:verify # Required when native Android files change
+   npm run android:check  # Native unit tests and lint
    ```
 4. **Commit** using Conventional Commits:
    ```bash
@@ -112,8 +114,19 @@ The pipeline runs automatically on all PRs — all gates must pass:
 ## Tech Notes
 
 - **Next.js 16** App Router — Firebase pages use `force-dynamic` export
+- **Android** is a hand-maintained Kotlin/Jetpack Compose client in `android/`; keep
+  Firebase access in its repository layer and UI state in ViewModels
+- **Android boundaries** forbid TWA, browser helper, Custom Tab, and WebView runtime code;
+  `npm run android:verify` enforces this
+- **Android versions** require a monotonically increasing `appVersionCode`; never reuse
+  an uploaded Play version code
+- **Signing keys** and `android/local.properties` must never be committed
 - **Calendar** uses emoji indicators (not colored dots)
 - **Charts** are pure SVG — no chart libraries allowed
+
+The `Android APK` workflow builds a debug APK for Android-related pull requests.
+Local Android prerequisites and the release process are documented in
+[docs/ANDROID.md](docs/ANDROID.md).
 
 ## Questions?
 

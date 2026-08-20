@@ -85,10 +85,10 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tipsKeys: ["tutorial.messages.tip1", "tutorial.messages.tip2", "tutorial.messages.tip3"],
   },
   {
-    emoji: "🏆",
-    titleKey: "tutorial.rpg.title",
-    textKey: "tutorial.rpg.text",
-    tipsKeys: ["tutorial.rpg.tip1", "tutorial.rpg.tip2", "tutorial.rpg.tip3", "tutorial.rpg.tip4"],
+    emoji: "👤",
+    titleKey: "tutorial.profile.title",
+    textKey: "tutorial.profile.text",
+    tipsKeys: ["tutorial.profile.tip1", "tutorial.profile.tip2", "tutorial.profile.tip3", "tutorial.profile.tip4"],
   },
   {
     emoji: "🏘️",

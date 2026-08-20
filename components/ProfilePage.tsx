@@ -7,14 +7,10 @@ import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { useAuth } from "@/lib/auth";
 import { useHouseContext } from "@/lib/context";
 import {
-  getStats,
-  getLevel,
-  getTitle,
+  activityStatsFromData,
   calculateStats,
   BADGES,
   GameStats,
-  getPendingBoxes,
-  openLootBox,
   equipItem,
   unequipItem,
   LOOT_POOL,
@@ -24,7 +20,6 @@ import {
 } from "@/lib/gamification";
 import CharacterModel from "./CharacterModel";
 import Inventory from "./Inventory";
-import LootBoxOpener from "./LootBoxOpener";
 import AvatarBuilder, { AnimeAnimalCharacter, type AvatarConfig } from "./AvatarBuilder";
 
 interface ProfilePageProps {
@@ -38,7 +33,6 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [equipped, setEquipped] = useState<EquippedItems>({});
   const [avatarConfig, setAvatarConfig] = useState<AvatarConfig | null>(null);
-  const [boxesOpened, setBoxesOpened] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"stats" | "inventory" | "avatar" | "settings">("stats");
   const { user, linkGoogleAccount } = useAuth();
@@ -48,18 +42,15 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
     if (!user && !viewMember) return;
     const load = async () => {
       const owner = viewMember || user?.displayName || user?.email || "user";
-      const s = await getStats(owner);
-      setStats(s);
-
-      // Load badges from gamification doc
       const ref = doc(db, "gamification", owner);
       const snap = await getDoc(ref);
+      const data = snap.exists() ? snap.data() : undefined;
+      setStats(activityStatsFromData(data));
       if (snap.exists()) {
-        setCurrentBadges(snap.data().badges || []);
-        setInventory(snap.data().inventory || []);
-        setEquipped(snap.data().equipped || {});
-        setBoxesOpened(snap.data().boxesOpened || 0);
-        if (snap.data().avatar) setAvatarConfig(snap.data().avatar);
+        setCurrentBadges(data?.badges || []);
+        setInventory(data?.inventory || []);
+        setEquipped(data?.equipped || {});
+        if (data?.avatar) setAvatarConfig(data.avatar);
       }
       setLoading(false);
     };
@@ -74,8 +65,6 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
     );
   }
 
-  const { level, xpInLevel, xpForNext } = getLevel(stats.points);
-  const title = getTitle(level);
   const rpgStats = calculateStats(stats);
   const userName = viewMember || user?.displayName || user?.email?.split("@")[0] || "Herói";
   const isReadOnly = !!viewMember;
@@ -105,26 +94,8 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
           )}
         </div>
 
-        {/* Name + Title */}
+        {/* Name */}
         <h2 className="mt-3 text-xl font-bold text-rose-800">{userName}</h2>
-        <p className="text-purple-600 text-sm font-medium">{title}</p>
-
-        {/* Level + XP Bar */}
-        <div className="mt-3 mx-auto max-w-[200px]">
-          <div className="flex justify-between text-[10px] text-purple-600 mb-1">
-            <span>Nível {level}</span>
-            <span>{xpInLevel}/{xpForNext} XP</span>
-          </div>
-          <div className="h-2.5 rounded-full bg-purple-200/60 border border-purple-300/40 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
-              style={{ width: `${(xpInLevel / xpForNext) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Points */}
-        <p className="mt-2 text-purple-600 text-xs">{stats.points} pontos totais</p>
 
         {/* Tab switcher */}
         <div className="flex gap-2 justify-center mt-4">
@@ -176,15 +147,13 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
       </div>
 
       {activeTab === "stats" ? (
-        <StatsTab stats={stats} rpgStats={rpgStats} level={level} currentBadges={currentBadges} />
+        <StatsTab stats={stats} rpgStats={rpgStats} currentBadges={currentBadges} />
       ) : activeTab === "inventory" ? (
         <InventoryTab
           inventory={inventory}
           equipped={equipped}
           stats={stats}
-          boxesOpened={boxesOpened}
           user={user}
-          level={level}
           readOnly={isReadOnly}
           onUpdate={() => {
             const owner = viewMember || user?.displayName || user?.email || "user";
@@ -193,7 +162,6 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
               if (snap.exists()) {
                 setInventory(snap.data().inventory || []);
                 setEquipped(snap.data().equipped || {});
-                setBoxesOpened(snap.data().boxesOpened || 0);
               }
             });
           }}
@@ -212,24 +180,15 @@ export default function ProfilePage({ onClose, viewMember }: ProfilePageProps) {
 import type { RPGStat } from "@/lib/gamification";
 import type { User } from "firebase/auth";
 
-function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate, level, readOnly }: {
+function InventoryTab({ inventory, equipped, stats, user, onUpdate, readOnly }: {
   inventory: InventoryItem[];
   equipped: EquippedItems;
   stats: GameStats;
-  boxesOpened: number;
   user: User | null;
   onUpdate: () => void;
-  level: number;
   readOnly?: boolean;
 }) {
   const owner = user?.displayName || user?.email || "user";
-  const pending = getPendingBoxes(stats.points, boxesOpened);
-
-  const handleOpen = async () => {
-    const result = await openLootBox(owner);
-    onUpdate();
-    return result;
-  };
 
   const handleEquip = async (itemId: string, slot: LootSlot) => {
     await equipItem(owner, itemId, slot);
@@ -243,13 +202,6 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
 
   return (
     <div className="mt-2 pb-8">
-      {/* Loot Box Opener — only for own profile */}
-      {!readOnly && (
-      <div className="mx-4 mb-3 rounded-2xl bg-gradient-to-b from-white/70 to-purple-50/70 border border-purple-200/40 p-3 shadow-sm">
-        <LootBoxOpener pendingBoxes={pending} onOpen={handleOpen} />
-      </div>
-      )}
-
       {/* Equipment - Character Panel */}
       <div className="px-3 mb-4">
         <div className="relative rounded-xl overflow-hidden border-2 border-rose-200/60 shadow-lg shadow-rose-100/30">
@@ -262,9 +214,9 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
           <div className="relative px-2 py-4">
             <div className="flex items-stretch justify-between gap-1">
               <div className="flex flex-col gap-2 justify-center items-center">
-                <LootEquipSlot slot="helmet" equipped={equipped} label="Cabeça" onUnequip={handleUnequip} onEquip={handleEquip} />
-                <LootEquipSlot slot="weapon" equipped={equipped} label="Arma" onUnequip={handleUnequip} onEquip={handleEquip} />
-                <LootEquipSlot slot="armor" equipped={equipped} label="Corpo" onUnequip={handleUnequip} onEquip={handleEquip} />
+                <LootEquipSlot slot="helmet" equipped={equipped} label="Cabeça" onUnequip={handleUnequip} onEquip={handleEquip} readOnly={readOnly} />
+                <LootEquipSlot slot="weapon" equipped={equipped} label="Arma" onUnequip={handleUnequip} onEquip={handleEquip} readOnly={readOnly} />
+                <LootEquipSlot slot="armor" equipped={equipped} label="Corpo" onUnequip={handleUnequip} onEquip={handleEquip} readOnly={readOnly} />
               </div>
 
               <div className="flex-1 flex flex-col items-center justify-center min-h-[200px]">
@@ -275,19 +227,15 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
               </div>
 
               <div className="flex flex-col gap-2 justify-center items-center">
-                <LootEquipSlot slot="shield" equipped={equipped} label="Escudo" onUnequip={handleUnequip} onEquip={handleEquip} />
-                <LootEquipSlot slot="boots" equipped={equipped} label="Botas" onUnequip={handleUnequip} onEquip={handleEquip} />
-                <LootEquipSlot slot="accessory" equipped={equipped} label="Acess." onUnequip={handleUnequip} onEquip={handleEquip} />
+                <LootEquipSlot slot="shield" equipped={equipped} label="Escudo" onUnequip={handleUnequip} onEquip={handleEquip} readOnly={readOnly} />
+                <LootEquipSlot slot="boots" equipped={equipped} label="Botas" onUnequip={handleUnequip} onEquip={handleEquip} readOnly={readOnly} />
+                <LootEquipSlot slot="accessory" equipped={equipped} label="Acess." onUnequip={handleUnequip} onEquip={handleEquip} readOnly={readOnly} />
               </div>
             </div>
           </div>
 
           <div className="relative px-3 py-2 bg-gradient-to-r from-rose-100/30 via-purple-100/30 to-rose-100/30 border-t border-rose-200/30">
-            <div className="flex justify-around text-[9px] text-purple-600">
-              <span>Nv. {level}</span>
-              <span>{stats.points} pts</span>
-              <span>{stats.totalCompleted} feitos</span>
-            </div>
+            <p className="text-center text-[9px] text-purple-600">{stats.totalCompleted} atividades concluídas</p>
           </div>
 
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-rose-300/50 rounded-tl-lg" />
@@ -308,6 +256,7 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
         equipped={equipped}
         onEquip={handleEquip}
         onUnequip={handleUnequip}
+        readOnly={readOnly}
       />
     </div>
   );
@@ -315,7 +264,7 @@ function InventoryTab({ inventory, equipped, stats, boxesOpened, user, onUpdate,
 
 // ─── Stats Tab ─────────────────────────────────────────────────
 
-function StatsTab({ stats, rpgStats, currentBadges }: { stats: GameStats; rpgStats: RPGStat[]; level: number; currentBadges: string[] }) {
+function StatsTab({ stats, rpgStats, currentBadges }: { stats: GameStats; rpgStats: RPGStat[]; currentBadges: string[] }) {
   return (
     <>
       {/* Stats */}
@@ -591,7 +540,7 @@ function getStatColor(key: string): string {
 }
 
 // Loot-based equipment slot — shows the equipped loot item from inventory, accepts drag
-function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: LootSlot; equipped: EquippedItems; label: string; onUnequip: (slot: LootSlot) => void; onEquip: (itemId: string, slot: LootSlot) => void }) {
+function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip, readOnly = false }: { slot: LootSlot; equipped: EquippedItems; label: string; onUnequip: (slot: LootSlot) => void; onEquip: (itemId: string, slot: LootSlot) => void; readOnly?: boolean }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const itemId = equipped[slot];
@@ -602,12 +551,14 @@ function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: Lo
     : "";
 
   const handleDragOver = (e: React.DragEvent) => {
+    if (readOnly) return;
     e.preventDefault();
     const draggedItemId = e.dataTransfer.types.includes("text/plain") ? true : false;
     if (draggedItemId) setDragOver(true);
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    if (readOnly) return;
     e.preventDefault();
     setDragOver(false);
     const draggedItemId = e.dataTransfer.getData("text/plain");
@@ -625,7 +576,8 @@ function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: Lo
         onDrop={handleDrop}
       >
         <button
-          onClick={() => item ? setShowTooltip(!showTooltip) : null}
+          onClick={() => item && !readOnly ? setShowTooltip(!showTooltip) : null}
+          disabled={readOnly}
           className={`w-[46px] h-[46px] rounded-lg flex items-center justify-center text-xl transition-all active:scale-90 border-2 shadow-sm ${
             dragOver ? "border-rose-400/80 scale-110" : item ? rarityBorder : "border-purple-200/50"
           } ${
@@ -671,12 +623,12 @@ function LootEquipSlot({ slot, equipped, label, onUnequip, onEquip }: { slot: Lo
           }`}>
             {item.rarity === "legendary" ? "Lendário" : item.rarity === "epic" ? "Épico" : item.rarity === "rare" ? "Raro" : "Comum"}
           </p>
-          <button
+          {!readOnly && <button
             onClick={(e) => { e.stopPropagation(); onUnequip(slot); setShowTooltip(false); }}
             className="mt-1.5 w-full text-[9px] py-1 rounded bg-red-50 text-red-500 border border-red-200/50 hover:bg-red-100 transition-all"
           >
             Desequipar
-          </button>
+          </button>}
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-pink-200/40" />
         </div>
       )}
