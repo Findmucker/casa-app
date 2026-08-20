@@ -9,7 +9,7 @@ import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        NotificationNavigation.publish(intent?.getStringExtra(NotificationTagExtra))
+        publishNotificationTarget(intent)
         enableEdgeToEdge()
         setContent {
             CasinhaTheme {
@@ -21,6 +21,10 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        NotificationNavigation.publish(intent.getStringExtra(NotificationTagExtra))
+        publishNotificationTarget(intent)
+    }
+
+    private fun publishNotificationTarget(intent: Intent?) {
+        NotificationNavigation.publish(intent?.getStringExtra(NOTIFICATION_TAG_EXTRA))
     }
 }
